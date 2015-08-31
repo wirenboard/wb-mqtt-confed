@@ -6,10 +6,6 @@ import (
 	"testing"
 )
 
-const (
-	SAMPLE_CLIENT_ID = "11111111"
-)
-
 type EditorSuite struct {
 	wbgo.Suite
 	*wbgo.DataFileFixture
@@ -29,7 +25,7 @@ func (s *EditorSuite) SetupTest() {
 	s.RpcFixture = wbgo.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
 		editor,
-		"List")
+		"List", "Load")
 }
 
 func (s *EditorSuite) TearDownTest() {
@@ -51,8 +47,41 @@ func (s *EditorSuite) TestListFiles() {
 	})
 }
 
+func (s *EditorSuite) TestLoadFile() {
+	s.VerifyRpc("Load", objx.Map{"path": "sample.json"}, objx.Map{
+		"content": objx.Map{
+			"firstName": "foo",
+			"lastName":  "bar",
+			"age":       100,
+		},
+		"schema": objx.Map{
+			"title": "Example Schema",
+			"type":  "object",
+			"properties": objx.Map{
+				"firstName": objx.Map{
+					"type": "string",
+				},
+				"lastName": objx.Map{
+					"type": "string",
+				},
+				"age": objx.Map{
+					"description": "Age in years",
+					"type":        "integer",
+					"minimum":     0,
+				},
+			},
+			"required": []interface{}{
+				"firstName",
+				"lastName",
+			},
+		},
+	})
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
 
 // TBD: list multiple configs in the catalog
+// TBD: load errors
+// TBD: validate configs when loading, don't list invalid configs

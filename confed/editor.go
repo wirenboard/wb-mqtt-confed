@@ -20,7 +20,9 @@ type confCatalogItem struct {
 type confFile struct {
 	Description string `json:"description"`
 	Path        string `json:"path"`
+	schemaPath  string
 	schema      *gojsonschema.Schema
+	schemaBytes []byte
 }
 
 type Editor struct {
@@ -45,18 +47,22 @@ func (err *EditorError) ErrorCode() int32 {
 const (
 	// no iota here because these values may be used
 	// by external software
-	EDITOR_ERROR_INVALID_PATH   = 1000
-	EDITOR_ERROR_LISTDIR        = 1001
-	EDITOR_ERROR_WRITE          = 1002
-	EDITOR_ERROR_FILE_NOT_FOUND = 1003
-	EDITOR_ERROR_REMOVE         = 1004
-	EDITOR_ERROR_READ           = 1005
+	EDITOR_ERROR_INVALID_PATH         = 1000
+	EDITOR_ERROR_LISTDIR              = 1001
+	EDITOR_ERROR_WRITE                = 1002
+	EDITOR_ERROR_FILE_NOT_FOUND       = 1003
+	EDITOR_ERROR_REMOVE               = 1004
+	EDITOR_ERROR_READ                 = 1005
+	EDITOR_ERROR_INVALID_CONFIG_ERROR = 1006
+	EDITOR_ERROR_INVALID_SCHEMA_ERROR = 1007
 )
 
 var invalidPathError = &EditorError{EDITOR_ERROR_INVALID_PATH, "Invalid path"}
 var listDirError = &EditorError{EDITOR_ERROR_LISTDIR, "Error listing the directory"}
 var writeError = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
 var fileNotFoundError = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
+var invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG_ERROR, "Invalid config file"}
+var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA_ERROR, "Invalid config schema"}
 var rmError = &EditorError{EDITOR_ERROR_REMOVE, "Error removing the file"}
 var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
 
@@ -91,6 +97,7 @@ func (editor *Editor) loadCatalog() (err error) {
 		editor.configs[item.Path] = &confFile{
 			Path:        item.Path,
 			Description: item.Description,
+			schemaPath:  item.Schema,
 			schema:      schema,
 		}
 	}
@@ -108,4 +115,52 @@ func (editor *Editor) List(args *struct{}, reply *[]*confFile) (err error) {
 		(*reply)[i] = editor.configs[path]
 	}
 	return
+}
+
+type EditorPathArgs struct {
+	Path string `json:"path"`
+}
+
+type EditorContentResponse struct {
+	Content *json.RawMessage `json:"content"`
+	Schema  *json.RawMessage `json:"schema"`
+}
+
+func (editor *Editor) locateFile(path string) (*confFile, error) {
+	if conf, ok := editor.configs[path]; !ok {
+		return nil, fileNotFoundError
+	} else {
+		return conf, nil
+	}
+}
+
+func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
+	conf, err := editor.locateFile(args.Path)
+	if err != nil {
+		return err
+	}
+
+	bs, err := loadConfigBytes(filepath.Join(editor.basePath, conf.Path))
+	if err != nil {
+		return invalidConfigError
+	}
+
+	documentLoader := gojsonschema.NewStringLoader(string(bs))
+	r, err := conf.schema.Validate(documentLoader)
+	if err != nil || !r.Valid() {
+		return invalidConfigError
+	}
+
+	// FIXME (don't reload schema here)
+	schemaBytes, err := loadConfigBytes(filepath.Join(editor.basePath, conf.schemaPath))
+	if err != nil {
+		return fileNotFoundError
+	}
+
+	content := json.RawMessage(bs)
+	schema := json.RawMessage(schemaBytes)
+	reply.Content = &content
+	reply.Schema = &schema
+
+	return nil
 }

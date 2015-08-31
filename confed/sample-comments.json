@@ -1,6 +1,6 @@
 {
   // a comment
+  "age": 100,
   "firstName": "foo1",
-  "lastName": "bar1",
-  "age": 100
+  "lastName": "bar1"
 }
