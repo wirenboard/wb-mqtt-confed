@@ -8,10 +8,18 @@ import (
 
 type ValidationSuite struct {
 	wbgo.Suite
+	schema *JSONSchema
+}
+
+func (s *ValidationSuite) SetupTest() {
+	s.Suite.SetupTest()
+	var err error
+	s.schema, err = NewJSONSchema("sample.schema.json")
+	s.Ck("error loading schema", err)
 }
 
 func (s *ValidationSuite) validate(path string) (r *gojsonschema.Result) {
-	r, err := ValidateJSON(path, "sample.schema.json")
+	r, err := s.schema.ValidateFile(path)
 	s.Ck("validation error", err)
 	return
 }
@@ -25,8 +33,10 @@ func (s *ValidationSuite) verifyInvalid(docPath string) {
 }
 
 func (s *ValidationSuite) verifyError(docPath, schemaPath string) {
-	_, err := ValidateJSON(docPath, schemaPath)
-	s.NotNil(err)
+	schema, err := NewJSONSchema(schemaPath)
+	s.Ck("error loading schema", err)
+	_, validationError := schema.ValidateFile(docPath)
+	s.NotNil(validationError)
 }
 
 func (s *ValidationSuite) TestValidation() {
@@ -35,7 +45,8 @@ func (s *ValidationSuite) TestValidation() {
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
 	s.verifyError("nosuchfile.json", "sample.schema.json")
-	s.verifyError("sample.json", "nosuchschema.json")
+	_, err := NewJSONSchema("nosuchfile.schema.json")
+	s.NotNil(err)
 }
 
 func TestValidationSuite(t *testing.T) {

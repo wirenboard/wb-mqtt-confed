@@ -2,27 +2,56 @@ package confed
 
 import (
 	"github.com/xeipuuv/gojsonschema"
-	"path/filepath"
 )
 
-func LoadSchema(schemaFile string) (schema *gojsonschema.Schema, err error) {
-	schemaPath, err := filepath.Abs(schemaFile)
-	if err != nil {
-		return
-	}
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + schemaPath)
-	return gojsonschema.NewSchema(schemaLoader)
+type JSONSchema struct {
+	path    string
+	schema  *gojsonschema.Schema
+	content []byte
 }
 
-func ValidateJSON(jsonFile, schemaFile string) (result *gojsonschema.Result, err error) {
-	bs, err := loadConfigBytes(jsonFile)
+func configLoader(path string) (loader gojsonschema.JSONLoader, content []byte, err error) {
+	content, err = loadConfigBytes(path)
 	if err != nil {
 		return
 	}
-	documentLoader := gojsonschema.NewStringLoader(string(bs))
-	schema, err := LoadSchema(schemaFile)
+	loader = gojsonschema.NewStringLoader(string(content))
+	return
+}
+
+func NewJSONSchema(schemaPath string) (s *JSONSchema, err error) {
+	loader, content, err := configLoader(schemaPath)
 	if err != nil {
 		return
 	}
-	return schema.Validate(documentLoader)
+	schema, err := gojsonschema.NewSchema(loader)
+	if err != nil {
+		return
+	}
+	return &JSONSchema{
+		path:    schemaPath,
+		schema:  schema,
+		content: content,
+	}, nil
+}
+
+func (s *JSONSchema) ValidateContent(content []byte) (*gojsonschema.Result, error) {
+	documentLoader := gojsonschema.NewStringLoader(string(content))
+	return s.schema.Validate(documentLoader)
+}
+
+func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err error) {
+	bs, err := loadConfigBytes(path)
+	if err != nil {
+		return
+	}
+	return s.ValidateContent(bs)
+}
+
+func (s *JSONSchema) Path() string {
+	return s.path
+}
+
+func (s *JSONSchema) Content() []byte {
+	return s.content
 }

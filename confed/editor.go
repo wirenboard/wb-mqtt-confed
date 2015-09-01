@@ -2,7 +2,6 @@ package confed
 
 import (
 	"encoding/json"
-	"github.com/xeipuuv/gojsonschema"
 	"path/filepath"
 	"sort"
 )
@@ -20,9 +19,7 @@ type confCatalogItem struct {
 type confFile struct {
 	Description string `json:"description"`
 	Path        string `json:"path"`
-	schemaPath  string
-	schema      *gojsonschema.Schema
-	schemaBytes []byte
+	schema      *JSONSchema
 }
 
 type Editor struct {
@@ -90,14 +87,13 @@ func (editor *Editor) loadCatalog() (err error) {
 		return
 	}
 	for _, item := range catalog.Configs {
-		schema, err := LoadSchema(filepath.Join(editor.basePath, item.Schema))
+		schema, err := NewJSONSchema(filepath.Join(editor.basePath, item.Schema))
 		if err != nil {
 			return err
 		}
 		editor.configs[item.Path] = &confFile{
 			Path:        item.Path,
 			Description: item.Description,
-			schemaPath:  item.Schema,
 			schema:      schema,
 		}
 	}
@@ -145,20 +141,13 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		return invalidConfigError
 	}
 
-	documentLoader := gojsonschema.NewStringLoader(string(bs))
-	r, err := conf.schema.Validate(documentLoader)
+	r, err := conf.schema.ValidateContent(bs)
 	if err != nil || !r.Valid() {
 		return invalidConfigError
 	}
 
-	// FIXME (don't reload schema here)
-	schemaBytes, err := loadConfigBytes(filepath.Join(editor.basePath, conf.schemaPath))
-	if err != nil {
-		return fileNotFoundError
-	}
-
 	content := json.RawMessage(bs)
-	schema := json.RawMessage(schemaBytes)
+	schema := json.RawMessage(conf.schema.Content())
 	reply.Content = &content
 	reply.Schema = &schema
 
