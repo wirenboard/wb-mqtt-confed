@@ -20,7 +20,9 @@ func (s *EditorSuite) SetupTest() {
 	s.Suite.SetupTest()
 	s.DataFileFixture = wbgo.NewDataFileFixture(s.T())
 	s.addSampleFiles()
-	editor, err := NewEditor(s.DataFilePath("wb-configs.json"))
+	editor := NewEditor()
+	editor.setRoot(s.DataFileTempDir())
+	err := editor.loadSchema(s.DataFilePath("sample.schema.json"))
 	s.Ck("error creating the editor", err)
 	s.RpcFixture = wbgo.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
@@ -35,28 +37,31 @@ func (s *EditorSuite) TearDownTest() {
 }
 
 func (s *EditorSuite) addSampleFiles() {
-	s.CopyDataFilesToTempDir("sample.json", "sample.schema.json", "wb-configs.json")
+	s.CopyDataFilesToTempDir("sample.json", "sample.schema.json")
 }
 
 func (s *EditorSuite) TestListFiles() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
-			"path":        "sample.json",
-			"description": "Sample config file",
+			"configPath":  "/sample.json",
+			"title":       "Example Config",
+			"description": "Just an example",
 		},
 	})
 }
 
 func (s *EditorSuite) TestLoadFile() {
-	s.VerifyRpc("Load", objx.Map{"path": "sample.json"}, objx.Map{
+	s.VerifyRpc("Load", objx.Map{"path": "/sample.json"}, objx.Map{
 		"content": objx.Map{
 			"firstName": "foo",
 			"lastName":  "bar",
 			"age":       100,
 		},
 		"schema": objx.Map{
-			"title": "Example Schema",
-			"type":  "object",
+			"configPath":  "sample.json",
+			"title":       "Example Config",
+			"description": "Just an example",
+			"type":        "object",
 			"properties": objx.Map{
 				"firstName": objx.Map{
 					"type": "string",
@@ -85,3 +90,7 @@ func TestEditorSuite(t *testing.T) {
 // TBD: list multiple configs in the catalog
 // TBD: load errors
 // TBD: validate configs when loading, don't list invalid configs
+// TBD: test schema file removal
+// TBD: test $ref
+// TBD: test reloading schemas (possibly with other config path)
+// TBD: test config path conflict between schemas

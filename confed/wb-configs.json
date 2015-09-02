@@ -1,9 +1,0 @@
-{
-  "configs": [
-    {
-      "path": "sample.json",
-      "description": "Sample config file",
-      "schema": "sample.schema.json"
-    }
-  ]
-}

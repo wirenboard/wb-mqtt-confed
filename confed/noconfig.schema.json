@@ -1,6 +1,4 @@
 {
-  "configPath": "sample.json",
-  "description": "Just an example",
   "properties": {
     "age": {
       "description": "Age in years",
@@ -15,6 +13,7 @@
     }
   },
   "required": ["firstName", "lastName"],
-  "title": "Example Config",
+  "title": "Example Schema",
+  "description": "Just an example",
   "type": "object"
 }

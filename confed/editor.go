@@ -4,28 +4,14 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"sort"
+	"sync"
 )
 
-type confCatalog struct {
-	Configs []confCatalogItem `json:"configs"`
-}
-
-type confCatalogItem struct {
-	Description string `json:"description"`
-	Path        string `json:"path"`
-	Schema      string `json:"schema"`
-}
-
-type confFile struct {
-	Description string `json:"description"`
-	Path        string `json:"path"`
-	schema      *JSONSchema
-}
-
 type Editor struct {
-	basePath    string
-	catalogPath string
-	configs     map[string]*confFile
+	mtx                 sync.Mutex
+	root                string
+	schemasByConfigPath map[string]*JSONSchema
+	schemasBySchemaPath map[string]*JSONSchema
 }
 
 type EditorError struct {
@@ -63,52 +49,56 @@ var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA_ERROR, "
 var rmError = &EditorError{EDITOR_ERROR_REMOVE, "Error removing the file"}
 var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
 
-func NewEditor(catalogPath string) (editor *Editor, err error) {
-	catalogPath, err = filepath.Abs(catalogPath)
+func NewEditor() *Editor {
+	return &Editor{
+		root:                "/",
+		schemasByConfigPath: make(map[string]*JSONSchema),
+		schemasBySchemaPath: make(map[string]*JSONSchema),
+	}
+}
+
+func (editor *Editor) setRoot(path string) {
+	if len(editor.schemasBySchemaPath) > 0 {
+		panic("cannot set root for non-empty editor")
+	}
+	editor.root = path
+}
+
+func (editor *Editor) loadSchema(path string) (err error) {
+	editor.mtx.Lock()
+	defer editor.mtx.Unlock()
+
+	schema, err := NewJSONSchemaWithRoot(path, editor.root)
 	if err != nil {
 		return
 	}
-	editor = &Editor{
-		catalogPath: catalogPath,
-		basePath:    filepath.Dir(catalogPath),
-		configs:     make(map[string]*confFile),
-	}
-	err = editor.loadCatalog()
-	return
-}
 
-func (editor *Editor) loadCatalog() (err error) {
-	bs, err := loadConfigBytes(editor.catalogPath)
 	if err != nil {
 		return
 	}
-	var catalog confCatalog
-	if err = json.Unmarshal(bs, &catalog); err != nil {
-		return
+	oldSchema, found := editor.schemasBySchemaPath[schema.Path()]
+	if found {
+		delete(editor.schemasBySchemaPath, oldSchema.Path())
+		delete(editor.schemasByConfigPath, oldSchema.ConfigPath())
 	}
-	for _, item := range catalog.Configs {
-		schema, err := NewJSONSchema(filepath.Join(editor.basePath, item.Schema))
-		if err != nil {
-			return err
-		}
-		editor.configs[item.Path] = &confFile{
-			Path:        item.Path,
-			Description: item.Description,
-			schema:      schema,
-		}
-	}
+	editor.schemasBySchemaPath[schema.Path()] = schema
+	editor.schemasByConfigPath[schema.ConfigPath()] = schema
+
 	return
 }
 
-func (editor *Editor) List(args *struct{}, reply *[]*confFile) (err error) {
-	paths := make([]string, 0, len(editor.configs))
-	for path := range editor.configs {
+func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error) {
+	editor.mtx.Lock()
+	defer editor.mtx.Unlock()
+
+	paths := make([]string, 0, len(editor.schemasByConfigPath))
+	for path := range editor.schemasByConfigPath {
 		paths = append(paths, path)
 	}
 	sort.Strings(paths)
-	*reply = make([]*confFile, len(editor.configs))
+	*reply = make([]*JSONSchemaProps, len(editor.schemasByConfigPath))
 	for i, path := range paths {
-		(*reply)[i] = editor.configs[path]
+		(*reply)[i] = editor.schemasByConfigPath[path].Properties()
 	}
 	return
 }
@@ -122,8 +112,8 @@ type EditorContentResponse struct {
 	Schema  *json.RawMessage `json:"schema"`
 }
 
-func (editor *Editor) locateFile(path string) (*confFile, error) {
-	if conf, ok := editor.configs[path]; !ok {
+func (editor *Editor) locateConfig(path string) (*JSONSchema, error) {
+	if conf, ok := editor.schemasByConfigPath[path]; !ok {
 		return nil, fileNotFoundError
 	} else {
 		return conf, nil
@@ -131,25 +121,25 @@ func (editor *Editor) locateFile(path string) (*confFile, error) {
 }
 
 func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
-	conf, err := editor.locateFile(args.Path)
+	schema, err := editor.locateConfig(args.Path)
 	if err != nil {
 		return err
 	}
 
-	bs, err := loadConfigBytes(filepath.Join(editor.basePath, conf.Path))
+	bs, err := loadConfigBytes(filepath.Join(editor.root, schema.ConfigPath()))
 	if err != nil {
 		return invalidConfigError
 	}
 
-	r, err := conf.schema.ValidateContent(bs)
+	r, err := schema.ValidateContent(bs)
 	if err != nil || !r.Valid() {
 		return invalidConfigError
 	}
 
 	content := json.RawMessage(bs)
-	schema := json.RawMessage(conf.schema.Content())
+	schemaContent := json.RawMessage(schema.Content())
 	reply.Content = &content
-	reply.Schema = &schema
+	reply.Schema = &schemaContent
 
 	return nil
 }
