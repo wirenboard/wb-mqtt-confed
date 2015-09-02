@@ -2,6 +2,8 @@ package confed
 
 import (
 	"encoding/json"
+	"github.com/contactless/wbgo"
+	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -107,6 +109,10 @@ type EditorPathArgs struct {
 	Path string `json:"path"`
 }
 
+type EditorPathResponse struct {
+	Path string `json:"path"`
+}
+
 type EditorContentResponse struct {
 	Content *json.RawMessage `json:"content"`
 	Schema  *json.RawMessage `json:"schema"`
@@ -120,13 +126,17 @@ func (editor *Editor) locateConfig(path string) (*JSONSchema, error) {
 	}
 }
 
+func (editor *Editor) configPath(schema *JSONSchema) string {
+	return filepath.Join(editor.root, schema.ConfigPath())
+}
+
 func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
 	schema, err := editor.locateConfig(args.Path)
 	if err != nil {
 		return err
 	}
 
-	bs, err := loadConfigBytes(filepath.Join(editor.root, schema.ConfigPath()))
+	bs, err := loadConfigBytes(editor.configPath(schema))
 	if err != nil {
 		return invalidConfigError
 	}
@@ -141,5 +151,32 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 	reply.Content = &content
 	reply.Schema = &schemaContent
 
+	return nil
+}
+
+type EditorSaveArgs struct {
+	Path    string           `json:"path"`
+	Content *json.RawMessage `json:"content"`
+}
+
+func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) error {
+	editor.mtx.Lock()
+	defer editor.mtx.Unlock()
+
+	schema, err := editor.locateConfig(args.Path)
+	if err != nil {
+		return err
+	}
+	r, err := schema.ValidateContent(*args.Content)
+	if err != nil || !r.Valid() {
+		return invalidConfigError
+	}
+
+	if err = ioutil.WriteFile(editor.configPath(schema), *args.Content, 0777); err != nil {
+		wbgo.Error.Printf("error writing %s: %s", editor.configPath(schema), err)
+		return writeError
+	}
+
+	reply.Path = args.Path
 	return nil
 }

@@ -3,6 +3,7 @@ package confed
 import (
 	"github.com/contactless/wbgo"
 	"github.com/stretchr/objx"
+	"io/ioutil"
 	"testing"
 )
 
@@ -27,7 +28,7 @@ func (s *EditorSuite) SetupTest() {
 	s.RpcFixture = wbgo.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
 		editor,
-		"List", "Load")
+		"List", "Load", "Save")
 }
 
 func (s *EditorSuite) TearDownTest() {
@@ -83,14 +84,39 @@ func (s *EditorSuite) TestLoadFile() {
 	})
 }
 
+func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
+	bs, err := ioutil.ReadFile(s.DataFilePath(path))
+	s.Ck("ReadFile()", err)
+	s.Equal(expectedContent, objx.MustFromJSON(string(bs)))
+}
+
+func (s *EditorSuite) TestSaveFile() {
+	newContent := objx.Map{
+		"age":       float64(4242),
+		"firstName": "qqq",
+		"lastName":  "rrr",
+	}
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/sample.json",
+		"content": newContent,
+	}, objx.Map{
+		"path": "/sample.json",
+	})
+	s.verifyJSONFile("sample.json", newContent)
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
 
 // TBD: list multiple configs in the catalog
-// TBD: load errors
-// TBD: validate configs when loading, don't list invalid configs
+// TBD: test load errors
+// TBD: test errors upon writing unlisted files
+// TBD: validate configs when saving
 // TBD: test schema file removal
 // TBD: test $ref
 // TBD: test reloading schemas (possibly with other config path)
 // TBD: test config path conflict between schemas
+// TBD: use parsed json configs (MSIs), not byte slices
+// TBD: rm unused error types
+// TBD: when using DirWatcher, use ContentTracker with it
