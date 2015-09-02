@@ -1,5 +1,7 @@
 {
-  "firstName": "foo",
-  "lastName": "bar",
-  "age": 100
+  "device_type" : "MSU21",
+  "name": "MSU21",
+  "id": "msu21",
+  "slave_id": 24,
+  "enabled": true
 }

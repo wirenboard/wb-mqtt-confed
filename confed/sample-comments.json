@@ -1,6 +1,8 @@
 {
-  // a comment
-  "firstName": "foo1",
-  "lastName": "bar1",
-  "age": 100
+  // sample device definition
+  "device_type" : "MSU21",
+  "name": "MSU21",
+  "id": "msu21",
+  "slave_id": 24,
+  "enabled": true
 }

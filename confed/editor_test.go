@@ -7,6 +7,47 @@ import (
 	"testing"
 )
 
+const (
+	EXPECTED_SCHEMA_CONTENT = `
+{
+  "type": "object",
+  "title": "Example Config",
+  "description": "Just an example",
+  "properties": {
+    "device_type": {
+      "type": "string",
+      "enum": ["MSU21"],
+      "title": "Device type",
+      "description": "Modbus device template to use"
+    },
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI"
+    },
+    "id": {
+      "type": "string",
+      "title": "Device ID",
+      "description": "Device identifier to be used as a part of MQTT topic"
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Enabled",
+      "description": "Check to enable device polling"
+    },
+    "slave_id": {
+      "type": "integer",
+      "title": "Slave ID",
+      "description": "Modbus Slave ID",
+      "minimum": 0
+    }
+  },
+  "required": ["device_type", "slave_id"],
+  "configPath": "sample.json"
+}
+`
+)
+
 type EditorSuite struct {
 	wbgo.Suite
 	*wbgo.DataFileFixture
@@ -54,33 +95,13 @@ func (s *EditorSuite) TestListFiles() {
 func (s *EditorSuite) TestLoadFile() {
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.json"}, objx.Map{
 		"content": objx.Map{
-			"firstName": "foo",
-			"lastName":  "bar",
-			"age":       100,
+			"device_type": "MSU21",
+			"name":        "MSU21",
+			"id":          "msu21",
+			"slave_id":    float64(24),
+			"enabled":     true,
 		},
-		"schema": objx.Map{
-			"configPath":  "sample.json",
-			"title":       "Example Config",
-			"description": "Just an example",
-			"type":        "object",
-			"properties": objx.Map{
-				"firstName": objx.Map{
-					"type": "string",
-				},
-				"lastName": objx.Map{
-					"type": "string",
-				},
-				"age": objx.Map{
-					"description": "Age in years",
-					"type":        "integer",
-					"minimum":     0,
-				},
-			},
-			"required": []interface{}{
-				"firstName",
-				"lastName",
-			},
-		},
+		"schema": objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
 	})
 }
 
@@ -92,9 +113,10 @@ func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
 
 func (s *EditorSuite) TestSaveFile() {
 	newContent := objx.Map{
-		"age":       float64(4242),
-		"firstName": "qqq",
-		"lastName":  "rrr",
+		"device_type": "MSU21",
+		"name":        "MSU21 (updated)",
+		"id":          "msu21",
+		"slave_id":    float64(42),
 	}
 	s.VerifyRpc("Save", objx.Map{
 		"path":    "/sample.json",
@@ -116,12 +138,14 @@ func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
 
+// TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)
 // TBD: test errors upon writing unlisted files
 // TBD: test schema file removal (not via RPC API)
-// TBD: test $ref
 // TBD: test reloading schemas (possibly with other config path)
 // TBD: test config path conflict between schemas
-// TBD: use parsed json configs (MSIs), not byte slices
 // TBD: rm unused error types
 // TBD: modbus device_type handling (use json pointer)
+// Later: resolve $ref when loading config
+// so as to avoid using complicated loading mechanism
+// on the client

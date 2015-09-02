@@ -3,18 +3,34 @@
   "title": "Example Config",
   "description": "Just an example",
   "properties": {
-    "age": {
-      "description": "Age in years",
-      "minimum": 0,
-      "type": "integer"
+    "device_type": {
+      "type": "string",
+      "enum": ["MSU21"],
+      "title": "Device type",
+      "description": "Modbus device template to use"
     },
-    "firstName": {
-      "type": "string"
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI"
     },
-    "lastName": {
-      "type": "string"
+    "id": {
+      "type": "string",
+      "title": "Device ID",
+      "description": "Device identifier to be used as a part of MQTT topic"
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Enabled",
+      "description": "Check to enable device polling"
+    },
+    "slave_id": {
+      "type": "integer",
+      "title": "Slave ID",
+      "description": "Modbus Slave ID",
+      "minimum": 0
     }
   },
-  "required": ["firstName", "lastName"],
+  "required": ["device_type", "slave_id"],
   "configPath": "sample.json"
 }

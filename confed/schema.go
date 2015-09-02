@@ -106,5 +106,3 @@ func (s *JSONSchema) Description() string {
 func (s *JSONSchema) Properties() *JSONSchemaProps {
 	return &s.props
 }
-
-// TBD: rename to ConfigSchema
