@@ -105,18 +105,23 @@ func (s *EditorSuite) TestSaveFile() {
 	s.verifyJSONFile("sample.json", newContent)
 }
 
+func (s *EditorSuite) TestSaveInvalidConfig() {
+	s.VerifyRpcError("Save", objx.Map{
+		"path":    "/sample.json",
+		"content": objx.Map{"wtf": 100},
+	}, EDITOR_ERROR_INVALID_CONFIG, "EditorError", "Invalid config file")
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
 
-// TBD: list multiple configs in the catalog
-// TBD: test load errors
+// TBD: test load errors (including invalid config errors)
 // TBD: test errors upon writing unlisted files
-// TBD: validate configs when saving
-// TBD: test schema file removal
+// TBD: test schema file removal (not via RPC API)
 // TBD: test $ref
 // TBD: test reloading schemas (possibly with other config path)
 // TBD: test config path conflict between schemas
 // TBD: use parsed json configs (MSIs), not byte slices
 // TBD: rm unused error types
-// TBD: when using DirWatcher, use ContentTracker with it
+// TBD: modbus device_type handling (use json pointer)

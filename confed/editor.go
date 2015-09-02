@@ -32,22 +32,22 @@ func (err *EditorError) ErrorCode() int32 {
 const (
 	// no iota here because these values may be used
 	// by external software
-	EDITOR_ERROR_INVALID_PATH         = 1000
-	EDITOR_ERROR_LISTDIR              = 1001
-	EDITOR_ERROR_WRITE                = 1002
-	EDITOR_ERROR_FILE_NOT_FOUND       = 1003
-	EDITOR_ERROR_REMOVE               = 1004
-	EDITOR_ERROR_READ                 = 1005
-	EDITOR_ERROR_INVALID_CONFIG_ERROR = 1006
-	EDITOR_ERROR_INVALID_SCHEMA_ERROR = 1007
+	EDITOR_ERROR_INVALID_PATH   = 1000
+	EDITOR_ERROR_LISTDIR        = 1001
+	EDITOR_ERROR_WRITE          = 1002
+	EDITOR_ERROR_FILE_NOT_FOUND = 1003
+	EDITOR_ERROR_REMOVE         = 1004
+	EDITOR_ERROR_READ           = 1005
+	EDITOR_ERROR_INVALID_CONFIG = 1006
+	EDITOR_ERROR_INVALID_SCHEMA = 1007
 )
 
 var invalidPathError = &EditorError{EDITOR_ERROR_INVALID_PATH, "Invalid path"}
 var listDirError = &EditorError{EDITOR_ERROR_LISTDIR, "Error listing the directory"}
 var writeError = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
 var fileNotFoundError = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
-var invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG_ERROR, "Invalid config file"}
-var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA_ERROR, "Invalid config schema"}
+var invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "Invalid config file"}
+var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA, "Invalid config schema"}
 var rmError = &EditorError{EDITOR_ERROR_REMOVE, "Error removing the file"}
 var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
 
