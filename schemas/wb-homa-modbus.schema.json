@@ -1,0 +1,84 @@
+{
+  "type": "object",
+  "title": "Modbus Driver Configuration",
+  "description": "Lists Modbus and Uniel devices attached to RS-485 ports",
+  "definitions": {
+    "port": {
+      "type": "object",
+      "title": "Serial port",
+      "properties": {
+        "path": {
+          "type": "string",
+          "title": "Path to device"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable poll",
+          "default": true
+        },
+        "baud_rate": {
+          "type": "integer",
+          "title": "Baud rate",
+          "enum": [110, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200],
+          "default": 9600
+        },
+        "parity": {
+          "type": "string",
+          "title": "Parity",
+          "enum": ["N", "E", "O"],
+          "default": "N"
+        },
+        "data_bits": {
+          "type": "integer",
+          "title": "Data bits",
+          "enum": [5, 6, 7, 8],
+          "default": 8
+        },
+        "stop_bits": {
+          "type": "integer",
+          "title": "Stop bits",
+          "enum": [1, 2],
+          "default": 1
+        },
+        "response_timeout_ms": {
+          "type": "integer",
+          "title": "Response timeout (ms)",
+          "description": "Zero means no timeout",
+          "minimum": 0,
+          "default": 0
+        },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Delay between polls (ms)",
+          "minimum": 0,
+          "default": 2000
+        },
+        "type": {
+          "type": "string",
+          "title": "Device type",
+          "description": "Type of devices to be used on this port",
+          "enum": ["modbus", "uniel"],
+          "default": "modbus"
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  "properties": {
+    "debug": {
+      "type": "boolean",
+      "title": "Enable debugging",
+      "description": "Enables debug logging",
+      "default": false
+    },
+    "ports": {
+      "type": "array",
+      "title": "List of serial ports",
+      "description": "Lists serial ports that can be used by the driver",
+      "items": { "$ref": "#/definitions/port" },
+      "minItems": 1
+    }
+  },
+  "required": ["ports"],
+  "configPath": "schemas/wb-homa-modbus.conf"
+}
