@@ -3,23 +3,26 @@ package confed
 import (
 	"github.com/contactless/wbgo"
 	"github.com/xeipuuv/gojsonschema"
-	"os"
 	"testing"
 )
 
 type SchemaSuite struct {
 	wbgo.Suite
-	wd     string
+	*ConfFixture
 	schema *JSONSchema
 }
 
 func (s *SchemaSuite) SetupTest() {
 	s.Suite.SetupTest()
+	s.ConfFixture = NewConfFixture(s.T())
 	var err error
-	s.wd, err = os.Getwd()
-	s.Ck("Getwd", err)
-	s.schema, err = NewJSONSchemaWithRoot("sample.schema.json", s.wd)
+	s.schema, err = newJSONSchema("sample.schema.json", s.DataFileTempDir())
 	s.Ck("error loading schema", err)
+}
+
+func (s *SchemaSuite) TearDownTest() {
+	s.schema.StopWatchingSubconfigs()
+	s.Suite.TearDownTest()
 }
 
 func (s *SchemaSuite) validate(path string) (r *gojsonschema.Result) {
@@ -37,8 +40,9 @@ func (s *SchemaSuite) verifyInvalid(docPath string) {
 }
 
 func (s *SchemaSuite) verifyError(docPath, schemaPath string) {
-	schema, err := NewJSONSchemaWithRoot(schemaPath, s.wd)
+	schema, err := newJSONSchema(schemaPath, s.DataFileTempDir())
 	s.Ck("error loading schema", err)
+	defer schema.StopWatchingSubconfigs()
 	_, validationError := schema.ValidateFile(docPath)
 	s.NotNil(validationError)
 }
@@ -49,9 +53,9 @@ func (s *SchemaSuite) TestValidation() {
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
 	s.verifyError("nosuchfile.json", "sample.schema.json")
-	_, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.wd)
+	_, err := newJSONSchema("nosuchfile.schema.json", s.DataFileTempDir())
 	s.NotNil(err)
-	_, err = NewJSONSchemaWithRoot("noconfig.schema.json", s.wd)
+	_, err = newJSONSchema("noconfig.schema.json", s.DataFileTempDir())
 	s.NotNil(err)
 }
 
@@ -60,6 +64,13 @@ func (s *SchemaSuite) TestSchemaProperties() {
 	s.Equal("/sample.json", s.schema.ConfigPath())
 	s.Equal("Example Config", s.schema.Title())
 	s.Equal("Just an example", s.schema.Description())
+}
+
+func (s *SchemaSuite) TestAddingSubconf() {
+	s.verifyValid("sample.json") // initialize schema to make sure it's updated properly later
+	s.WriteDataFile("sample_devtypes/whatever.conf", `{"device_type": "Whatever"}`)
+	s.WaitFor(func() bool { return s.schema.enumLoader.IsDirty() })
+	s.verifyValid("sample-to-use-after-new-subconf.json")
 }
 
 func TestSchemaSuite(t *testing.T) {

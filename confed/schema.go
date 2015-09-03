@@ -7,26 +7,24 @@ import (
 	"path/filepath"
 )
 
+const (
+	DEFAULT_SUBCONF_PATTERN = `^.*\.conf$`
+)
+
 type JSONSchemaProps struct {
-	ConfigPath  string `json:"configPath"`
-	Description string `json:"description"`
 	Title       string `json:"title"`
+	Description string `json:"description"`
+	ConfigPath  string `json:"configPath"`
 }
 
 type JSONSchema struct {
-	path    string
-	schema  *gojsonschema.Schema
-	content []byte
-	props   JSONSchemaProps
-}
-
-func configLoader(path string) (loader gojsonschema.JSONLoader, content []byte, err error) {
-	content, err = loadConfigBytes(path)
-	if err != nil {
-		return
-	}
-	loader = gojsonschema.NewStringLoader(string(content))
-	return
+	path         string
+	schema       *gojsonschema.Schema
+	content      []byte
+	parsed       map[string]interface{}
+	preprocessed map[string]interface{}
+	props        JSONSchemaProps
+	enumLoader   *enumLoader
 }
 
 func pathFromRoot(root, path string) (r string, err error) {
@@ -40,39 +38,80 @@ func pathFromRoot(root, path string) (r string, err error) {
 	return
 }
 
-func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
-	loader, content, err := configLoader(schemaPath)
+func subconfKey(path, pattern, ptrString string) string {
+	return path + "\x00" + pattern + "\x00" + ptrString
+}
+
+func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
+	content, err := loadConfigBytes(schemaPath)
 	if err != nil {
 		return
 	}
-	schema, err := gojsonschema.NewSchema(loader)
-	if err != nil {
+
+	var parsed map[string]interface{}
+	if err = json.Unmarshal(content, &parsed); err != nil {
 		return
 	}
+
+	configPath, _ := parsed["configPath"].(string)
+	if configPath == "" {
+		return nil, errors.New("bad configPath or no configPath in schema file")
+	}
+	title, _ := parsed["title"].(string)
+	description, _ := parsed["description"].(string)
+
 	schemaPathFromRoot, err := pathFromRoot(root, schemaPath)
 	if err != nil {
 		return
 	}
 	s = &JSONSchema{
 		path:    schemaPathFromRoot,
-		schema:  schema,
+		schema:  nil,
 		content: content,
-	}
-	err = json.Unmarshal(content, &s.props)
-	if err == nil && s.props.ConfigPath == "" {
-		return nil, errors.New("no config path in schema file")
+		parsed:  parsed,
+		props: JSONSchemaProps{
+			ConfigPath:  configPath,
+			Title:       title,
+			Description: description,
+		},
+		enumLoader: newEnumLoader(),
 	}
 	s.props.ConfigPath, err = pathFromRoot(root, s.props.ConfigPath)
 	return
 }
 
 func NewJSONSchema(schemaPath string) (s *JSONSchema, err error) {
-	return NewJSONSchemaWithRoot(schemaPath, "/")
+	return newJSONSchema(schemaPath, "/")
 }
 
-func (s *JSONSchema) ValidateContent(content []byte) (*gojsonschema.Result, error) {
+func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
+	if s.preprocessed == nil || s.enumLoader.IsDirty() {
+		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]interface{}) // FIXME
+	}
+	return s.preprocessed
+}
+
+func (s *JSONSchema) getSchema() (schema *gojsonschema.Schema, err error) {
+	if s.schema != nil && !s.enumLoader.IsDirty() {
+		return s.schema, nil
+	}
+
+	loader := gojsonschema.NewGoLoader(s.GetPreprocessed())
+	s.schema, err = gojsonschema.NewSchema(loader)
+	if err != nil {
+		return
+	}
+
+	return s.schema, nil
+}
+
+func (s *JSONSchema) ValidateContent(content []byte) (r *gojsonschema.Result, err error) {
 	documentLoader := gojsonschema.NewStringLoader(string(content))
-	return s.schema.Validate(documentLoader)
+	schema, err := s.getSchema()
+	if err != nil {
+		return
+	}
+	return schema.Validate(documentLoader)
 }
 
 func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err error) {
@@ -105,4 +144,8 @@ func (s *JSONSchema) Description() string {
 
 func (s *JSONSchema) Properties() *JSONSchemaProps {
 	return &s.props
+}
+
+func (s *JSONSchema) StopWatchingSubconfigs() {
+	s.enumLoader.StopWatchingSubconfigs()
 }

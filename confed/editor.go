@@ -70,7 +70,7 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
-	schema, err := NewJSONSchemaWithRoot(path, editor.root)
+	schema, err := newJSONSchema(path, editor.root)
 	if err != nil {
 		return
 	}
@@ -80,6 +80,7 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	}
 	oldSchema, found := editor.schemasBySchemaPath[schema.Path()]
 	if found {
+		oldSchema.StopWatchingSubconfigs()
 		delete(editor.schemasBySchemaPath, oldSchema.Path())
 		delete(editor.schemasByConfigPath, oldSchema.ConfigPath())
 	}
@@ -114,8 +115,8 @@ type EditorPathResponse struct {
 }
 
 type EditorContentResponse struct {
-	Content *json.RawMessage `json:"content"`
-	Schema  *json.RawMessage `json:"schema"`
+	Content *json.RawMessage       `json:"content"`
+	Schema  map[string]interface{} `json:"schema"`
 }
 
 func (editor *Editor) locateConfig(path string) (*JSONSchema, error) {
@@ -146,10 +147,9 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		return invalidConfigError
 	}
 
-	content := json.RawMessage(bs)
-	schemaContent := json.RawMessage(schema.Content())
+	content := json.RawMessage(bs) // TBD: use parsed config
 	reply.Content = &content
-	reply.Schema = &schemaContent
+	reply.Schema = schema.GetPreprocessed()
 
 	return nil
 }
@@ -179,4 +179,10 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 
 	reply.Path = args.Path
 	return nil
+}
+
+func (editor *Editor) stopWatchingSubconfigs() {
+	for _, schema := range editor.schemasBySchemaPath {
+		schema.StopWatchingSubconfigs()
+	}
 }

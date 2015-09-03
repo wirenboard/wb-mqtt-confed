@@ -16,7 +16,7 @@ const (
   "properties": {
     "device_type": {
       "type": "string",
-      "enum": ["MSU21"],
+      "enum": ["MSU21", "WB-MRM2"],
       "title": "Device type",
       "description": "Modbus device template to use"
     },
@@ -50,8 +50,9 @@ const (
 
 type EditorSuite struct {
 	wbgo.Suite
-	*wbgo.DataFileFixture
+	*ConfFixture
 	*wbgo.RpcFixture
+	editor *Editor
 }
 
 func (s *EditorSuite) T() *testing.T {
@@ -60,26 +61,22 @@ func (s *EditorSuite) T() *testing.T {
 
 func (s *EditorSuite) SetupTest() {
 	s.Suite.SetupTest()
-	s.DataFileFixture = wbgo.NewDataFileFixture(s.T())
-	s.addSampleFiles()
-	editor := NewEditor()
-	editor.setRoot(s.DataFileTempDir())
-	err := editor.loadSchema(s.DataFilePath("sample.schema.json"))
+	s.ConfFixture = NewConfFixture(s.T())
+	s.editor = NewEditor()
+	s.editor.setRoot(s.DataFileTempDir())
+	err := s.editor.loadSchema(s.DataFilePath("sample.schema.json"))
 	s.Ck("error creating the editor", err)
 	s.RpcFixture = wbgo.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
-		editor,
+		s.editor,
 		"List", "Load", "Save")
 }
 
 func (s *EditorSuite) TearDownTest() {
+	s.editor.stopWatchingSubconfigs()
 	s.TearDownRPC()
 	s.TearDownDataFiles()
 	s.Suite.TearDownTest()
-}
-
-func (s *EditorSuite) addSampleFiles() {
-	s.CopyDataFilesToTempDir("sample.json", "sample.schema.json")
 }
 
 func (s *EditorSuite) TestListFiles() {
@@ -141,11 +138,17 @@ func TestEditorSuite(t *testing.T) {
 // TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)
 // TBD: test errors upon writing unlisted files
+// TBD: test adding schema file (not via RPC API)
 // TBD: test schema file removal (not via RPC API)
+// TBD: test adding subconf (not via RPC API)
+// TBD: test subconf removal (not via RPC API)
 // TBD: test reloading schemas (possibly with other config path)
 // TBD: test config path conflict between schemas
 // TBD: rm unused error types
 // TBD: modbus device_type handling (use json pointer)
+// TBD: handle relative paths (incl. enum subconf paths) properly:
+//      they should be relative to the schema file, not the current
+//      directory
 // Later: resolve $ref when loading config
 // so as to avoid using complicated loading mechanism
 // on the client

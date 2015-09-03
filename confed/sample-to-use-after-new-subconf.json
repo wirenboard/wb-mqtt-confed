@@ -1,0 +1,7 @@
+{
+  "device_type" : "Whatever",
+  "name": "Whatever",
+  "id": "whatever",
+  "slave_id": 11,
+  "enabled": true
+}

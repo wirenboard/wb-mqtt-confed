@@ -5,7 +5,11 @@
   "properties": {
     "device_type": {
       "type": "string",
-      "enum": ["MSU21"],
+      "enum": {
+        "directories": ["sample_devtypes"],
+        "pointer": "/device_type",
+        "pattern": "^.*\\.conf$"
+      },
       "title": "Device type",
       "description": "Modbus device template to use"
     },
