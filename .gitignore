@@ -26,7 +26,7 @@ _testmain.go
 # Tern port file
 .tern-port
 
-/wb-rules
+/wb-mqtt-confed
 
 _vendor
 *.rice-box.go
