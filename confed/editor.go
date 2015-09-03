@@ -78,16 +78,34 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	if err != nil {
 		return
 	}
-	oldSchema, found := editor.schemasBySchemaPath[schema.Path()]
-	if found {
-		oldSchema.StopWatchingSubconfigs()
-		delete(editor.schemasBySchemaPath, oldSchema.Path())
-		delete(editor.schemasByConfigPath, oldSchema.ConfigPath())
-	}
+	editor.doRemoveSchema(schema.Path())
 	editor.schemasBySchemaPath[schema.Path()] = schema
 	editor.schemasByConfigPath[schema.ConfigPath()] = schema
-
 	return
+}
+
+func (editor *Editor) doRemoveSchema(path string) (err error) {
+	schema, found := editor.schemasBySchemaPath[path]
+	if !found {
+		return fmt.Errorf("file not found: %s", path)
+	}
+
+	schema.StopWatchingSubconfigs()
+	delete(editor.schemasBySchemaPath, schema.Path())
+	delete(editor.schemasByConfigPath, schema.ConfigPath())
+	return
+}
+
+func (editor *Editor) removeSchema(path string) (err error) {
+	editor.mtx.Lock()
+	defer editor.mtx.Unlock()
+
+	path, err = pathFromRoot(editor.root, path)
+	if err != nil {
+		return
+	}
+
+	return editor.doRemoveSchema(path)
 }
 
 func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error) {
@@ -185,4 +203,28 @@ func (editor *Editor) stopWatchingSubconfigs() {
 	for _, schema := range editor.schemasBySchemaPath {
 		schema.StopWatchingSubconfigs()
 	}
+}
+
+// We don't provide LoadFile / LiveLoadFile / LiveRemoveFile
+// for *Editor itself in order to avoid RPC server warnings
+// about improper methods.
+
+type EditorDirWatcherClient struct {
+	editor *Editor
+}
+
+func NewEditorDirWatcherClient(editor *Editor) wbgo.DirWatcherClient {
+	return &EditorDirWatcherClient{editor}
+}
+
+func (c *EditorDirWatcherClient) LoadFile(path string) error {
+	return c.editor.loadSchema(path)
+}
+
+func (c *EditorDirWatcherClient) LiveLoadFile(path string) error {
+	return c.LoadFile(path)
+}
+
+func (c *EditorDirWatcherClient) LiveRemoveFile(path string) error {
+	return c.editor.removeSchema(path)
 }

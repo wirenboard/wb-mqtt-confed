@@ -79,7 +79,7 @@ func (s *EditorSuite) TearDownTest() {
 	s.Suite.TearDownTest()
 }
 
-func (s *EditorSuite) TestListFiles() {
+func (s *EditorSuite) verifyInitialSchemaList() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
 			"configPath":  "/sample.json",
@@ -89,7 +89,11 @@ func (s *EditorSuite) TestListFiles() {
 	})
 }
 
-func (s *EditorSuite) TestLoadFile() {
+func (s *EditorSuite) TestListFiles() {
+	s.verifyInitialSchemaList()
+}
+
+func (s *EditorSuite) verifyLoadSampleJson() {
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.json"}, objx.Map{
 		"content": objx.Map{
 			"device_type": "MSU21",
@@ -100,6 +104,10 @@ func (s *EditorSuite) TestLoadFile() {
 		},
 		"schema": objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
 	})
+}
+
+func (s *EditorSuite) TestLoadFile() {
+	s.verifyLoadSampleJson()
 }
 
 func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
@@ -131,6 +139,56 @@ func (s *EditorSuite) TestSaveInvalidConfig() {
 	}, EDITOR_ERROR_INVALID_CONFIG, "EditorError", "Invalid config file")
 }
 
+func (s *EditorSuite) TestAddSchema() {
+	s.verifyInitialSchemaList()
+	s.CopyDataFilesToTempDir("another.schema.json", "another.json")
+	dwc := NewEditorDirWatcherClient(s.editor)
+	s.Ck("LiveLoadFile()", dwc.LiveLoadFile(s.DataFilePath("another.schema.json")))
+	s.VerifyRpc("List", objx.Map{}, []objx.Map{
+		{
+			"configPath":  "/another.json",
+			"title":       "Another Example Config",
+			"description": "",
+		},
+		{
+			"configPath":  "/sample.json",
+			"title":       "Example Config",
+			"description": "Just an example",
+		},
+	})
+	s.verifyLoadSampleJson()
+	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
+		"content": objx.Map{
+			"name": "foobar",
+		},
+		"schema": objx.MustFromJSON(s.ReadSourceDataFile("another.schema.json")),
+	})
+}
+
+func (s *EditorSuite) TestRemoveSchema() {
+	s.verifyInitialSchemaList()
+	s.CopyDataFilesToTempDir("another.schema.json", "another.json")
+	s.RmFile("sample.schema.json")
+	dwc := NewEditorDirWatcherClient(s.editor)
+	s.Ck("LiveLoadFile()", dwc.LiveLoadFile(s.DataFilePath("another.schema.json")))
+	s.Ck("LiveRemoveFile()", dwc.LiveRemoveFile(s.DataFilePath("sample.schema.json")))
+	s.VerifyRpc("List", objx.Map{}, []objx.Map{
+		{
+			"configPath":  "/another.json",
+			"title":       "Another Example Config",
+			"description": "",
+		},
+	})
+	s.VerifyRpcError("Load", objx.Map{"path": "/sample.json"},
+		EDITOR_ERROR_FILE_NOT_FOUND, "EditorError", "File not found")
+	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
+		"content": objx.Map{
+			"name": "foobar",
+		},
+		"schema": objx.MustFromJSON(s.ReadSourceDataFile("another.schema.json")),
+	})
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
@@ -138,14 +196,9 @@ func TestEditorSuite(t *testing.T) {
 // TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)
 // TBD: test errors upon writing unlisted files
-// TBD: test adding schema file (not via RPC API)
-// TBD: test schema file removal (not via RPC API)
-// TBD: test adding subconf (not via RPC API)
-// TBD: test subconf removal (not via RPC API)
 // TBD: test reloading schemas (possibly with other config path)
 // TBD: test config path conflict between schemas
 // TBD: rm unused error types
-// TBD: modbus device_type handling (use json pointer)
 // TBD: handle relative paths (incl. enum subconf paths) properly:
 //      they should be relative to the schema file, not the current
 //      directory

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "title": "Another Example Config",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI"
+    }
+  },
+  "required": ["name"],
+  "configPath": "another.json"
+}
