@@ -70,30 +70,28 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
+	wbgo.Debug.Printf("Loading schema file: %s", path)
 	schema, err := newJSONSchema(path, editor.root)
 	if err != nil {
+		wbgo.Error.Printf("Error loading schema: %s", err)
 		return
 	}
 
-	if err != nil {
-		return
-	}
 	editor.doRemoveSchema(schema.Path())
 	editor.schemasBySchemaPath[schema.Path()] = schema
 	editor.schemasByConfigPath[schema.ConfigPath()] = schema
 	return
 }
 
-func (editor *Editor) doRemoveSchema(path string) (err error) {
+func (editor *Editor) doRemoveSchema(path string) {
 	schema, found := editor.schemasBySchemaPath[path]
 	if !found {
-		return fmt.Errorf("file not found: %s", path)
+		return
 	}
 
 	schema.StopWatchingSubconfigs()
 	delete(editor.schemasBySchemaPath, schema.Path())
 	delete(editor.schemasByConfigPath, schema.ConfigPath())
-	return
 }
 
 func (editor *Editor) removeSchema(path string) (err error) {
@@ -105,7 +103,8 @@ func (editor *Editor) removeSchema(path string) (err error) {
 		return
 	}
 
-	return editor.doRemoveSchema(path)
+	editor.doRemoveSchema(path)
+	return nil
 }
 
 func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error) {
@@ -157,11 +156,20 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 
 	bs, err := loadConfigBytes(editor.configPath(schema))
 	if err != nil {
+		wbgo.Error.Printf("Failed to read config file %s: %s", args.Path, err)
 		return invalidConfigError
 	}
 
 	r, err := schema.ValidateContent(bs)
-	if err != nil || !r.Valid() {
+	if err != nil {
+		wbgo.Error.Printf("Failed to validate config file %s: %s", args.Path, err)
+		return invalidConfigError
+	}
+	if !r.Valid() {
+		wbgo.Error.Printf("Invalid config file %s", args.Path)
+		for _, desc := range r.Errors() {
+			wbgo.Error.Printf("- %s\n", desc)
+		}
 		return invalidConfigError
 	}
 
