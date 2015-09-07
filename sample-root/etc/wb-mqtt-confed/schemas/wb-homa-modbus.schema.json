@@ -94,5 +94,5 @@
     }
   },
   "required": ["ports"],
-  "configPath": "schemas/wb-homa-modbus.conf"
+  "configPath": "/etc/wb-homa-modbus.conf"
 }
