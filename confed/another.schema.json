@@ -6,6 +6,11 @@
       "type": "string",
       "title": "Device name",
       "description": "Device name to be displayed in UI"
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Active",
+      "_format": "checkbox"
     }
   },
   "required": ["name"],

@@ -46,6 +46,30 @@ const (
   "configPath": "sample.json"
 }
 `
+	// Note that "_format" property name in another.schema.json
+	// gets replaced with "format". That's necessary because
+	// 'format' values intended for json-editor like 'checkbox'
+	// for boolean may confuse gojsonschema
+	EXPECTED_ANOTHER_SCHEMA_CONTENT = `
+{
+  "type": "object",
+  "title": "Another Example Config",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI"
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Active",
+      "format": "checkbox"
+    }
+  },
+  "required": ["name"],
+  "configPath": "another.json"
+}
+`
 )
 
 type EditorSuite struct {
@@ -108,6 +132,14 @@ func (s *EditorSuite) verifyLoadSampleJson() {
 
 func (s *EditorSuite) TestLoadFile() {
 	s.verifyLoadSampleJson()
+	s.CopyDataFilesToTempDir("another.schema.json", "another.json")
+	s.Ck("loadSchema()", s.editor.loadSchema("another.schema.json"))
+	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
+		"content": objx.Map{
+			"name": "foobar",
+		},
+		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
+	})
 }
 
 func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
@@ -161,7 +193,7 @@ func (s *EditorSuite) TestAddSchema() {
 		"content": objx.Map{
 			"name": "foobar",
 		},
-		"schema": objx.MustFromJSON(s.ReadSourceDataFile("another.schema.json")),
+		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
 	})
 }
 
@@ -185,7 +217,7 @@ func (s *EditorSuite) TestRemoveSchema() {
 		"content": objx.Map{
 			"name": "foobar",
 		},
-		"schema": objx.MustFromJSON(s.ReadSourceDataFile("another.schema.json")),
+		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
 	})
 }
 
@@ -202,6 +234,12 @@ func TestEditorSuite(t *testing.T) {
 // TBD: handle relative paths (incl. enum subconf paths) properly:
 //      they should be relative to the schema file, not the current
 //      directory
+// TBD: add propertyOrder to schema properties
+//      (it works without it, but that's not good to rely on this behavior)
+//      (write Emacs func for it)
+// TBD: for schema editor: disable_properties, no_additional_properties
+// TBD: always provide absolute paths to configs
+//      (this helps with URLs on the client side)
 // Later: resolve $ref when loading config
 // so as to avoid using complicated loading mechanism
 // on the client

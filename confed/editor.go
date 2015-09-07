@@ -1,6 +1,7 @@
 package confed
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/contactless/wbgo"
 	"io/ioutil"
@@ -8,6 +9,31 @@ import (
 	"sort"
 	"sync"
 )
+
+func fixFormatProps(v interface{}) interface{} {
+	switch v.(type) {
+	case map[string]interface{}:
+		m := v.(map[string]interface{})
+		r := make(map[string]interface{})
+		for k, item := range m {
+			if k == "_format" {
+				r["format"] = fixFormatProps(item)
+			} else {
+				r[k] = fixFormatProps(item)
+			}
+		}
+		return r
+	case []interface{}:
+		l := v.([]interface{})
+		r := make([]interface{}, len(l))
+		for n, item := range l {
+			r[n] = fixFormatProps(item)
+		}
+		return r
+	default:
+		return v
+	}
+}
 
 type Editor struct {
 	mtx                 sync.Mutex
@@ -175,7 +201,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 
 	content := json.RawMessage(bs) // TBD: use parsed config
 	reply.Content = &content
-	reply.Schema = schema.GetPreprocessed()
+	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]interface{})
 
 	return nil
 }
@@ -198,7 +224,13 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return invalidConfigError
 	}
 
-	if err = ioutil.WriteFile(editor.configPath(schema), *args.Content, 0777); err != nil {
+	var indented bytes.Buffer
+	if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {
+		wbgo.Error.Printf("json.Indent() error, %s: %s", editor.configPath(schema), err)
+		return writeError
+	}
+
+	if err = ioutil.WriteFile(editor.configPath(schema), indented.Bytes(), 0777); err != nil {
 		wbgo.Error.Printf("error writing %s: %s", editor.configPath(schema), err)
 		return writeError
 	}
