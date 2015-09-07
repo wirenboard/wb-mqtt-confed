@@ -9,56 +9,67 @@
       "properties": {
         "path": {
           "type": "string",
-          "title": "Path to device"
+          "title": "Path to device",
+          "minLength": 1,
+          "propertyOrder": 1
         },
         "enabled": {
           "type": "boolean",
           "title": "Enable poll",
-          "default": true
+          "default": true,
+          "_format": "checkbox",
+          "propertyOrder": 2
         },
         "baud_rate": {
           "type": "integer",
           "title": "Baud rate",
           "enum": [110, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200],
-          "default": 9600
+          "default": 9600,
+          "propertyOrder": 3
         },
         "parity": {
           "type": "string",
           "title": "Parity",
           "enum": ["N", "E", "O"],
-          "default": "N"
+          "default": "N",
+          "propertyOrder": 4
         },
         "data_bits": {
           "type": "integer",
           "title": "Data bits",
           "enum": [5, 6, 7, 8],
-          "default": 8
+          "default": 8,
+          "propertyOrder": 5
         },
         "stop_bits": {
           "type": "integer",
           "title": "Stop bits",
           "enum": [1, 2],
-          "default": 1
+          "default": 1,
+          "propertyOrder": 5
         },
         "response_timeout_ms": {
           "type": "integer",
           "title": "Response timeout (ms)",
           "description": "Zero means no timeout",
           "minimum": 0,
-          "default": 0
+          "default": 0,
+          "propertyOrder": 6
         },
         "poll_interval": {
           "type": "integer",
           "title": "Delay between polls (ms)",
           "minimum": 0,
-          "default": 2000
+          "default": 2000,
+          "propertyOrder": 7
         },
         "type": {
           "type": "string",
           "title": "Device type",
           "description": "Type of devices to be used on this port",
           "enum": ["modbus", "uniel"],
-          "default": "modbus"
+          "default": "modbus",
+          "propertyOrder": 8
         }
       },
       "required": ["path"]
@@ -67,16 +78,19 @@
   "properties": {
     "debug": {
       "type": "boolean",
-      "title": "Enable debugging",
-      "description": "Enables debug logging",
-      "default": false
+      "title": "Enable debug logging",
+      "default": false,
+      "_format": "checkbox",
+      "propertyOrder": 1
     },
     "ports": {
       "type": "array",
       "title": "List of serial ports",
       "description": "Lists serial ports that can be used by the driver",
       "items": { "$ref": "#/definitions/port" },
-      "minItems": 1
+      "minItems": 1,
+      "_format": "tabs",
+      "propertyOrder": 2
     }
   },
   "required": ["ports"],
