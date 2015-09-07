@@ -77,19 +77,17 @@ var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA, "Invali
 var rmError = &EditorError{EDITOR_ERROR_REMOVE, "Error removing the file"}
 var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
 
-func NewEditor() *Editor {
+func NewEditor(root string) *Editor {
+	confRoot, err := filepath.Abs(root)
+	if err != nil {
+		wbgo.Error.Printf("invalid root path %s, using /", root)
+		confRoot = root
+	}
 	return &Editor{
-		root:                "/",
+		root:                confRoot,
 		schemasByConfigPath: make(map[string]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
 	}
-}
-
-func (editor *Editor) setRoot(path string) {
-	if len(editor.schemasBySchemaPath) > 0 {
-		panic("cannot set root for non-empty editor")
-	}
-	editor.root = path
 }
 
 func (editor *Editor) loadSchema(path string) (err error) {
@@ -170,17 +168,13 @@ func (editor *Editor) locateConfig(path string) (*JSONSchema, error) {
 	}
 }
 
-func (editor *Editor) configPath(schema *JSONSchema) string {
-	return filepath.Join(editor.root, schema.ConfigPath())
-}
-
 func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
 	schema, err := editor.locateConfig(args.Path)
 	if err != nil {
 		return err
 	}
 
-	bs, err := loadConfigBytes(editor.configPath(schema))
+	bs, err := loadConfigBytes(schema.PhysicalConfigPath())
 	if err != nil {
 		wbgo.Error.Printf("Failed to read config file %s: %s", args.Path, err)
 		return invalidConfigError
@@ -226,12 +220,12 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 
 	var indented bytes.Buffer
 	if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {
-		wbgo.Error.Printf("json.Indent() error, %s: %s", editor.configPath(schema), err)
+		wbgo.Error.Printf("json.Indent() error, %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}
 
-	if err = ioutil.WriteFile(editor.configPath(schema), indented.Bytes(), 0777); err != nil {
-		wbgo.Error.Printf("error writing %s: %s", editor.configPath(schema), err)
+	if err = ioutil.WriteFile(schema.PhysicalConfigPath(), indented.Bytes(), 0777); err != nil {
+		wbgo.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}
 

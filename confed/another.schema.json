@@ -14,5 +14,5 @@
     }
   },
   "required": ["name"],
-  "configPath": "another.json"
+  "configPath": "/another.json"
 }

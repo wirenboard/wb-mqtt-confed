@@ -62,6 +62,7 @@ func (s *SchemaSuite) TestValidation() {
 func (s *SchemaSuite) TestSchemaProperties() {
 	s.Equal("/sample.schema.json", s.schema.Path())
 	s.Equal("/sample.json", s.schema.ConfigPath())
+	s.Equal(s.DataFilePath("sample.json"), s.schema.PhysicalConfigPath())
 	s.Equal("Example Config", s.schema.Title())
 	s.Equal("Just an example", s.schema.Description())
 }

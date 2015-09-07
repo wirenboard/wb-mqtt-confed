@@ -12,9 +12,10 @@ const (
 )
 
 type JSONSchemaProps struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	ConfigPath  string `json:"configPath"`
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	ConfigPath         string `json:"configPath"`
+	physicalConfigPath string
 }
 
 type JSONSchema struct {
@@ -28,6 +29,9 @@ type JSONSchema struct {
 }
 
 func pathFromRoot(root, path string) (r string, err error) {
+	if len(root) == 0 || root[:len(root)-1] != "/" {
+		root = root + "/"
+	}
 	path, err = filepath.Abs(path)
 	if err == nil {
 		r, err = filepath.Rel(root, path)
@@ -53,10 +57,23 @@ func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	configPath, _ := parsed["configPath"].(string)
-	if configPath == "" {
+	physicalConfigPath, _ := parsed["configPath"].(string)
+	if physicalConfigPath == "" {
 		return nil, errors.New("bad configPath or no configPath in schema file")
 	}
+	if physicalConfigPath[:1] != "/" {
+		physicalConfigPath = "/" + physicalConfigPath
+	} else {
+		for physicalConfigPath[:1] == "/" {
+			physicalConfigPath = physicalConfigPath[1:]
+		}
+	}
+	physicalConfigPath = filepath.Join(root, physicalConfigPath)
+	configPath, err := pathFromRoot(root, physicalConfigPath)
+	if err != nil {
+		return
+	}
+
 	title, _ := parsed["title"].(string)
 	description, _ := parsed["description"].(string)
 
@@ -70,13 +87,13 @@ func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
 		content: content,
 		parsed:  parsed,
 		props: JSONSchemaProps{
-			ConfigPath:  configPath,
-			Title:       title,
-			Description: description,
+			ConfigPath:         configPath,
+			physicalConfigPath: physicalConfigPath,
+			Title:              title,
+			Description:        description,
 		},
 		enumLoader: newEnumLoader(),
 	}
-	s.props.ConfigPath, err = pathFromRoot(root, s.props.ConfigPath)
 	return
 }
 
@@ -132,6 +149,10 @@ func (s *JSONSchema) Content() []byte {
 
 func (s *JSONSchema) ConfigPath() string {
 	return s.props.ConfigPath
+}
+
+func (s *JSONSchema) PhysicalConfigPath() string {
+	return s.props.physicalConfigPath
 }
 
 func (s *JSONSchema) Title() string {

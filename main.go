@@ -11,6 +11,7 @@ const DRIVER_CLIENT_ID = "confed"
 
 func main() {
 	brokerAddress := flag.String("broker", "tcp://localhost:1883", "MQTT broker url")
+	root := flag.String("root", "/", "Config root path")
 	debug := flag.Bool("debug", false, "Enable debugging")
 	useSyslog := flag.Bool("syslog", false, "Use syslog for logging")
 	flag.Parse()
@@ -24,7 +25,7 @@ func main() {
 		wbgo.SetDebuggingEnabled(true)
 	}
 
-	editor := confed.NewEditor()
+	editor := confed.NewEditor(*root)
 	watcher := wbgo.NewDirWatcher("\\.schema.json$", confed.NewEditorDirWatcherClient(editor))
 
 	gotSome := false

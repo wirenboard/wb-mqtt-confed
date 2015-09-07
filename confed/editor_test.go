@@ -43,7 +43,7 @@ const (
     }
   },
   "required": ["device_type", "slave_id"],
-  "configPath": "sample.json"
+  "configPath": "/sample.json"
 }
 `
 	// Note that "_format" property name in another.schema.json
@@ -67,7 +67,7 @@ const (
     }
   },
   "required": ["name"],
-  "configPath": "another.json"
+  "configPath": "/another.json"
 }
 `
 )
@@ -86,8 +86,7 @@ func (s *EditorSuite) T() *testing.T {
 func (s *EditorSuite) SetupTest() {
 	s.Suite.SetupTest()
 	s.ConfFixture = NewConfFixture(s.T())
-	s.editor = NewEditor()
-	s.editor.setRoot(s.DataFileTempDir())
+	s.editor = NewEditor(s.DataFileTempDir())
 	err := s.editor.loadSchema(s.DataFilePath("sample.schema.json"))
 	s.Ck("error creating the editor", err)
 	s.RpcFixture = wbgo.NewRpcFixture(
