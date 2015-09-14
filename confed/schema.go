@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/xeipuuv/gojsonschema"
-	"path/filepath"
 )
 
 const (
@@ -28,25 +27,11 @@ type JSONSchema struct {
 	enumLoader   *enumLoader
 }
 
-func pathFromRoot(root, path string) (r string, err error) {
-	if len(root) == 0 || root[:len(root)-1] != "/" {
-		root = root + "/"
-	}
-	path, err = filepath.Abs(path)
-	if err == nil {
-		r, err = filepath.Rel(root, path)
-		if err == nil {
-			r = "/" + r
-		}
-	}
-	return
-}
-
 func subconfKey(path, pattern, ptrString string) string {
 	return path + "\x00" + pattern + "\x00" + ptrString
 }
 
-func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
+func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	content, err := loadConfigBytes(schemaPath)
 	if err != nil {
 		return
@@ -61,15 +46,7 @@ func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
 	if physicalConfigPath == "" {
 		return nil, errors.New("bad configPath or no configPath in schema file")
 	}
-	if physicalConfigPath[:1] != "/" {
-		physicalConfigPath = "/" + physicalConfigPath
-	} else {
-		for physicalConfigPath[:1] == "/" {
-			physicalConfigPath = physicalConfigPath[1:]
-		}
-	}
-	physicalConfigPath = filepath.Join(root, physicalConfigPath)
-	configPath, err := pathFromRoot(root, physicalConfigPath)
+	physicalConfigPath, configPath, err := fakeRootPath(root, physicalConfigPath)
 	if err != nil {
 		return
 	}
@@ -92,13 +69,13 @@ func newJSONSchema(schemaPath, root string) (s *JSONSchema, err error) {
 			Title:              title,
 			Description:        description,
 		},
-		enumLoader: newEnumLoader(),
+		enumLoader: newEnumLoader(root),
 	}
 	return
 }
 
 func NewJSONSchema(schemaPath string) (s *JSONSchema, err error) {
-	return newJSONSchema(schemaPath, "/")
+	return NewJSONSchemaWithRoot(schemaPath, "/")
 }
 
 func (s *JSONSchema) GetPreprocessed() map[string]interface{} {

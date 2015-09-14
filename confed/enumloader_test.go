@@ -62,7 +62,7 @@ func (s *EnumLoaderSuite) T() *testing.T {
 func (s *EnumLoaderSuite) SetupTest() {
 	s.Suite.SetupTest()
 	s.ConfFixture = NewConfFixture(s.T())
-	s.enumLoader = newEnumLoader()
+	s.enumLoader = newEnumLoader(s.DataFileTempDir())
 }
 
 func (s *EnumLoaderSuite) TearDownTest() {

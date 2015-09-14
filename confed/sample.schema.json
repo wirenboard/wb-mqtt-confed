@@ -6,7 +6,7 @@
     "device_type": {
       "type": "string",
       "enum": {
-        "directories": ["sample_devtypes"],
+        "directories": ["/sample_devtypes"],
         "pointer": "/device_type",
         "pattern": "^.*\\.conf$"
       },

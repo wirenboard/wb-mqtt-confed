@@ -2,8 +2,11 @@ package main
 
 import (
 	"./confed"
+	"encoding/json"
 	"flag"
 	"github.com/contactless/wbgo"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -14,6 +17,8 @@ func main() {
 	root := flag.String("root", "/", "Config root path")
 	debug := flag.Bool("debug", false, "Enable debugging")
 	useSyslog := flag.Bool("syslog", false, "Use syslog for logging")
+	validate := flag.Bool("validate", false, "Validate specified config file and exit")
+	dump := flag.Bool("dump", false, "Dump preprocessed schema and exit")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		wbgo.Error.Fatal("must specify schema(s) / schema directory(ies)")
@@ -24,8 +29,54 @@ func main() {
 	if *debug {
 		wbgo.SetDebuggingEnabled(true)
 	}
+	absRoot, err := filepath.Abs(*root)
+	if err != nil {
+		wbgo.Error.Fatal("failed to get absolute path for root")
+	}
 
-	editor := confed.NewEditor(*root)
+	// TBD: don't watch subconfs while validating/dumping
+	if *validate {
+		if flag.NArg() != 2 {
+			// TBD: don't require config path, it should
+			// be taken from schema if it's not specified
+			wbgo.Error.Fatal("must specify schema and config files")
+		}
+		schemaPath, configPath := flag.Arg(0), flag.Arg(1)
+		schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
+		if err != nil {
+			wbgo.Error.Fatal("failed to load schema %s: %s", schemaPath, err)
+		}
+		r, err := schema.ValidateFile(configPath)
+		if err != nil {
+			wbgo.Error.Fatal("failed to validate %s: %s", configPath, err)
+		}
+		if !r.Valid() {
+			wbgo.Error.Printf("Validation failed for %s", configPath)
+			for _, desc := range r.Errors() {
+				wbgo.Error.Printf("- %s\n", desc)
+			}
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+	if *dump {
+		if flag.NArg() != 1 {
+			wbgo.Error.Fatal("must specify schema file")
+		}
+		schemaPath := flag.Arg(0)
+		schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
+		if err != nil {
+			wbgo.Error.Fatal("failed to load schema %s: %s", schemaPath, err)
+		}
+		content, err := json.MarshalIndent(schema.GetPreprocessed(), "", "  ")
+		if err != nil {
+			wbgo.Error.Fatal("failed to serialize schema %s: %s", schemaPath, err)
+		}
+		os.Stdout.Write(content)
+		os.Exit(0)
+	}
+
+	editor := confed.NewEditor(absRoot)
 	watcher := wbgo.NewDirWatcher("\\.schema.json$", confed.NewEditorDirWatcherClient(editor))
 
 	gotSome := false

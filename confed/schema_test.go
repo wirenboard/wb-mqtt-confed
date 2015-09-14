@@ -16,7 +16,7 @@ func (s *SchemaSuite) SetupTest() {
 	s.Suite.SetupTest()
 	s.ConfFixture = NewConfFixture(s.T())
 	var err error
-	s.schema, err = newJSONSchema("sample.schema.json", s.DataFileTempDir())
+	s.schema, err = NewJSONSchemaWithRoot("sample.schema.json", s.DataFileTempDir())
 	s.Ck("error loading schema", err)
 }
 
@@ -40,7 +40,7 @@ func (s *SchemaSuite) verifyInvalid(docPath string) {
 }
 
 func (s *SchemaSuite) verifyError(docPath, schemaPath string) {
-	schema, err := newJSONSchema(schemaPath, s.DataFileTempDir())
+	schema, err := NewJSONSchemaWithRoot(schemaPath, s.DataFileTempDir())
 	s.Ck("error loading schema", err)
 	defer schema.StopWatchingSubconfigs()
 	_, validationError := schema.ValidateFile(docPath)
@@ -53,9 +53,9 @@ func (s *SchemaSuite) TestValidation() {
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
 	s.verifyError("nosuchfile.json", "sample.schema.json")
-	_, err := newJSONSchema("nosuchfile.schema.json", s.DataFileTempDir())
+	_, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.DataFileTempDir())
 	s.NotNil(err)
-	_, err = newJSONSchema("noconfig.schema.json", s.DataFileTempDir())
+	_, err = NewJSONSchemaWithRoot("noconfig.schema.json", s.DataFileTempDir())
 	s.NotNil(err)
 }
 

@@ -95,7 +95,7 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	defer editor.mtx.Unlock()
 
 	wbgo.Debug.Printf("Loading schema file: %s", path)
-	schema, err := newJSONSchema(path, editor.root)
+	schema, err := NewJSONSchemaWithRoot(path, editor.root)
 	if err != nil {
 		wbgo.Error.Printf("Error loading schema: %s", err)
 		return

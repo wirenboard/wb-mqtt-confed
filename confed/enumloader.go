@@ -12,13 +12,15 @@ import (
 
 type enumLoader struct {
 	sync.Mutex
+	root       string
 	dirty      bool
 	watchers   map[string]*wbgo.DirWatcher
 	enumValues map[string]map[string]string
 }
 
-func newEnumLoader() *enumLoader {
+func newEnumLoader(root string) *enumLoader {
 	return &enumLoader{
+		root:       root,
 		dirty:      true,
 		watchers:   make(map[string]*wbgo.DirWatcher),
 		enumValues: make(map[string]map[string]string),
@@ -121,10 +123,16 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	}
 	paths := make([]string, len(maybePaths))
 	for n, p := range maybePaths {
-		paths[n], ok = p.(string)
+		path, ok := p.(string)
 		if !ok {
 			return nil, invalidEnumSubconfError
 		}
+		paths[n], _, err = fakeRootPath(e.root, path)
+		if err != nil {
+			wbgo.Warn.Printf("pathFromRoot failed for %s", path)
+			paths[n] = path
+		}
+		wbgo.Debug.Printf("pathFromRoot: %s, %s -> %s", e.root, path, paths[n])
 	}
 
 	ptrString, ok := node["pointer"].(string)
