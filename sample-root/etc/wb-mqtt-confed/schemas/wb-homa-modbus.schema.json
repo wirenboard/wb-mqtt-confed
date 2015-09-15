@@ -122,7 +122,8 @@
             "directories": ["/usr/share/wb-homa-modbus/templates/wb-homa-modbus-templates"],
             "pointer": "/device_type",
             "pattern": "^.*\\.json$"
-          }
+          },
+          "propertyOrder": 5
         },
         "setup": {
           "type": "array",
@@ -130,14 +131,14 @@
           "description": "Lists holding register values that must be written during initialization",
           "items": { "$ref": "#/definitions/setup_cmd" },
           "_format": "table",
-          "propertyOrder": 5
+          "propertyOrder": 6
         },
         "channels": {
           "type": "array",
           "title": "List of channels",
           "description": "Lists Modbus registers of the device and their corresponding controls",
           "items": { "$ref": "#/definitions/channel" },
-          "propertyOrder": 6
+          "propertyOrder": 7
         }
       },
       "required": ["slave_id"]
