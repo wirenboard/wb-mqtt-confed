@@ -47,21 +47,26 @@ func (c *subconfWatcherClient) LiveRemoveFile(path string) error {
 }
 
 func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) (err error) {
+	wbgo.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
 	content, err := loadConfigBytes(path)
 	if err != nil {
+		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
 		return
 	}
 
 	var parsed map[string]interface{}
 	if err = json.Unmarshal(content, &parsed); err != nil {
+		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s unmarshal failed: %s", path, err)
 		return
 	}
 
 	node, kind, err := ptr.Get(parsed)
 	if err != nil {
+		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s JSON pointer deref failed: %s", path, err)
 		return
 	}
 	if kind != reflect.String {
+		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s: JSON Pointer enum target is not a string", path)
 		return errors.New("JSON Pointer enum target is not a string")
 	}
 
@@ -148,7 +153,11 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	seen := make(map[string]bool)
 	strs := make([]string, 0, 32)
 	for _, path := range paths {
+		wbgo.Debug.Printf("enumLoader.subconfEnumValues(): loading subconf path %s", path)
 		curErr := e.ensureSubconfDirLoaded(path, pattern, ptrString)
+		if curErr != nil {
+			wbgo.Debug.Printf("enumLoader.subconfEnumValues(): subconf load error: %s", curErr)
+		}
 		if err == nil {
 			err = curErr
 		}
@@ -168,6 +177,7 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	for n, v := range strs {
 		r[n] = v
 	}
+	wbgo.Debug.Printf("enumLoader.subconfEnumValues(): values=%v", r)
 	return
 }
 
