@@ -141,7 +141,8 @@
           "propertyOrder": 7
         }
       },
-      "required": ["slave_id"]
+      "required": ["slave_id"],
+      "defaultProperties": ["slave_id", "device_type"]
     },
     "setup_cmd": {
       "type": "object",
