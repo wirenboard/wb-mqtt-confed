@@ -6,6 +6,7 @@
     "port": {
       "type": "object",
       "title": "Serial port",
+      "headerTemplate": "Port {{self.path}}{{ (|self.type|)}}",
       "properties": {
         "path": {
           "type": "string",
@@ -79,11 +80,14 @@
           "propertyOrder": 9
         }
       },
-      "required": ["path"]
+      "required": ["path"],
+      "defaultProperties": ["path", "type"]
     },
     "device": {
       "type": "object",
       "title": "Modbus device",
+      "headerTemplate": "Modbus device{{: |self.name}}{{ (slave id |self.slave_id|)}}",
+      // "options": { "collapsed": true },
       "properties": {
         "name": {
           "type": "string",
@@ -147,6 +151,7 @@
     "setup_cmd": {
       "type": "object",
       "title": "Setup command",
+      // "options": { "collapsed": true },
       "properties": {
         "title": {
           "type": "string",
@@ -171,6 +176,7 @@
     },
     "channel": {
       "type": "object",
+      // "options": { "collapsed": true },
       "oneOf": [
         {
           "title": "Modbus register",
