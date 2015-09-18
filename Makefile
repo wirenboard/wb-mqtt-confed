@@ -29,5 +29,6 @@ wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GOM) build
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/
+	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/etc/wb-mqtt-confed
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
+	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
