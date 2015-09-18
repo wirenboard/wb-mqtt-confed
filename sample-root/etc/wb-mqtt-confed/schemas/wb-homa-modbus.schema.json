@@ -123,7 +123,7 @@
           "title": "Device type",
           "description": "Selects device template",
           "enum": {
-            "directories": ["/usr/share/wb-homa-modbus/templates/wb-homa-modbus-templates"],
+            "directories": ["/usr/share/wb-homa-modbus/templates"],
             "pointer": "/device_type",
             "pattern": "^.*\\.json$"
           },
