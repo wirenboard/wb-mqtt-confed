@@ -14,5 +14,7 @@
     }
   },
   "required": ["name"],
-  "configPath": "/another.json"
+  "configFile": {
+    "path": "/another.json"
+  }
 }

@@ -44,7 +44,9 @@ const (
     }
   },
   "required": ["device_type", "slave_id"],
-  "configPath": "/sample.json"
+  "configFile": {
+    "path": "/sample.json"
+  }
 }
 `
 )

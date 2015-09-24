@@ -42,9 +42,14 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	physicalConfigPath, _ := parsed["configPath"].(string)
+	configFile, _ := parsed["configFile"].(map[string]interface{})
+	if configFile == nil {
+		return nil, errors.New("no configFile section in the schema")
+	}
+
+	physicalConfigPath, _ := configFile["path"].(string)
 	if physicalConfigPath == "" {
-		return nil, errors.New("bad configPath or no configPath in schema file")
+		return nil, errors.New("bad config path or no config path in schema file")
 	}
 	physicalConfigPath, configPath, err := fakeRootPath(root, physicalConfigPath)
 	if err != nil {

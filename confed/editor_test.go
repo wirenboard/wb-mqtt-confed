@@ -43,7 +43,9 @@ const (
     }
   },
   "required": ["device_type", "slave_id"],
-  "configPath": "/sample.json"
+  "configFile": {
+    "path": "/sample.json"
+  }
 }
 `
 	// Note that "_format" property name in another.schema.json
@@ -67,7 +69,9 @@ const (
     }
   },
   "required": ["name"],
-  "configPath": "/another.json"
+  "configFile": {
+    "path": "/another.json"
+  }
 }
 `
 )
