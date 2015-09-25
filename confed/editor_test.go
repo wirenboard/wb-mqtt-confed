@@ -4,6 +4,8 @@ import (
 	"github.com/contactless/wbgo"
 	"github.com/stretchr/objx"
 	"io/ioutil"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -74,6 +76,23 @@ const (
   }
 }
 `
+
+	EXPECTED_INTERFACES_JSON = `
+{
+  "interfaces": [
+    {
+      "auto": true,
+      "method": "static",
+      "name": "eth0",
+      "options": {
+        "address": "172.16.200.77",
+        "broadcast": "172.16.200.255",
+        "gateway": "172.16.200.10",
+        "netmask": "255.255.255.0"
+      }
+    }
+  ]
+}`
 )
 
 type EditorSuite struct {
@@ -90,9 +109,9 @@ func (s *EditorSuite) T() *testing.T {
 func (s *EditorSuite) SetupTest() {
 	s.Suite.SetupTest()
 	s.ConfFixture = NewConfFixture(s.T())
+	s.setupPathEnvVar()
 	s.editor = NewEditor(s.DataFileTempDir())
-	err := s.editor.loadSchema(s.DataFilePath("sample.schema.json"))
-	s.Ck("error creating the editor", err)
+	s.Ck("s.editor.loadSchema()", s.editor.loadSchema(s.DataFilePath("sample.schema.json")))
 	s.RpcFixture = wbgo.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
 		s.editor,
@@ -104,6 +123,17 @@ func (s *EditorSuite) TearDownTest() {
 	s.TearDownRPC()
 	s.TearDownDataFiles()
 	s.Suite.TearDownTest()
+}
+
+func (s *EditorSuite) setupPathEnvVar() {
+	// add directory with 'networkparser' to the front of $PATH
+	path := os.Getenv("PATH")
+	if path == "" {
+		os.Setenv("PATH", s.SourceDir()+"/..")
+	} else {
+		os.Setenv("PATH", s.SourceDir()+"/..:"+path)
+	}
+
 }
 
 func (s *EditorSuite) verifyInitialSchemaList() {
@@ -149,6 +179,12 @@ func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
 	bs, err := ioutil.ReadFile(s.DataFilePath(path))
 	s.Ck("ReadFile()", err)
 	s.Equal(expectedContent, objx.MustFromJSON(string(bs)))
+}
+
+func (s *EditorSuite) verifyTextFile(path string, expectedContent string) {
+	bs, err := ioutil.ReadFile(s.DataFilePath(path))
+	s.Ck("ReadFile()", err)
+	s.Equal(expectedContent, string(bs))
 }
 
 func (s *EditorSuite) TestSaveFile() {
@@ -224,9 +260,79 @@ func (s *EditorSuite) TestRemoveSchema() {
 	})
 }
 
+func (s *EditorSuite) loadInterfacesConf() {
+	s.CopyDataFilesToTempDir(
+		"interfaces.schema.json",
+		"interfaces:etc/network/interfaces")
+	s.Ck("s.editor.loadSchema()", s.editor.loadSchema(s.DataFilePath("interfaces.schema.json")))
+}
+
+func (s *EditorSuite) TestListPreprocessed() {
+	s.loadInterfacesConf()
+	s.VerifyRpc("List", objx.Map{}, []objx.Map{
+		{
+			"configPath":  "/etc/network/interfaces",
+			"title":       "Network Interface Configuration",
+			"description": "Specifies network configuration of the system",
+		},
+		{
+			"configPath":  "/sample.json",
+			"title":       "Example Config",
+			"description": "Just an example",
+		},
+	})
+}
+
+func (s *EditorSuite) TestLoadPreprocessed() {
+	s.loadInterfacesConf()
+	s.VerifyRpc("Load", objx.Map{"path": "/etc/network/interfaces"}, objx.Map{
+		"content": objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
+		"schema": objx.MustFromJSON(
+			strings.Replace(
+				s.ReadSourceDataFile("interfaces.schema.json"),
+				"_format", "format", -1)),
+	})
+}
+
+func (s *EditorSuite) TestSavePreprocessed() {
+	s.loadInterfacesConf()
+	newContent := objx.Map{
+		"interfaces": []interface{}{
+			map[string]interface{}{
+				"name":   "eth0",
+				"auto":   true,
+				"method": "dhcp",
+				"options": map[string]interface{}{
+					"hostname": "WirenBoard",
+				},
+			},
+		},
+	}
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/etc/network/interfaces",
+		"content": newContent,
+	}, objx.Map{
+		"path": "/etc/network/interfaces",
+	})
+	s.verifyTextFile("etc/network/interfaces", `auto eth0
+iface eth0 inet dhcp
+  hostname WirenBoard
+
+`)
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
+
+// TBD: interfaces schema: configFile
+// TBD: interfaces schema: address validation (ipv4)
+// TBD: interfaces schema: dhcp / static / manual (separate subschemas)
+// TBD: interfaces: add eth0 alias
+// TBD: add python-netaddr and python-pyparsing to package deps
+// TBD: test interfaces parse error
+// TBD: install networkparser to /usr/bin
+// TBD: test loopback etc.
 
 // TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)

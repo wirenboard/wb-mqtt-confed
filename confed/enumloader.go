@@ -48,7 +48,7 @@ func (c *subconfWatcherClient) LiveRemoveFile(path string) error {
 
 func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) (err error) {
 	wbgo.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
-	content, err := loadConfigBytes(path)
+	content, err := loadConfigBytes(path, nil)
 	if err != nil {
 		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
 		return

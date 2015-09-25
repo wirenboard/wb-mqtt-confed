@@ -15,6 +15,8 @@ type JSONSchemaProps struct {
 	Description        string `json:"description"`
 	ConfigPath         string `json:"configPath"`
 	physicalConfigPath string
+	fromJSONCommand    []string
+	toJSONCommand      []string
 }
 
 type JSONSchema struct {
@@ -31,8 +33,34 @@ func subconfKey(path, pattern, ptrString string) string {
 	return path + "\x00" + pattern + "\x00" + ptrString
 }
 
+func extractCommand(msi map[string]interface{}, key string) ([]string, error) {
+	cmd, found := msi[key]
+	if !found {
+		return nil, nil
+	}
+
+	s, ok := cmd.(string)
+	if ok {
+		return []string{s}, nil
+	}
+
+	parts, ok := cmd.([]interface{})
+	if !ok {
+		return nil, errors.New("bad command spec")
+	}
+
+	r := make([]string, len(parts))
+	for n, p := range parts {
+		r[n], ok = p.(string)
+		if !ok {
+			return nil, errors.New("bad command spec")
+		}
+	}
+	return r, nil
+}
+
 func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
-	content, err := loadConfigBytes(schemaPath)
+	content, err := loadConfigBytes(schemaPath, nil)
 	if err != nil {
 		return
 	}
@@ -56,6 +84,16 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
+	fromJSONCommand, err := extractCommand(configFile, "fromJSON")
+	if err != nil {
+		return
+	}
+
+	toJSONCommand, err := extractCommand(configFile, "toJSON")
+	if err != nil {
+		return
+	}
+
 	title, _ := parsed["title"].(string)
 	description, _ := parsed["description"].(string)
 
@@ -73,6 +111,8 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			physicalConfigPath: physicalConfigPath,
 			Title:              title,
 			Description:        description,
+			fromJSONCommand:    fromJSONCommand,
+			toJSONCommand:      toJSONCommand,
 		},
 		enumLoader: newEnumLoader(root),
 	}
@@ -114,7 +154,7 @@ func (s *JSONSchema) ValidateContent(content []byte) (r *gojsonschema.Result, er
 }
 
 func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err error) {
-	bs, err := loadConfigBytes(path)
+	bs, err := loadConfigBytes(path, nil)
 	if err != nil {
 		return
 	}
@@ -135,6 +175,14 @@ func (s *JSONSchema) ConfigPath() string {
 
 func (s *JSONSchema) PhysicalConfigPath() string {
 	return s.props.physicalConfigPath
+}
+
+func (s *JSONSchema) ToJSONCommand() []string {
+	return s.props.toJSONCommand
+}
+
+func (s *JSONSchema) FromJSONCommand() []string {
+	return s.props.fromJSONCommand
 }
 
 func (s *JSONSchema) Title() string {

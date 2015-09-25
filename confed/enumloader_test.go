@@ -80,7 +80,7 @@ func (s *EnumLoaderSuite) expectedContent(enumSubst string) (r map[string]interf
 }
 
 func (s *EnumLoaderSuite) verifyEnum(enumSubst string) {
-	bs, err := loadConfigBytes(s.DataFilePath("sample.schema.json"))
+	bs, err := loadConfigBytes(s.DataFilePath("sample.schema.json"), nil)
 	s.Ck("loadConfigBytes()", err)
 	var m map[string]interface{}
 	s.Ck("Unmarshal JSON", json.Unmarshal(bs, &m))

@@ -174,7 +174,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		return err
 	}
 
-	bs, err := loadConfigBytes(schema.PhysicalConfigPath())
+	bs, err := loadConfigBytes(schema.PhysicalConfigPath(), schema.ToJSONCommand())
 	if err != nil {
 		wbgo.Error.Printf("Failed to read config file %s: %s", args.Path, err)
 		return invalidConfigError
@@ -218,13 +218,25 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return invalidConfigError
 	}
 
-	var indented bytes.Buffer
-	if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {
-		wbgo.Error.Printf("json.Indent() error, %s: %s", schema.PhysicalConfigPath(), err)
-		return writeError
+	var bs []byte
+	if schema.FromJSONCommand() != nil {
+		var buf *bytes.Buffer
+		buf, err = extPreprocess(schema.FromJSONCommand(), *args.Content)
+		if err != nil {
+			wbgo.Error.Printf("external command error, %s: %s", schema.PhysicalConfigPath(), err)
+			return writeError
+		}
+		bs = buf.Bytes()
+	} else {
+		var indented bytes.Buffer
+		if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {
+			wbgo.Error.Printf("json.Indent() error, %s: %s", schema.PhysicalConfigPath(), err)
+			return writeError
+		}
+		bs = indented.Bytes()
 	}
 
-	if err = ioutil.WriteFile(schema.PhysicalConfigPath(), indented.Bytes(), 0777); err != nil {
+	if err = ioutil.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
 		wbgo.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}

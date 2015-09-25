@@ -22,6 +22,7 @@ func (s *SchemaSuite) SetupTest() {
 
 func (s *SchemaSuite) TearDownTest() {
 	s.schema.StopWatchingSubconfigs()
+	s.TearDownDataFiles()
 	s.Suite.TearDownTest()
 }
 
