@@ -49,6 +49,7 @@ iface %(iface)s inet static
   address 169.254.%(d1)d.%(d2)d
   netmask 255.255.0.0
 """
+PRIMARY_IFACE = "eth0"
 
 
 class ParseError(Exception):
@@ -349,12 +350,24 @@ class NetworkParser(object):
         return dict(interfaces=r)
 
 
+_cached_serial = None
+
+
+def get_serial():
+    global _cached_serial
+    if _cached_serial is None:
+        try:
+            with open(SERIAL_FILE, "r") as f:
+                _cached_serial = (f.readline().strip(),)
+        except IOError:
+            print >>sys.stderr, "cannot find %s" % SERIAL_FILE
+            _cached_serial = (None,)
+    return _cached_serial[0]
+
+
 def link_local_addr_low_bs():
-    try:
-        with open(SERIAL_FILE, "r") as f:
-            serial = f.readline()
-    except IOError:
-        print >>sys.stderr, "cannot find %s" % SERIAL_FILE
+    serial = get_serial()
+    if serial is None:
         return DEFAULT_LINK_LOCAL_LOW_BS
     m = re.match(r"^(?:[0-9A-Fa-f]{2}:){4}([0-9A-Fa-f]{2}):([0-9A-Fa-f]{2})", serial)
     if not m:
@@ -374,6 +387,13 @@ def to_json():
         np = NetworkParser(content=sys.stdin.read())
     except ParseError, e:
         print >>sys.stdout, "Error parsing interfaces: %s" % e
+    # FIXME
+    serial = get_serial()
+    if serial is not None:
+        for iface in np.interfaces["interfaces"]:
+            if iface.get("name") == PRIMARY_IFACE:
+                iface.setdefault("options", {})["hwaddress"] = serial
+                break
     json.dump(np.interfaces, sys.stdout, sort_keys=True, indent=JSON_INDENT_LEVEL)
 
 
@@ -383,6 +403,7 @@ def from_json():
     except ValueError:
         print >>sys.stdout, "Invalid JSON"
         sys.exit(1)
+
     np = NetworkParser()
     np.interfaces = d
     try:
