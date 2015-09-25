@@ -14,15 +14,15 @@ import (
 	"syscall"
 )
 
-func extPreprocess(commandAndArgs []string, in []byte) (*bytes.Buffer, error) {
-	if len(commandAndArgs) < 1 {
-		return nil, errors.New("commandAndArgs must not be empty")
+func runCommand(captureStdout bool, stdin io.Reader, command string, args ...string) (*bytes.Buffer, error) {
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = stdin
+	var stdout *bytes.Buffer
+	if captureStdout {
+		stdout = new(bytes.Buffer)
+		cmd.Stdout = stdout
 	}
-
-	cmd := exec.Command(commandAndArgs[0], commandAndArgs[1:]...)
-	cmd.Stdin = bytes.NewBuffer(in)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
+	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		exitErr, ok := err.(*exec.ExitError)
@@ -32,14 +32,22 @@ func extPreprocess(commandAndArgs []string, in []byte) (*bytes.Buffer, error) {
 			if ok {
 				status = ws.ExitStatus()
 			}
-			return nil, fmt.Errorf("exit status %d from %s: %s",
-				status, strings.Join(commandAndArgs, " "),
+			return nil, fmt.Errorf("exit status %d from %s %s: %s",
+				status, command, strings.Join(args, " "),
 				string(stderr.Bytes()))
 		}
 		return nil, err
 	}
 
-	return &stdout, nil
+	return stdout, nil
+}
+
+func extPreprocess(commandAndArgs []string, in []byte) (*bytes.Buffer, error) {
+	if len(commandAndArgs) < 1 {
+		return nil, errors.New("commandAndArgs must not be empty")
+	}
+
+	return runCommand(true, bytes.NewBuffer(in), commandAndArgs[0], commandAndArgs[1:]...)
 }
 
 func loadConfigBytes(path string, preprocessCmd []string) (bs []byte, err error) {

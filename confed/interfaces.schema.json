@@ -6,7 +6,9 @@
   "configFile": {
     "path": "/etc/network/interfaces",
     "toJSON": "networkparser",
-    "fromJSON": ["networkparser", "-s"]
+    "fromJSON": ["networkparser", "-s"],
+    "restartDelayMS": 4000,
+    "service": "networking"
   },
   "definitions": {
     "iface_common": {

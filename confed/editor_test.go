@@ -294,23 +294,24 @@ func (s *EditorSuite) TestLoadPreprocessed() {
 	})
 }
 
-func (s *EditorSuite) TestSavePreprocessed() {
-	s.loadInterfacesConf()
-	newContent := objx.Map{
-		"interfaces": []interface{}{
-			map[string]interface{}{
-				"name":   "eth0",
-				"auto":   true,
-				"method": "dhcp",
-				"options": map[string]interface{}{
-					"hostname": "WirenBoard",
-				},
+var newIfacesContent = objx.Map{
+	"interfaces": []interface{}{
+		map[string]interface{}{
+			"name":   "eth0",
+			"auto":   true,
+			"method": "dhcp",
+			"options": map[string]interface{}{
+				"hostname": "WirenBoard",
 			},
 		},
-	}
+	},
+}
+
+func (s *EditorSuite) TestSavePreprocessed() {
+	s.loadInterfacesConf()
 	s.VerifyRpc("Save", objx.Map{
 		"path":    "/etc/network/interfaces",
-		"content": newContent,
+		"content": newIfacesContent,
 	}, objx.Map{
 		"path": "/etc/network/interfaces",
 	})
@@ -318,21 +319,29 @@ func (s *EditorSuite) TestSavePreprocessed() {
 iface eth0 inet dhcp
   hostname WirenBoard
 
+
+auto eth0:42
+iface eth0:42 inet static
+  address 169.254.42.42
+  netmask 255.255.0.0
 `)
+}
+
+func (s *EditorSuite) TestRestart() {
+	s.loadInterfacesConf()
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/etc/network/interfaces",
+		"content": newIfacesContent,
+	}, objx.Map{
+		"path": "/etc/network/interfaces",
+	})
+	restart := <-s.editor.RestartCh
+	s.Equal(RestartRequest{"networking", 4000}, restart)
 }
 
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
-
-// TBD: interfaces schema: configFile
-// TBD: interfaces schema: address validation (ipv4)
-// TBD: interfaces schema: dhcp / static / manual (separate subschemas)
-// TBD: interfaces: add eth0 alias
-// TBD: add python-netaddr and python-pyparsing to package deps
-// TBD: test interfaces parse error
-// TBD: install networkparser to /usr/bin
-// TBD: test loopback etc.
 
 // TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)

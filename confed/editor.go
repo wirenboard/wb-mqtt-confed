@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+const (
+	RESTART_QUEUE_LEN = 100
+)
+
 func fixFormatProps(v interface{}) interface{} {
 	switch v.(type) {
 	case map[string]interface{}:
@@ -35,11 +39,17 @@ func fixFormatProps(v interface{}) interface{} {
 	}
 }
 
+type RestartRequest struct {
+	Name    string
+	DelayMS int
+}
+
 type Editor struct {
 	mtx                 sync.Mutex
 	root                string
 	schemasByConfigPath map[string]*JSONSchema
 	schemasBySchemaPath map[string]*JSONSchema
+	RestartCh           chan RestartRequest
 }
 
 type EditorError struct {
@@ -87,6 +97,7 @@ func NewEditor(root string) *Editor {
 		root:                confRoot,
 		schemasByConfigPath: make(map[string]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
+		RestartCh:           make(chan RestartRequest, RESTART_QUEUE_LEN),
 	}
 }
 
@@ -242,6 +253,9 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	reply.Path = args.Path
+	if schema.Service() != "" {
+		editor.RestartCh <- RestartRequest{schema.Service(), schema.RestartDelayMS()}
+	}
 	return nil
 }
 

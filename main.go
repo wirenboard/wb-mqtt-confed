@@ -90,6 +90,7 @@ func main() {
 	if !gotSome {
 		wbgo.Error.Fatalf("no valid schemas found")
 	}
+	confed.RunRestarter(editor.RestartCh)
 
 	mqttClient := wbgo.NewPahoMQTTClient(*brokerAddress, DRIVER_CLIENT_ID, true)
 	rpc := wbgo.NewMQTTRPCServer("confed", mqttClient)

@@ -17,6 +17,8 @@ type JSONSchemaProps struct {
 	physicalConfigPath string
 	fromJSONCommand    []string
 	toJSONCommand      []string
+	service            string
+	restartDelayMS     int
 }
 
 type JSONSchema struct {
@@ -94,6 +96,9 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
+	service, _ := configFile["service"].(string)
+	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
+
 	title, _ := parsed["title"].(string)
 	description, _ := parsed["description"].(string)
 
@@ -113,6 +118,8 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			Description:        description,
 			fromJSONCommand:    fromJSONCommand,
 			toJSONCommand:      toJSONCommand,
+			service:            service,
+			restartDelayMS:     int(restartDelayMS),
 		},
 		enumLoader: newEnumLoader(root),
 	}
@@ -191,6 +198,14 @@ func (s *JSONSchema) Title() string {
 
 func (s *JSONSchema) Description() string {
 	return s.props.Description
+}
+
+func (s *JSONSchema) Service() string {
+	return s.props.service
+}
+
+func (s *JSONSchema) RestartDelayMS() int {
+	return s.props.restartDelayMS
 }
 
 func (s *JSONSchema) Properties() *JSONSchemaProps {
