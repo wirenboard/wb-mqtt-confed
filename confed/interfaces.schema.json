@@ -136,7 +136,7 @@
                   "propertyOrder": 14
                 },
                 "metric": {
-                  "type": "integer",
+                  "type": "string", // FIXME (should be integer)
                   "title": "Routing metric for default gateway",
                   "format": "ipv4",
                   "propertyOrder": 15
@@ -154,7 +154,7 @@
                   "propertyOrder": 17
                 },
                 "mtu": {
-                  "type": "integer",
+                  "type": "string", // FIXME (should be integer)
                   "title": "MTU",
                   "default": 1500,
                   "propertyOrder": 18
@@ -243,7 +243,7 @@
                   "propertyOrder": 11
                 },
                 "unit": {
-                  "type": "integer",
+                  "type": "string", // FIXME (should be integer)
                   "title": "PPP unit number",
                   "propertyOrder": 12
                 },
@@ -286,7 +286,7 @@
                   "propertyOrder": 11
                 },
                 "mtu": {
-                  "type": "integer",
+                  "type": "string", // FIXME (should be integer)
                   "title": "MTU",
                   "propertyOrder": 12
                 }
