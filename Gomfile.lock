@@ -1,6 +1,6 @@
 gom 'git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git', :commit => '0d95fb886332902c477408b4b554667f65d01605'
 gom 'github.com/DisposaBoy/JsonConfigReader', :commit => '33a99fdf1d5ee1f79b5077e9c06f955ad356d5f4'
-gom 'github.com/contactless/wbgo', :commit => 'f16b4e5ee92cea7fcbf19aa7c39802116a391183'
+gom 'github.com/contactless/wbgo', :commit => '7d1d3a4c6546ffb9d18a29ad55d9e73f6a7b28d3'
 gom 'github.com/pborman/uuid', :commit => 'cccd189d45f7ac3368a0d127efb7f4d08ae0b655'
 gom 'github.com/stretchr/objx', :commit => 'cbeaeb16a013161a98496fad62933b1d21786672'
 gom 'github.com/stretchr/testify', :commit => 'e4ec8152c15fc46bd5056ce65997a07c7d415325'
