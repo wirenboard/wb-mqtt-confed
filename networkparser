@@ -26,6 +26,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+import re
 import json
 import sys
 import codecs
@@ -39,6 +40,15 @@ from pyparsing import Regex, SkipTo
 
 
 JSON_INDENT_LEVEL = 2
+DEFAULT_LINK_LOCAL_LOW_BS = (42, 42)
+SERIAL_FILE = "/var/lib/wirenboard/serial.conf"
+RESERVED_IFACE = "eth0:42"
+LINK_LOCAL_SECTION = """
+auto %(iface)s
+iface %(iface)s inet static
+  address 169.254.%(d1)d.%(d2)d
+  netmask 255.255.0.0
+"""
 
 
 class ParseError(Exception):
@@ -153,7 +163,7 @@ class Interface(object):
 
 class NetworkParser(object):
 
-    interface = Word(alphanums)
+    interface = Word(alphanums + ":")
     key = Word(alphanums + "-_")
     space = White().suppress()
     value = CharsNotIn("{}\n#")
@@ -265,6 +275,8 @@ class NetworkParser(object):
                 name = iface["name"]
             except KeyError:
                 raise ParseError("interface without name")
+            if name == RESERVED_IFACE:
+                continue
             if not isinstance(name, basestring):
                 raise ParseError("bad interface name")
             if iface.get("auto"):
@@ -309,6 +321,9 @@ class NetworkParser(object):
         np = self.get()
         for idefinition in np:
             name = idefinition[1]
+            # -- Uncomment to skip the reserved interface in JSON
+            # if name == RESERVED_IFACE:
+            #     continue
             if name in interfaces:
                 iface = interfaces[name]
             else:
@@ -330,6 +345,26 @@ class NetworkParser(object):
         return dict(interfaces=r)
 
 
+def link_local_addr_low_bs():
+    try:
+        with open(SERIAL_FILE, "r") as f:
+            serial = f.readline()
+    except IOError:
+        print >>sys.stderr, "cannot find %s" % SERIAL_FILE
+        return DEFAULT_LINK_LOCAL_LOW_BS
+    m = re.match(r"^(?:[0-9A-Fa-f]{2}:){4}([0-9A-Fa-f]{2}):([0-9A-Fa-f]{2})", serial)
+    if not m:
+        print >>sys.stderr, "bad serial: %r" % serial
+        return DEFAULT_LINK_LOCAL_LOW_BS
+    r = tuple(int(x, 16) for x in m.groups())
+    return (0, 1) if r in ((0, 0), (255, 255)) else r
+
+
+def link_local_section():
+    d1, d2 = link_local_addr_low_bs()
+    return LINK_LOCAL_SECTION % dict(iface=RESERVED_IFACE, d1=d1, d2=d2)
+
+
 def to_json():
     try:
         np = NetworkParser(content=sys.stdin.read())
@@ -347,7 +382,7 @@ def from_json():
     np = NetworkParser()
     np.interfaces = d
     try:
-        sys.stdout.write(np.format())
+        sys.stdout.write(np.format() + link_local_section())
     except ParseError, e:
         print >>sys.stderr, "Error parsing JSON definitions: %s" % e
         sys.exit(1)
