@@ -43,12 +43,13 @@ JSON_INDENT_LEVEL = 2
 DEFAULT_LINK_LOCAL_LOW_BS = (42, 42)
 SERIAL_FILE = "/var/lib/wirenboard/serial.conf"
 RESERVED_IFACE = "eth0:42"
-LINK_LOCAL_SECTION = """
-auto %(iface)s
-iface %(iface)s inet static
-  address 169.254.%(d1)d.%(d2)d
-  netmask 255.255.0.0
-"""
+LINK_LOCAL_SECTION = ""  # disabled for now
+# LINK_LOCAL_SECTION = """
+# auto %(iface)s
+# iface %(iface)s inet static
+#   address 169.254.%(d1)d.%(d2)d
+#   netmask 255.255.0.0
+# """
 PRIMARY_IFACE = "eth0"
 
 
