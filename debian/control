@@ -7,5 +7,5 @@ Build-Depends: debhelper (>= 9), pkg-config
 
 Package: wb-mqtt-confed
 Architecture: armel
-Depends: libc6 (>= 2.13), ${misc:Depends}
+Depends: libc6 (>= 2.13), python-pyparsing (>= 1.5.6), python-netaddr (>= 0.7.7), ${misc:Depends}
 Description: Configuration Editor Backend
