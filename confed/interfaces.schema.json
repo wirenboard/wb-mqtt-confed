@@ -24,6 +24,13 @@
           "title": "Name",
           "minLength": 1,
           "propertyOrder": 2
+        },
+        "allow-hotplug": {
+          "type": "boolean",
+          "default": true,
+          "title": "Allow hotplug",
+          "_format": "checkbox",
+          "propertyOrder": 3
         }
       },
       "_properties_that_are_not_used_for_now": {

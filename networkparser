@@ -170,7 +170,7 @@ class NetworkParser(object):
     line = Regex("^.*$")
     comment = ("#")
     method = Regex("loopback|manual|dhcp|static")
-    stanza = Regex("auto|iface|mapping")
+    stanza = Regex("auto|iface|mapping|allow-hotplug")
     option_key = Regex("bridge_\w*|post-\w*|up|down|pre-\w*|address"
                        "|network|netmask|gateway|broadcast|dns-\w*|scope|"
                        "pointtopoint|metric|hwaddress|mtu|hostname|"
@@ -280,9 +280,11 @@ class NetworkParser(object):
             if not isinstance(name, basestring):
                 raise ParseError("bad interface name")
             if iface.get("auto"):
-                output += "auto %s\n" % iface["name"]
+                output += "auto %s\n" % name
+            if iface.get("allow-hotplug"):
+                output += "allow-hotplug %s\n" % name
 
-            output += "iface %s inet %s\n" % (iface["name"], iface.get("method", "manual"))
+            output += "iface %s inet %s\n" % (name, iface.get("method", "manual"))
             # options
             options = iface.get("options", {})
             if not isinstance(options, dict):
@@ -333,6 +335,8 @@ class NetworkParser(object):
             # auto?
             if idefinition[0] == "auto":
                 iface["auto"] = True
+            if idefinition[0] == "allow-hotplug":
+                iface["allow-hotplug"] = True
             elif idefinition[0] == "iface":
                 method = idefinition[3]
                 iface["method"] = method
