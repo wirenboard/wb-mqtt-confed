@@ -2,7 +2,7 @@ GOM=gom
 .PHONY: all prepare clean
 
 GOPATH := $(HOME)/go
-PATH := $(HOME)/progs/go/bin:$(GOPATH)/bin:$(PATH)
+PATH := $(GOPATH)/bin:$(PATH)
 
 DEB_TARGET_ARCH ?= armel
 
@@ -34,3 +34,6 @@ install:
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
 	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
 	install -m 0755 networkparser $(DESTDIR)/usr/bin/
+
+deb: prepare
+	CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc

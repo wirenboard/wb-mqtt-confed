@@ -24,6 +24,5 @@ cd wb-mqtt-confed/
 export GOPATH=~/go
 mkdir -p $GOPATH
 export PATH=$HOME/progs/go/bin:$GOPATH/bin:$PATH
-make prepare
-dpkg-buildpackage -b -aarmel -us -uc
+make deb
 ```
