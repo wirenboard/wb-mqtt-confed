@@ -1,4 +1,4 @@
-wb-mqtt-confed (1.0.1) wheezy; urgency=low
+wb-mqtt-confed (1.0.2) wheezy; urgency=low
 
   * Moved schema files to /usr/share/wb-mqtt-confed/schemas
 
