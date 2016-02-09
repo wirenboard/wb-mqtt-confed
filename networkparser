@@ -202,17 +202,16 @@ class NetworkParser(object):
 
     file_header = """# File parsed and saved by privacyidea.\n\n"""
 
-    def __init__(self,
-                 infile="/etc/network/interfaces",
-                 content=None):
+    def __init__(self, infile=None, content=None):
         self.filename = None
+        self.content = None
         if content:
             self.content = content
-        else:
+        elif infile is not None:
             self.filename = infile
             self._read()
-
-        self.interfaces = self.get_interfaces()
+        if self.content is not None:
+            self.interfaces = self.get_interfaces()
 
     def _read(self):
         """

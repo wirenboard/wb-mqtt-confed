@@ -319,12 +319,14 @@ func (s *EditorSuite) TestSavePreprocessed() {
 iface eth0 inet dhcp
   hostname WirenBoard
 
-
-auto eth0:42
-iface eth0:42 inet static
-  address 169.254.42.42
-  netmask 255.255.0.0
 `)
+	// FIXME: link-local section is disabled for now
+	//
+	// auto eth0:42
+	// iface eth0:42 inet static
+	//   address 169.254.42.42
+	//   netmask 255.255.0.0
+	// `)
 }
 
 func (s *EditorSuite) TestRestart() {
