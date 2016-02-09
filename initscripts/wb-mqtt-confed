@@ -26,7 +26,7 @@ DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 CONFED_OPTIONS=""
-SCHEMA_DIR=/etc/wb-mqtt-confed
+SCHEMA_DIR=/usr/share/wb-mqtt-confed
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

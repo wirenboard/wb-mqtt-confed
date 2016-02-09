@@ -1,0 +1,2 @@
+rm -f /etc/wb-mqtt-confed/schemas/interfaces.schema.json
+rmdir --ignore-fail-on-non-empty /etc/wb-mqtt-confed/schemas /etc/wb-mqtt-confed

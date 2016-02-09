@@ -29,8 +29,8 @@ wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GOM) build
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/etc/wb-mqtt-confed/schemas
-	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/etc/wb-mqtt-confed/schemas/interfaces.schema.json
+	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
+	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
 	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
 	install -m 0755 networkparser $(DESTDIR)/usr/bin/
