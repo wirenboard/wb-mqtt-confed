@@ -1,3 +1,4 @@
+#!/bin/sh
 rm -f /etc/wb-mqtt-confed/schemas/interfaces.schema.json
 if [ -d /etc/wb-mqtt-confed ]; then
    if [ -d /etc/wb-mqtt-confed/schemas ]; then
