@@ -50,6 +50,46 @@ const (
   }
 }
 `
+	EXPECTED_ALT_SCHEMA_CONTENT = `
+{
+  "type": "object",
+  "title": "Example Config (alt)",
+  "description": "Just an example (alt)",
+  "properties": {
+    "device_type": {
+      "type": "string",
+      "enum": ["MSU21", "WB-MRM2"],
+      "title": "Device type",
+      "description": "Modbus device template to use"
+    },
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI"
+    },
+    "id": {
+      "type": "string",
+      "title": "Device ID",
+      "description": "Device identifier to be used as a part of MQTT topic"
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Enabled",
+      "description": "Check to enable device polling"
+    },
+    "slave_id": {
+      "type": "integer",
+      "title": "Slave ID",
+      "description": "Modbus Slave ID",
+      "minimum": 0
+    }
+  },
+  "required": ["device_type", "slave_id"],
+  "configFile": {
+    "path": "/sample.json"
+  }
+}
+`
 	// Note that "_format" property name in another.schema.json
 	// gets replaced with "format". That's necessary because
 	// 'format' values intended for json-editor like 'checkbox'
@@ -140,6 +180,7 @@ func (s *EditorSuite) verifyInitialSchemaList() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
 			"configPath":  "/sample.json",
+			"schemaPath":  "/sample.schema.json",
 			"title":       "Example Config",
 			"description": "Just an example",
 		},
@@ -152,6 +193,7 @@ func (s *EditorSuite) TestListFiles() {
 
 func (s *EditorSuite) verifyLoadSampleJson() {
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.json"}, objx.Map{
+		"configPath": "/sample.json",
 		"content": objx.Map{
 			"device_type": "MSU21",
 			"name":        "MSU21",
@@ -167,12 +209,15 @@ func (s *EditorSuite) TestLoadFile() {
 	s.verifyLoadSampleJson()
 	s.CopyDataFilesToTempDir("another.schema.json", "another.json")
 	s.Ck("loadSchema()", s.editor.loadSchema("another.schema.json"))
-	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
-		"content": objx.Map{
-			"name": "foobar",
-		},
-		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
-	})
+	for _, path := range []string{"/another.json", "/another.schema.json"} {
+		s.VerifyRpc("Load", objx.Map{"path": path}, objx.Map{
+			"configPath": "/another.json",
+			"content": objx.Map{
+				"name": "foobar",
+			},
+			"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
+		})
+	}
 }
 
 func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
@@ -201,6 +246,15 @@ func (s *EditorSuite) TestSaveFile() {
 		"path": "/sample.json",
 	})
 	s.verifyJSONFile("sample.json", newContent)
+
+	newContent["id"] = "msu21xxx"
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/sample.schema.json",
+		"content": newContent,
+	}, objx.Map{
+		"path": "/sample.schema.json",
+	})
+	s.verifyJSONFile("sample.json", newContent)
 }
 
 func (s *EditorSuite) TestSaveInvalidConfig() {
@@ -218,17 +272,20 @@ func (s *EditorSuite) TestAddSchema() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
 			"configPath":  "/another.json",
+			"schemaPath":  "/another.schema.json",
 			"title":       "Another Example Config",
 			"description": "",
 		},
 		{
 			"configPath":  "/sample.json",
+			"schemaPath":  "/sample.schema.json",
 			"title":       "Example Config",
 			"description": "Just an example",
 		},
 	})
 	s.verifyLoadSampleJson()
 	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
+		"configPath": "/another.json",
 		"content": objx.Map{
 			"name": "foobar",
 		},
@@ -246,6 +303,7 @@ func (s *EditorSuite) TestRemoveSchema() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
 			"configPath":  "/another.json",
+			"schemaPath":  "/another.schema.json",
 			"title":       "Another Example Config",
 			"description": "",
 		},
@@ -253,6 +311,7 @@ func (s *EditorSuite) TestRemoveSchema() {
 	s.VerifyRpcError("Load", objx.Map{"path": "/sample.json"},
 		EDITOR_ERROR_FILE_NOT_FOUND, "EditorError", "File not found")
 	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
+		"configPath": "/another.json",
 		"content": objx.Map{
 			"name": "foobar",
 		},
@@ -272,11 +331,13 @@ func (s *EditorSuite) TestListPreprocessed() {
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
 		{
 			"configPath":  "/etc/network/interfaces",
+			"schemaPath":  "/interfaces.schema.json",
 			"title":       "Network Interface Configuration",
 			"description": "Specifies network configuration of the system",
 		},
 		{
 			"configPath":  "/sample.json",
+			"schemaPath":  "/sample.schema.json",
 			"title":       "Example Config",
 			"description": "Just an example",
 		},
@@ -286,7 +347,8 @@ func (s *EditorSuite) TestListPreprocessed() {
 func (s *EditorSuite) TestLoadPreprocessed() {
 	s.loadInterfacesConf()
 	s.VerifyRpc("Load", objx.Map{"path": "/etc/network/interfaces"}, objx.Map{
-		"content": objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
+		"configPath": "/etc/network/interfaces",
+		"content":    objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
 		"schema": objx.MustFromJSON(
 			strings.Replace(
 				s.ReadSourceDataFile("interfaces.schema.json"),
@@ -341,10 +403,65 @@ func (s *EditorSuite) TestRestart() {
 	s.Equal(RestartRequest{"networking", 4000}, restart)
 }
 
+func (s *EditorSuite) TestMultipleSchemasPerConfig() {
+	s.CopyDataFilesToTempDir("sample-extra.schema.json")
+	s.Ck("loadSchema()", s.editor.loadSchema("sample-extra.schema.json"))
+	s.VerifyRpc("List", objx.Map{}, []objx.Map{
+		{
+			"configPath":  "/sample.json",
+			"schemaPath":  "/sample-extra.schema.json",
+			"title":       "Example Config (alt)",
+			"description": "Just an example (alt)",
+		},
+		{
+			"configPath":  "/sample.json",
+			"schemaPath":  "/sample.schema.json",
+			"title":       "Example Config",
+			"description": "Just an example",
+		},
+	})
+	content := objx.Map{
+		"device_type": "MSU21",
+		"name":        "MSU21",
+		"id":          "msu21",
+		"slave_id":    float64(24),
+		"enabled":     true,
+	}
+	s.VerifyRpc("Load", objx.Map{"path": "/sample.schema.json"}, objx.Map{
+		"configPath": "/sample.json",
+		"content":    content,
+		"schema":     objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
+	})
+	s.VerifyRpc("Load", objx.Map{"path": "/sample-extra.schema.json"}, objx.Map{
+		"configPath": "/sample.json",
+		"content":    content,
+		"schema":     objx.MustFromJSON(EXPECTED_ALT_SCHEMA_CONTENT),
+	})
+
+	content["id"] = "msu21xxx"
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/sample.schema.json",
+		"content": content,
+	}, objx.Map{
+		"path": "/sample.schema.json",
+	})
+	s.verifyJSONFile("sample.json", content)
+
+	content["id"] = "msu21yyy"
+	s.VerifyRpc("Save", objx.Map{
+		"path":    "/sample-extra.schema.json",
+		"content": content,
+	}, objx.Map{
+		"path": "/sample-extra.schema.json",
+	})
+	s.verifyJSONFile("sample.json", content)
+}
+
 func TestEditorSuite(t *testing.T) {
 	wbgo.RunSuites(t, new(EditorSuite))
 }
 
+// TBD: test schema removal
 // TBD: test multiple configs
 // TBD: test load errors (including invalid config errors)
 // TBD: test errors upon writing unlisted files

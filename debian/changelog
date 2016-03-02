@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.0.3) wheezy; urgency=low
+
+  * Multiple schemas per config
+
+ -- Ivan Shvedunov <ivan4th@gmail.com>  Wed, 02 Mar 2016 21:45:57 +0300
+
 wb-mqtt-confed (1.0.2) wheezy; urgency=low
 
   * fix deps

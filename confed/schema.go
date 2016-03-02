@@ -14,6 +14,7 @@ type JSONSchemaProps struct {
 	Title              string `json:"title"`
 	Description        string `json:"description"`
 	ConfigPath         string `json:"configPath"`
+	SchemaPath         string `json:"schemaPath"`
 	physicalConfigPath string
 	fromJSONCommand    []string
 	toJSONCommand      []string
@@ -113,6 +114,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		parsed:  parsed,
 		props: JSONSchemaProps{
 			ConfigPath:         configPath,
+			SchemaPath:         schemaPathFromRoot,
 			physicalConfigPath: physicalConfigPath,
 			Title:              title,
 			Description:        description,

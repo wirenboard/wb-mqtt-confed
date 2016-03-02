@@ -47,7 +47,7 @@ type RestartRequest struct {
 type Editor struct {
 	mtx                 sync.Mutex
 	root                string
-	schemasByConfigPath map[string]*JSONSchema
+	schemasByConfigPath map[string][]*JSONSchema
 	schemasBySchemaPath map[string]*JSONSchema
 	RestartCh           chan RestartRequest
 }
@@ -95,7 +95,7 @@ func NewEditor(root string) *Editor {
 	}
 	return &Editor{
 		root:                confRoot,
-		schemasByConfigPath: make(map[string]*JSONSchema),
+		schemasByConfigPath: make(map[string][]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
 		RestartCh:           make(chan RestartRequest, RESTART_QUEUE_LEN),
 	}
@@ -114,7 +114,11 @@ func (editor *Editor) loadSchema(path string) (err error) {
 
 	editor.doRemoveSchema(schema.Path())
 	editor.schemasBySchemaPath[schema.Path()] = schema
-	editor.schemasByConfigPath[schema.ConfigPath()] = schema
+	if l, ok := editor.schemasByConfigPath[schema.ConfigPath()]; ok {
+		editor.schemasByConfigPath[schema.ConfigPath()] = append(l, schema)
+	} else {
+		editor.schemasByConfigPath[schema.ConfigPath()] = []*JSONSchema{schema}
+	}
 	return
 }
 
@@ -126,7 +130,18 @@ func (editor *Editor) doRemoveSchema(path string) {
 
 	schema.StopWatchingSubconfigs()
 	delete(editor.schemasBySchemaPath, schema.Path())
-	delete(editor.schemasByConfigPath, schema.ConfigPath())
+	l := editor.schemasByConfigPath[schema.ConfigPath()]
+	if l == nil {
+		panic("schema not registered by config path")
+	}
+	newList := make([]*JSONSchema, 0, len(l)-1)
+	for _, s := range l {
+		if s == schema {
+			continue
+		}
+		newList = append(newList, s)
+	}
+	editor.schemasByConfigPath[schema.ConfigPath()] = newList
 }
 
 func (editor *Editor) removeSchema(path string) (err error) {
@@ -142,19 +157,26 @@ func (editor *Editor) removeSchema(path string) (err error) {
 	return nil
 }
 
+type ByConfigThenSchemaPath []*JSONSchemaProps
+
+func (b ByConfigThenSchemaPath) Len() int      { return len(b) }
+func (b ByConfigThenSchemaPath) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b ByConfigThenSchemaPath) Less(i, j int) bool {
+	if b[i].ConfigPath == b[j].ConfigPath {
+		return b[i].SchemaPath < b[j].SchemaPath
+	}
+	return b[i].ConfigPath < b[j].ConfigPath
+}
+
 func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error) {
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
-	paths := make([]string, 0, len(editor.schemasByConfigPath))
-	for path := range editor.schemasByConfigPath {
-		paths = append(paths, path)
+	*reply = make([]*JSONSchemaProps, 0, len(editor.schemasBySchemaPath))
+	for _, schema := range editor.schemasBySchemaPath {
+		*reply = append(*reply, schema.Properties())
 	}
-	sort.Strings(paths)
-	*reply = make([]*JSONSchemaProps, len(editor.schemasByConfigPath))
-	for i, path := range paths {
-		(*reply)[i] = editor.schemasByConfigPath[path].Properties()
-	}
+	sort.Sort(ByConfigThenSchemaPath(*reply))
 	return
 }
 
@@ -167,37 +189,42 @@ type EditorPathResponse struct {
 }
 
 type EditorContentResponse struct {
-	Content *json.RawMessage       `json:"content"`
-	Schema  map[string]interface{} `json:"schema"`
+	ConfigPath string                 `json:"configPath"`
+	Content    *json.RawMessage       `json:"content"`
+	Schema     map[string]interface{} `json:"schema"`
 }
 
-func (editor *Editor) locateConfig(path string) (*JSONSchema, error) {
-	if conf, ok := editor.schemasByConfigPath[path]; !ok {
-		return nil, fileNotFoundError
-	} else {
-		return conf, nil
+func (editor *Editor) locateSchema(path string) (*JSONSchema, error) {
+	schema, ok := editor.schemasBySchemaPath[path]
+	if !ok {
+		if schemas, ok := editor.schemasByConfigPath[path]; !ok || len(schemas) == 0 {
+			return nil, fileNotFoundError
+		} else {
+			schema = schemas[0]
+		}
 	}
+	return schema, nil
 }
 
 func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
-	schema, err := editor.locateConfig(args.Path)
+	schema, err := editor.locateSchema(args.Path)
 	if err != nil {
 		return err
 	}
 
 	bs, err := loadConfigBytes(schema.PhysicalConfigPath(), schema.ToJSONCommand())
 	if err != nil {
-		wbgo.Error.Printf("Failed to read config file %s: %s", args.Path, err)
+		wbgo.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
 
 	r, err := schema.ValidateContent(bs)
 	if err != nil {
-		wbgo.Error.Printf("Failed to validate config file %s: %s", args.Path, err)
+		wbgo.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
 	if !r.Valid() {
-		wbgo.Error.Printf("Invalid config file %s", args.Path)
+		wbgo.Error.Printf("Invalid config file %s", schema.PhysicalConfigPath())
 		for _, desc := range r.Errors() {
 			wbgo.Error.Printf("- %s\n", desc)
 		}
@@ -205,6 +232,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 	}
 
 	content := json.RawMessage(bs) // TBD: use parsed config
+	reply.ConfigPath = schema.ConfigPath()
 	reply.Content = &content
 	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]interface{})
 
@@ -220,7 +248,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
-	schema, err := editor.locateConfig(args.Path)
+	schema, err := editor.locateSchema(args.Path)
 	if err != nil {
 		return err
 	}
