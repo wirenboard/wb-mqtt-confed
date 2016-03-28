@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "title": "Example Config (alt)",
+  "description": "Just an example (alt)",
+  "properties": {
+    "device_type": {
+      "type": "string",
+      "enum": {
+        "directories": ["/sample_devtypes"],
+        "pointer": "/device_type",
+        "pattern": "^.*\\.conf$"
+      },
+      "title": "Device type",
+      "description": "Modbus device template to use"
+    },
+    "name": {
+      "type": "string",
+      "title": "Device name",
+      "description": "Device name to be displayed in UI",
+    },
+    "id": {
+      "type": "string",
+      "title": "Device ID",
+      "description": "Device identifier to be used as a part of MQTT topic"
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Enabled",
+      "description": "Check to enable device polling"
+    },
+    "slave_id": {
+      "type": "integer",
+      "title": "Slave ID",
+      "description": "Modbus Slave ID",
+      "minimum": 0
+    }
+  },
+  "required": ["device_type", "slave_id"],
+  "configFile": {
+    "path": "/sample.json"
+  }
+}
