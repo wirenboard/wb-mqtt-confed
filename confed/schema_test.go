@@ -1,13 +1,13 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo"
+	"github.com/contactless/wbgo/testutils"
 	"github.com/xeipuuv/gojsonschema"
 	"testing"
 )
 
 type SchemaSuite struct {
-	wbgo.Suite
+	testutils.Suite
 	*ConfFixture
 	schema *JSONSchema
 }
@@ -76,5 +76,5 @@ func (s *SchemaSuite) TestAddingSubconf() {
 }
 
 func TestSchemaSuite(t *testing.T) {
-	wbgo.RunSuites(t, new(SchemaSuite))
+	testutils.RunSuites(t, new(SchemaSuite))
 }

@@ -1,16 +1,16 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo"
+	"github.com/contactless/wbgo/testutils"
 	"testing"
 )
 
 type ConfFixture struct {
-	*wbgo.DataFileFixture
+	*testutils.DataFileFixture
 }
 
 func NewConfFixture(t *testing.T) (f *ConfFixture) {
-	f = &ConfFixture{wbgo.NewDataFileFixture(t)}
+	f = &ConfFixture{testutils.NewDataFileFixture(t)}
 	f.addSampleFiles()
 	return
 }

@@ -3,7 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/contactless/wbgo"
+	"github.com/contactless/wbgo/testutils"
 	"os"
 	"testing"
 )
@@ -52,7 +52,7 @@ const (
 )
 
 type EnumLoaderSuite struct {
-	wbgo.Suite
+	testutils.Suite
 	*ConfFixture
 	enumLoader *enumLoader
 }
@@ -120,7 +120,7 @@ func (s *EnumLoaderSuite) TestRemoveSubconf() {
 }
 
 func TestEnumLoaderSuite(t *testing.T) {
-	wbgo.RunSuites(t, new(EnumLoaderSuite))
+	testutils.RunSuites(t, new(EnumLoaderSuite))
 }
 
 // TBD: test malformed files

@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo"
+	"github.com/contactless/wbgo/testutils"
 	"github.com/stretchr/objx"
 	"io/ioutil"
 	"os"
@@ -136,9 +136,9 @@ const (
 )
 
 type EditorSuite struct {
-	wbgo.Suite
+	testutils.Suite
 	*ConfFixture
-	*wbgo.RpcFixture
+	*testutils.RpcFixture
 	editor *Editor
 }
 
@@ -152,7 +152,7 @@ func (s *EditorSuite) SetupTest() {
 	s.setupPathEnvVar()
 	s.editor = NewEditor(s.DataFileTempDir())
 	s.Ck("s.editor.loadSchema()", s.editor.loadSchema(s.DataFilePath("sample.schema.json")))
-	s.RpcFixture = wbgo.NewRpcFixture(
+	s.RpcFixture = testutils.NewRpcFixture(
 		s.T(), "confed", "Editor", "confed",
 		s.editor,
 		"List", "Load", "Save")
@@ -458,7 +458,7 @@ func (s *EditorSuite) TestMultipleSchemasPerConfig() {
 }
 
 func TestEditorSuite(t *testing.T) {
-	wbgo.RunSuites(t, new(EditorSuite))
+	testutils.RunSuites(t, new(EditorSuite))
 }
 
 // TBD: test schema removal
