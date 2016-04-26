@@ -1,0 +1,9 @@
+package: .
+import:
+- package: github.com/DisposaBoy/JsonConfigReader
+- package: github.com/contactless/wbgo
+  subpackages:
+  - testutils
+  version: ~0.0.1
+- package: github.com/xeipuuv/gojsonpointer
+- package: github.com/xeipuuv/gojsonschema

@@ -1,8 +1,4 @@
-GOM=gom
 .PHONY: all prepare clean
-
-GOPATH := $(HOME)/go
-PATH := $(GOPATH)/bin:$(PATH)
 
 DEB_TARGET_ARCH ?= armel
 
@@ -18,15 +14,12 @@ endif
 
 all: clean wb-mqtt-confed
 
-prepare:
-	go get -u github.com/mattn/gom
-
 clean:
 	rm -rf wb-mqtt-confed
 
 wb-mqtt-confed: main.go confed/*.go
-	$(GO_ENV) $(GOM) install
-	$(GO_ENV) $(GOM) build
+	$(GO_ENV) glide install
+	$(GO_ENV) go build
 
 install:
 	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas

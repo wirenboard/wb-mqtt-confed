@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./confed"
+	"github.com/contactless/wb-mqtt-confed/confed"
 	"encoding/json"
 	"flag"
 	"github.com/contactless/wbgo"

@@ -28,8 +28,7 @@ _testmain.go
 
 /wb-mqtt-confed
 
-_vendor
-*.rice-box.go
+vendor
 
 debian/files
 debian/wb-mqtt-confed*
