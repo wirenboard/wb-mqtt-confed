@@ -1,3 +1,10 @@
+wb-mqtt-confed (1.0.4) wheezy; urgency=low
+
+  * Fix desc in initscript
+  * Fix package build
+
+ -- Ivan Shvedunov <ivan4th@gmail.com>  Wed, 27 Apr 2016 18:13:40 +0300
+
 wb-mqtt-confed (1.0.3) wheezy; urgency=low
 
   * Multiple schemas per config

@@ -5,8 +5,8 @@
 # Default-Stop:      0 1 6
 # Required-Start:
 # Required-Stop:
-# Short-Description: MQTT Rule Engine for Wiren Board
-# Description:       MQTT Rule Engine for Wiren Board
+# Short-Description: Configuration Editor Backend
+# Description:       Configuration Editor Backend
 ### END INIT INFO
 
 # Author: Ivan Shvedunov <ivan4th@gmail.com>
@@ -18,7 +18,7 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="MQTT Rule Engine for Wiren Board"
+DESC="Configuration Editor Backend"
 NAME=wb-mqtt-confed
 DAEMON=/usr/bin/$NAME
 # CONFIG_FILE="/etc/wb-mqtt-confed.conf"
