@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+
+# Basic Python script to parse ntp.conf into JSON structure and vice versa
+
+import sys
+import json
+
+
+ETC_MARKER = "### !!!SERVER LIST GOES HERE ###"
+SERVER_ENTRIES = ["pool", "server", "peer", "broadcast", "manycastclient"]
+
+
+def parse_entry(entry):
+    ret = dict()
+
+    # address is 2nd value in word list
+    ret["address"] = entry[1]
+    ret["type"] = entry[0]
+
+    # check flags and options
+    i = 2
+    while i < len(entry):
+        w = entry[i]
+
+        if w in ["autokey", "burst", "iburst", "prefer"]:
+            ret[w] = True
+        elif w in ["key", "version", "minpoll", "maxpoll", "ttl"]:
+            if w == "version":
+                ret[w] = int(entry[i + 1])
+            else:
+                ret[w] = entry[i + 1]
+            i += 1
+
+        i += 1
+
+    return ret
+
+
+def print_entry(srv):
+    result = srv["type"] + " " + srv["address"]
+
+    if "autokey" in srv:
+        result += " autokey"
+    elif "key" in srv:
+        result += " key " + srv["key"]
+
+    if "burst" in srv:
+        result += " burst"
+    if "iburst" in srv:
+        result += " iburst"
+    if "prefer" in srv:
+        result += " prefer"
+
+    if "version" in srv:
+        result += " version" + srv["version"]
+    if "minpoll" in srv:
+        result += " minpoll" + srv["minpoll"]
+    if "maxpoll" in srv:
+        result += " maxpoll" + srv["maxpoll"]
+    if "ttl" in srv:
+        result += " ttl" + srv["ttl"]
+
+    print >>sys.stdout, result
+
+
+def from_json():
+    try:
+        data = json.load(sys.stdin)
+    except ValueError:
+        print >>sys.stderr, "Invalid JSON"
+        sys.exit(1)
+
+    data_printed = False
+
+    # list other strings first
+    for item in data["etc"]:
+        if item != ETC_MARKER:
+            print >>sys.stdout, item
+        elif not data_printed and "data" in data:
+            data_printed = True
+            for srv in data["data"]:
+                print_entry(srv)
+
+
+def to_json():
+    data = list()
+    etc = list()
+
+    etc_marked = False
+
+    for line in sys.stdin:
+        # check if it is server description
+        m = line.split()
+
+        if len(m) > 0 and m[0] in SERVER_ENTRIES:
+            if not etc_marked:
+                etc_marked = True
+                etc.append(ETC_MARKER)
+
+            data.append(parse_entry(m))
+        else:
+            etc.append(line.strip())
+
+    if not etc_marked and len(data) > 0:
+        etc.append(ETC_MARKER)
+
+    result = {"data": data, "etc": etc}
+
+    json.dump(result, sys.stdout, indent=True)
+
+
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] == '-s':
+        from_json()
+    else:
+        to_json()
+
+if __name__ == "__main__":
+    main()

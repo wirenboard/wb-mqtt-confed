@@ -27,9 +27,11 @@ wb-mqtt-confed: main.go confed/*.go
 install:
 	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
 	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
+	install -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
 	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
 	install -m 0755 networkparser $(DESTDIR)/usr/bin/
+	install -m 0755 ntpparser $(DESTDIR)/usr/bin/
 
 deb: prepare
 	CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc
