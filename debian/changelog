@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.0.5) stable; urgency=medium
+
+  * Add /etc/ntp.conf schema and converter 
+
+ -- Nikita Maslov <n.maslov@contactless.ru>  Wed, 13 Jul 2016 14:53:36 +0300
+
 wb-mqtt-confed (1.0.4) wheezy; urgency=low
 
   * Fix desc in initscript
