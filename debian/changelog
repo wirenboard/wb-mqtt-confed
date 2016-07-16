@@ -1,4 +1,4 @@
-wb-mqtt-confed (1.0.5) stable; urgency=medium
+wb-mqtt-confed (1.1) stable; urgency=medium
 
   * Add /etc/ntp.conf schema and converter 
 
