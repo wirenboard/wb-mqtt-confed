@@ -25,10 +25,7 @@ def parse_entry(entry):
         if w in ["autokey", "burst", "iburst", "prefer"]:
             ret[w] = True
         elif w in ["key", "version", "minpoll", "maxpoll", "ttl"]:
-            if w == "version":
-                ret[w] = int(entry[i + 1])
-            else:
-                ret[w] = entry[i + 1]
+            ret[w] = int(entry[i + 1])
             i += 1
 
         i += 1
@@ -52,13 +49,13 @@ def print_entry(srv):
         result += " prefer"
 
     if "version" in srv:
-        result += " version" + srv["version"]
+        result += " version " + str(srv["version"])
     if "minpoll" in srv:
-        result += " minpoll" + srv["minpoll"]
+        result += " minpoll " + str(srv["minpoll"])
     if "maxpoll" in srv:
-        result += " maxpoll" + srv["maxpoll"]
+        result += " maxpoll " + str(srv["maxpoll"])
     if "ttl" in srv:
-        result += " ttl" + srv["ttl"]
+        result += " ttl " + str(srv["ttl"])
 
     print >>sys.stdout, result
 

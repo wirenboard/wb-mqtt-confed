@@ -8,7 +8,7 @@
     "toJSON": "ntpparser",
     "fromJSON": ["ntpparser", "-s"],
     "restartDelayMS": 4000,
-    "service": "ntpd"
+    "service": "ntp"
   },
 
   "definitions": {
