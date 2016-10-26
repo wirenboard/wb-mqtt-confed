@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.1) stable; urgency=medium
+
+  * allows to process /etc/network/interfaces with more iface types (incl. ppp)
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 14 Mar 2017 17:14:07 +0300
+
 wb-mqtt-confed (1.2) stable; urgency=medium
 
   * Fix random hanging

@@ -96,7 +96,8 @@ class Interface(object):
         Creates a new interface object
 
         :param iface: The name of the interface (lo, br0, eth0, eth1)
-        :param mode: can bee loopback, manual, dhcp, static
+        :param mode: can bee loopback, manual, dhcp, static, ppp, bootp,
+            tunnel, wvdial, ipv4ll
         :param ip: The IP Address of the interface
         :type ip: basestring
         :param netmask: The netmask of the interface
@@ -112,7 +113,8 @@ class Interface(object):
         self.options = options or []
         self.iface = iface
         self.mode = mode
-        if self.mode not in ["auto", "manual", "dhcp", "static"]:
+        if self.mode not in ["auto", "manual", "dhcp", "static", "ppp",
+                             "bootp", "tunnel", "wvdial", "ipv4ll"]:
             raise ParseError("No valid mode. Valid modes are 'auto', "
                              "'manual', 'dhcp' or 'static'.")
         self.ip = ip
@@ -171,7 +173,7 @@ class NetworkParser(object):
     value = CharsNotIn("{}\n#")
     line = Regex("^.*$")
     comment = ("#")
-    method = Regex("loopback|manual|dhcp|static")
+    method = Regex("loopback|manual|dhcp|static|ppp|bootp|tunnel|wvdial|ipv4ll")
     stanza = Regex("auto|iface|mapping|allow-hotplug")
     option_key = Regex("bridge_\w*|post-\w*|up|down|pre-\w*|address"
                        "|network|netmask|gateway|broadcast|dns-\w*|scope|"
