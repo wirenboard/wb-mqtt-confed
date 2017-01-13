@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/contactless/wb-mqtt-confed/confed"
 	"encoding/json"
 	"flag"
+	"github.com/contactless/wb-mqtt-confed/confed"
 	"github.com/contactless/wbgo"
 	"os"
 	"path/filepath"
@@ -28,6 +28,7 @@ func main() {
 	}
 	if *debug {
 		wbgo.SetDebuggingEnabled(true)
+		wbgo.EnableMQTTDebugLog(*useSyslog)
 	}
 	absRoot, err := filepath.Abs(*root)
 	if err != nil {
