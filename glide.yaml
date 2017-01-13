@@ -4,6 +4,6 @@ import:
 - package: github.com/contactless/wbgo
   subpackages:
   - testutils
-  version: ~0.0.1
+  version: ~0.0.6
 - package: github.com/xeipuuv/gojsonpointer
 - package: github.com/xeipuuv/gojsonschema
