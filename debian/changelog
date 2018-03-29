@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.2) stable; urgency=medium
+
+  * require mosquitto to start service
+
+ -- Attila Door <a.door@contactless.ru>  Thr, 29 Mar 2017 10:14:07 +0300
+
 wb-mqtt-confed (1.2.1) stable; urgency=medium
 
   * allows to process /etc/network/interfaces with more iface types (incl. ppp)
