@@ -9,8 +9,8 @@ imports:
   version: 8b84a4b64eb80695a00647f268ec9daab153b172
   subpackages:
   - confed
-- name: github.com/contactless/wbgo
-  version: 645ba6f5f8fdd9cb1fcea3ff7162a70aed4e960e
+- name: github.com/evgeny-boger/wbgo
+  version: 16e894fd5ded0415f2c1bd47dc84c0336b36a3f2
   subpackages:
   - testutils
 - name: github.com/DisposaBoy/JsonConfigReader

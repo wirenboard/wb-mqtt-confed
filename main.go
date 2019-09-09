@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/contactless/wb-mqtt-confed/confed"
-	"github.com/contactless/wbgo"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/contactless/wb-mqtt-confed/confed"
+	"github.com/evgeny-boger/wbgo"
 )
 
 const DRIVER_CLIENT_ID = "confed"
@@ -45,11 +46,11 @@ func main() {
 		schemaPath, configPath := flag.Arg(0), flag.Arg(1)
 		schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
 		if err != nil {
-			wbgo.Error.Fatal("failed to load schema %s: %s", schemaPath, err)
+			wbgo.Error.Fatalf("failed to load schema %s: %s", schemaPath, err)
 		}
 		r, err := schema.ValidateFile(configPath)
 		if err != nil {
-			wbgo.Error.Fatal("failed to validate %s: %s", configPath, err)
+			wbgo.Error.Fatalf("failed to validate %s: %s", configPath, err)
 		}
 		if !r.Valid() {
 			wbgo.Error.Printf("Validation failed for %s", configPath)
@@ -67,11 +68,11 @@ func main() {
 		schemaPath := flag.Arg(0)
 		schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
 		if err != nil {
-			wbgo.Error.Fatal("failed to load schema %s: %s", schemaPath, err)
+			wbgo.Error.Fatalf("failed to load schema %s: %s", schemaPath, err)
 		}
 		content, err := json.MarshalIndent(schema.GetPreprocessed(), "", "  ")
 		if err != nil {
-			wbgo.Error.Fatal("failed to serialize schema %s: %s", schemaPath, err)
+			wbgo.Error.Fatalf("failed to serialize schema %s: %s", schemaPath, err)
 		}
 		os.Stdout.Write(content)
 		os.Exit(0)
@@ -93,7 +94,7 @@ func main() {
 	}
 	confed.RunRestarter(editor.RestartCh)
 
-	mqttClient := wbgo.NewPahoMQTTClient(*brokerAddress, DRIVER_CLIENT_ID, true)
+	mqttClient := wbgo.NewPahoMQTTClient(*brokerAddress, DRIVER_CLIENT_ID)
 	rpc := wbgo.NewMQTTRPCServer("confed", mqttClient)
 	rpc.Register(editor)
 	rpc.Start()

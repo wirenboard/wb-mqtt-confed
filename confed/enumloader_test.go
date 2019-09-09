@@ -3,7 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/contactless/wbgo/testutils"
+	"github.com/evgeny-boger/wbgo/testutils"
 	"os"
 	"testing"
 )

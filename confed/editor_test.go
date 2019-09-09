@@ -1,12 +1,13 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo/testutils"
-	"github.com/stretchr/objx"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/evgeny-boger/wbgo/testutils"
+	"github.com/stretchr/objx"
 )
 
 const (
@@ -198,7 +199,7 @@ func (s *EditorSuite) verifyLoadSampleJson() {
 			"device_type": "MSU21",
 			"name":        "MSU21",
 			"id":          "msu21",
-			"slave_id":    float64(24),
+			"slave_id":    int(24),
 			"enabled":     true,
 		},
 		"schema": objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
@@ -237,7 +238,7 @@ func (s *EditorSuite) TestSaveFile() {
 		"device_type": "MSU21",
 		"name":        "MSU21 (updated)",
 		"id":          "msu21",
-		"slave_id":    float64(42),
+		"slave_id":    int(42),
 	}
 	s.VerifyRpc("Save", objx.Map{
 		"path":    "/sample.json",
@@ -424,7 +425,7 @@ func (s *EditorSuite) TestMultipleSchemasPerConfig() {
 		"device_type": "MSU21",
 		"name":        "MSU21",
 		"id":          "msu21",
-		"slave_id":    float64(24),
+		"slave_id":    int(24),
 		"enabled":     true,
 	}
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.schema.json"}, objx.Map{

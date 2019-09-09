@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo"
+	"github.com/evgeny-boger/wbgo"
 	"time"
 )
 

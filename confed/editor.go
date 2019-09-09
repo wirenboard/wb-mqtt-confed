@@ -3,7 +3,7 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contactless/wbgo"
+	"github.com/evgeny-boger/wbgo"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
