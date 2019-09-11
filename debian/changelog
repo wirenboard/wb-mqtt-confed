@@ -1,3 +1,9 @@
+wb-mqtt-confed (2.0.0) stable; urgency=medium
+
+  * wbgo library rework
+
+ -- Roman Kubar <r.kubar@contactless.ru>  Thu, 12 Sep 2019 00:10:01 +0300
+
 wb-mqtt-confed (1.2.2) stable; urgency=medium
 
   * require mosquitto to start service
