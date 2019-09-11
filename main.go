@@ -11,6 +11,7 @@ import (
 	"github.com/evgeny-boger/wbgo"
 )
 
+// DRIVER_CLIENT_ID is client id used for mqtt connection
 const DRIVER_CLIENT_ID = "confed"
 
 func main() {
