@@ -31,7 +31,7 @@ install:
 	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
 	install -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
-	install -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/share/wb-rules/wbgo.so
+	install -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/share/wb-mqtt-confed/wbgo.so
 	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
 	install -m 0755 networkparser $(DESTDIR)/usr/bin/
 	install -m 0755 ntpparser $(DESTDIR)/usr/bin/
