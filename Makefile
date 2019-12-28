@@ -24,17 +24,17 @@ amd64:
 	$(MAKE) DEB_TARGET_ARCH=amd64
 
 wb-mqtt-confed: main.go confed/*.go
-	$(GO_ENV) glide install
-	$(GO_ENV) go build
+	$(GO_ENV) go build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
 
 install:
 	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
 	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
 	install -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
+	install -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/share/wb-mqtt-confed/wbgo.so
 	install -m 0755 initscripts/wb-mqtt-confed $(DESTDIR)/etc/init.d/wb-mqtt-confed
 	install -m 0755 networkparser $(DESTDIR)/usr/bin/
 	install -m 0755 ntpparser $(DESTDIR)/usr/bin/
 
-deb: prepare
-	CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc
+deb:
+	$(GO_ENV) dpkg-buildpackage -b -a$(DEB_TARGET_ARCH) -us -uc

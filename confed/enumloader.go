@@ -3,7 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
-	"github.com/contactless/wbgo"
+	"github.com/contactless/wbgong"
 	"github.com/xeipuuv/gojsonpointer"
 	"reflect"
 	"sort"
@@ -14,7 +14,7 @@ type enumLoader struct {
 	sync.Mutex
 	root       string
 	dirty      bool
-	watchers   map[string]*wbgo.DirWatcher
+	watchers   map[string]wbgong.DirWatcher
 	enumValues map[string]map[string]string
 }
 
@@ -22,7 +22,7 @@ func newEnumLoader(root string) *enumLoader {
 	return &enumLoader{
 		root:       root,
 		dirty:      true,
-		watchers:   make(map[string]*wbgo.DirWatcher),
+		watchers:   make(map[string]wbgong.DirWatcher),
 		enumValues: make(map[string]map[string]string),
 	}
 }
@@ -47,26 +47,26 @@ func (c *subconfWatcherClient) LiveRemoveFile(path string) error {
 }
 
 func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) (err error) {
-	wbgo.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
+	wbgong.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
 	content, err := loadConfigBytes(path, nil)
 	if err != nil {
-		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
+		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
 		return
 	}
 
 	var parsed map[string]interface{}
 	if err = json.Unmarshal(content, &parsed); err != nil {
-		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s unmarshal failed: %s", path, err)
+		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s unmarshal failed: %s", path, err)
 		return
 	}
 
 	node, kind, err := ptr.Get(parsed)
 	if err != nil {
-		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s JSON pointer deref failed: %s", path, err)
+		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s JSON pointer deref failed: %s", path, err)
 		return
 	}
 	if kind != reflect.String {
-		wbgo.Debug.Printf("enumLoader.loadSubconf(): %s: JSON Pointer enum target is not a string", path)
+		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s: JSON Pointer enum target is not a string", path)
 		return errors.New("JSON Pointer enum target is not a string")
 	}
 
@@ -113,7 +113,7 @@ func (e *enumLoader) ensureSubconfDirLoaded(path, pattern, ptrString string) (er
 		return
 	}
 	client := &subconfWatcherClient{e: e, key: key, ptr: ptr}
-	watcher := wbgo.NewDirWatcher(pattern, client)
+	watcher := wbgong.NewDirWatcher(pattern, client)
 	e.watchers[key] = watcher
 	watcher.Load(path)
 	return
@@ -134,10 +134,10 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 		}
 		paths[n], _, err = fakeRootPath(e.root, path)
 		if err != nil {
-			wbgo.Warn.Printf("pathFromRoot failed for %s", path)
+			wbgong.Warn.Printf("pathFromRoot failed for %s", path)
 			paths[n] = path
 		}
-		wbgo.Debug.Printf("pathFromRoot: %s, %s -> %s", e.root, path, paths[n])
+		wbgong.Debug.Printf("pathFromRoot: %s, %s -> %s", e.root, path, paths[n])
 	}
 
 	ptrString, ok := node["pointer"].(string)
@@ -153,10 +153,10 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	seen := make(map[string]bool)
 	strs := make([]string, 0, 32)
 	for _, path := range paths {
-		wbgo.Debug.Printf("enumLoader.subconfEnumValues(): loading subconf path %s", path)
+		wbgong.Debug.Printf("enumLoader.subconfEnumValues(): loading subconf path %s", path)
 		curErr := e.ensureSubconfDirLoaded(path, pattern, ptrString)
 		if curErr != nil {
-			wbgo.Debug.Printf("enumLoader.subconfEnumValues(): subconf load error: %s", curErr)
+			wbgong.Debug.Printf("enumLoader.subconfEnumValues(): subconf load error: %s", curErr)
 		}
 		if err == nil {
 			err = curErr
@@ -177,7 +177,7 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	for n, v := range strs {
 		r[n] = v
 	}
-	wbgo.Debug.Printf("enumLoader.subconfEnumValues(): values=%v", r)
+	wbgong.Debug.Printf("enumLoader.subconfEnumValues(): values=%v", r)
 	return
 }
 
@@ -203,7 +203,7 @@ func (e *enumLoader) preprocess(v interface{}) interface{} {
 			}
 			vals, err := e.subconfEnumValues(msi)
 			if err != nil {
-				wbgo.Error.Printf(
+				wbgong.Error.Printf(
 					"failed to load subconf values for %v: %s",
 					vals, err)
 				r[k] = []interface{}{}
