@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e
-	github.com/contactless/wbgong v0.0.2
+	github.com/contactless/wbgong v0.1.1
 	github.com/stretchr/objx v0.0.0-20140526180921-cbeaeb16a013
 	github.com/stretchr/testify v0.0.0-20150218221846-e4ec8152c15f // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20150102060019-636edb2500d2

@@ -4,6 +4,8 @@ github.com/alexcesaro/statsd v2.0.0+incompatible h1:HG17k1Qk8V1F4UOoq6tx+IUoAbOc
 github.com/alexcesaro/statsd v2.0.0+incompatible/go.mod h1:vNepIbQAiyLe1j480173M6NYYaAsGwEcvuDTU3OCUGY=
 github.com/contactless/wbgong v0.0.2 h1:qIqtkmMt+g4MU2Q8BantTA01BfBpX00mf+bEz8QL0Lk=
 github.com/contactless/wbgong v0.0.2/go.mod h1:r2wgXK7QCNzEzwdCTqw6vsHnlH/dtGR8eSrU08dPHrg=
+github.com/contactless/wbgong v0.1.1 h1:tC9pMJ/UrmyrPvDFeIlcjLReNilAaIDOMoowFHR8DII=
+github.com/contactless/wbgong v0.1.1/go.mod h1:r2wgXK7QCNzEzwdCTqw6vsHnlH/dtGR8eSrU08dPHrg=
 github.com/stretchr/objx v0.0.0-20140526180921-cbeaeb16a013 h1:lg5xphrNMF4T2GfLhtXOhFrTn5ZmPRUOWXvCLOattFY=
 github.com/stretchr/objx v0.0.0-20140526180921-cbeaeb16a013/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v0.0.0-20150218221846-e4ec8152c15f h1:s+/zETdGFl5S+XBos5NN8nSYQ4mwTf3kF3jjD83t4vY=
