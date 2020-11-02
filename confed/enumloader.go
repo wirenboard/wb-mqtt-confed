@@ -15,8 +15,6 @@ type deviceDefinition struct {
 	setupSchema map[string]interface{}
 }
 
-// ByAge implements sort.Interface for []Person based on
-// the Age field.
 type byDeviceType []*deviceDefinition
 
 func (a byDeviceType) Len() int           { return len(a) }
