@@ -1,0 +1,10 @@
+{
+  "device_type": "WB-MRM2 v2",
+  "setup_schema": {
+    "params": [1, 2, 3],
+    "params2": {
+      "a": 1,
+      "b": 2
+    }
+  }
+}

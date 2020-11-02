@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Serial Device Driver Configuration",
+  "definitions": {
+    "serialPort": {
+      "title": "Serial port",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "devices": {
+          "type": "array",
+          "title": "List of devices attached to the port",
+          "items": { "$ref": "#/definitions/device" }
+        }
+      }
+    },
+    "customDevice": {
+      "type": "object",
+      "title": "Custom device",
+      "properties": {
+        "setup": {
+          "type": "array",
+          "title": "List of setup commands",
+          "description": "Lists holding register values that must be written during initialization",
+          "items": { "$ref": "#/definitions/setup_cmd" },
+          "options": {
+            "disable_array_reorder": true
+          }
+        }
+      }
+    },
+    "device": {
+      "headerTemplate": "{{self.name}} {{slave id: |self.slave_id|}}",
+      "title": "Device",
+      "oneOf": [
+        { "$ref": "#/definitions/customDevice" },
+        { "$_devicesDefinitions": {
+                "directories":  ["/sample_devtypes2", "/sample_devtypes3"],
+                "pointer": ["/device_type", "/setup_schema"],
+                "pattern": "^.*\\.json$"
+            }
+        }
+      ],
+      "options": {
+        "disable_edit_json": true
+      }
+    },
+    "setup_cmd": {
+      "type": "object",
+      "title": "Setup command",
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Command name",
+          "description": "Used for logging/debugging purposes only",
+          "propertyOrder": 1
+        },
+        "address": {
+          "title": "Address",
+          "description": "Register index (0-65535 in case of Modbus)",
+          "$ref": "#/definitions/serial_int",
+          "propertyOrder": 2
+        },
+        "value": {
+          "title": "Value",
+          "description": "Value to be written",
+          "$ref": "#/definitions/serial_int",
+          "propertyOrder": 3
+        }
+      },
+      "options": {
+        "disable_collapse": true,
+        "disable_edit_json": true,
+        "disable_properties": true
+      },
+      "_format": "grid",
+      "required": ["address", "value"]
+    },
+    "serial_int": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^(0x[A-Fa-f\\d]+|\\d+)$"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    }
+  },
+  "properties": {
+    "ports": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/serialport" },
+      "minItems": 1
+    }
+  },
+  "required": ["ports"],
+  "configFile": {
+    "path": "/etc/wb-mqtt-serial.conf",
+    "service": "wb-mqtt-serial"
+  }
+}

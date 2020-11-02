@@ -119,6 +119,20 @@ func (s *EnumLoaderSuite) TestRemoveSubconf() {
 	s.verifyEnum(`["WB-MRM2"]`)
 }
 
+func (s *EnumLoaderSuite) TestDeviceDescriptions() {
+	bs, err := loadConfigBytes(s.DataFilePath("device_descriptions.schema.json"), nil)
+	s.Ck("loadConfigBytes()", err)
+	var m map[string]interface{}
+	s.Ck("Unmarshal JSON", json.Unmarshal(bs, &m))
+
+	bs, err = loadConfigBytes(s.DataFilePath("device_descriptions_expected.schema.json"), nil)
+	s.Ck("loadConfigBytes()", err)
+	var m2 map[string]interface{}
+	s.Ck("Unmarshal JSON", json.Unmarshal(bs, &m2))
+
+	s.Equal(m2, s.enumLoader.Preprocess(m))
+}
+
 func TestEnumLoaderSuite(t *testing.T) {
 	testutils.RunSuites(t, new(EnumLoaderSuite))
 }

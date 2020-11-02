@@ -1,14 +1,10 @@
-hash: f57668a161be3d6b55e02898f82f4e1d94fd18c2a743ae83fd66c43e4e9cc6f4
-updated: 2016-04-27T01:57:47.221593337+03:00
+hash: a2449558f454974f5738e7b3afa2b65445bafdc2a1920be1e98e678001debe68
+updated: 2020-11-02T16:34:50.338707573+05:00
 imports:
 - name: github.com/contactless/org.eclipse.paho.mqtt.golang
   version: bc107ec72972f0e7048787415ea061578b5c3f33
   subpackages:
   - packets
-- name: github.com/contactless/wb-mqtt-confed
-  version: 8b84a4b64eb80695a00647f268ec9daab153b172
-  subpackages:
-  - confed
 - name: github.com/contactless/wbgo
   version: 645ba6f5f8fdd9cb1fcea3ff7162a70aed4e960e
   subpackages:
@@ -35,4 +31,4 @@ imports:
   - websocket
 - name: gopkg.in/fsnotify.v1
   version: 96c060f6a6b7e0d6f75fddd10efeaca3e5d1bcb0
-devImports: []
+testImports: []

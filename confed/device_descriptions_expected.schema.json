@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "configFile": {
+   "path": "/etc/wb-mqtt-serial.conf",
+   "service": "wb-mqtt-serial"
+  },
+  "definitions": {
+   "customDevice": {
+    "properties": {
+     "setup": {
+      "description": "Lists holding register values that must be written during initialization",
+      "items": {
+       "$ref": "#/definitions/setup_cmd"
+      },
+      "options": {
+       "disable_array_reorder": true
+      },
+      "title": "List of setup commands",
+      "type": "array"
+     }
+    },
+    "title": "Custom device",
+    "type": "object"
+   },
+   "device": {
+    "headerTemplate": "{{self.name}} {{slave id: |self.slave_id|}}",
+    "oneOf": [
+     {
+      "$ref": "#/definitions/customDevice"
+     },
+     {
+      "properties": {
+       "device_type": {
+        "enum": [
+         "MSU21"
+        ],
+        "options": {
+         "hidden": true
+        },
+        "propertyOrder": 1,
+        "type": "string"
+       }
+      },
+      "title": "MSU21",
+      "type": "object"
+     },
+     {
+      "properties": {
+       "device_type": {
+        "enum": [
+         "WB-MRM2"
+        ],
+        "options": {
+         "hidden": true
+        },
+        "propertyOrder": 1,
+        "type": "string"
+       },
+       "setup": {
+        "params": [
+         1,
+         2,
+         3
+        ],
+        "params2": {
+         "a": 1,
+         "b": 2
+        }
+       }
+      },
+      "title": "WB-MRM2",
+      "type": "object"
+     },
+     {
+      "properties": {
+       "device_type": {
+        "enum": [
+         "WB-MRM2 v2"
+        ],
+        "options": {
+         "hidden": true
+        },
+        "propertyOrder": 1,
+        "type": "string"
+       },
+       "setup": {
+        "params": [
+         1,
+         2,
+         3
+        ],
+        "params2": {
+         "a": 1,
+         "b": 2
+        }
+       }
+      },
+      "title": "WB-MRM2 v2",
+      "type": "object"
+     }
+    ],
+    "options": {
+     "disable_edit_json": true
+    },
+    "title": "Device"
+   },
+   "serialPort": {
+    "additionalProperties": false,
+    "properties": {
+     "devices": {
+      "items": {
+       "$ref": "#/definitions/device"
+      },
+      "title": "List of devices attached to the port",
+      "type": "array"
+     }
+    },
+    "title": "Serial port",
+    "type": "object"
+   },
+   "serial_int": {
+    "oneOf": [
+     {
+      "pattern": "^(0x[A-Fa-f\\d]+|\\d+)$",
+      "type": "string"
+     },
+     {
+      "type": "integer"
+     }
+    ]
+   },
+   "setup_cmd": {
+    "_format": "grid",
+    "options": {
+     "disable_collapse": true,
+     "disable_edit_json": true,
+     "disable_properties": true
+    },
+    "properties": {
+     "address": {
+      "$ref": "#/definitions/serial_int",
+      "description": "Register index (0-65535 in case of Modbus)",
+      "propertyOrder": 2,
+      "title": "Address"
+     },
+     "title": {
+      "description": "Used for logging/debugging purposes only",
+      "propertyOrder": 1,
+      "title": "Command name",
+      "type": "string"
+     },
+     "value": {
+      "$ref": "#/definitions/serial_int",
+      "description": "Value to be written",
+      "propertyOrder": 3,
+      "title": "Value"
+     }
+    },
+    "required": [
+     "address",
+     "value"
+    ],
+    "title": "Setup command",
+    "type": "object"
+   }
+  },
+  "properties": {
+   "ports": {
+    "items": {
+     "$ref": "#/definitions/serialport"
+    },
+    "minItems": 1,
+    "type": "array"
+   }
+  },
+  "required": [
+   "ports"
+  ],
+  "title": "Serial Device Driver Configuration",
+  "type": "object"
+ }

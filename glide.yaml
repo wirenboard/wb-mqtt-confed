@@ -1,4 +1,4 @@
-package: .
+package: github.com/contactless/wb-mqtt-confed
 import:
 - package: github.com/DisposaBoy/JsonConfigReader
 - package: github.com/contactless/wbgo
