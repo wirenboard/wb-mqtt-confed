@@ -13,6 +13,7 @@ import (
 type deviceDefinition struct {
 	deviceType string
 	setupSchema map[string]interface{}
+	channels []interface{}
 }
 
 type byDeviceType []*deviceDefinition
@@ -201,19 +202,24 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	return
 }
 
+type deviceDefinitionPointers struct {
+	deviceType  gojsonpointer.JsonPointer
+	setupSchema gojsonpointer.JsonPointer
+	channels    gojsonpointer.JsonPointer
+}
+
 type deviceDefinitionsWatcherClient struct {
 	e   *enumLoader
 	key string
-	deviceTypePtr  gojsonpointer.JsonPointer
-	setupSchemaPtr gojsonpointer.JsonPointer
+	ptr deviceDefinitionPointers
 }
 
 func (c *deviceDefinitionsWatcherClient) LoadFile(path string) error {
-	return c.e.loadDeviceDefinitions(c.key, path, c.deviceTypePtr, c.setupSchemaPtr)
+	return c.e.loadDeviceDefinitions(c.key, path, c.ptr)
 }
 
 func (c *deviceDefinitionsWatcherClient) LiveLoadFile(path string) error {
-	return c.e.liveLoadDeviceDefinitions(c.key, path, c.deviceTypePtr, c.setupSchemaPtr)
+	return c.e.liveLoadDeviceDefinitions(c.key, path, c.ptr)
 }
 
 func (c *deviceDefinitionsWatcherClient) LiveRemoveFile(path string) error {
@@ -221,7 +227,7 @@ func (c *deviceDefinitionsWatcherClient) LiveRemoveFile(path string) error {
 	return nil
 }
 
-func (e *enumLoader) loadDeviceDefinitions(key, path string, deviceTypePtr gojsonpointer.JsonPointer, setupSchemaPtr gojsonpointer.JsonPointer) (err error) {
+func (e *enumLoader) loadDeviceDefinitions(key, path string, ptr deviceDefinitionPointers) (err error) {
 	content, err := loadConfigBytes(path, nil)
 	if err != nil {
 		wbgo.Debug.Printf("enumLoader.loadDeviceDefinitions(): %s load failed: %s", path, err)
@@ -234,7 +240,7 @@ func (e *enumLoader) loadDeviceDefinitions(key, path string, deviceTypePtr gojso
 		return
 	}
 
-	deviceTypeNode, _, err := deviceTypePtr.Get(parsed)
+	deviceTypeNode, _, err := ptr.deviceType.Get(parsed)
 	if err != nil {
 		wbgo.Debug.Printf("enumLoader.loadDeviceDefinitions(): %s device type JSON pointer deref failed: %s", path, err)
 		return
@@ -245,7 +251,7 @@ func (e *enumLoader) loadDeviceDefinitions(key, path string, deviceTypePtr gojso
 	}
 
 	var setupSchema map[string]interface{} = nil
-	setupSchemaNode, _, err := setupSchemaPtr.Get(parsed)
+	setupSchemaNode, _, err := ptr.setupSchema.Get(parsed)
 	if err == nil {
 		setupSchema, ok = setupSchemaNode.(map[string]interface{})
 		if !ok {
@@ -255,20 +261,30 @@ func (e *enumLoader) loadDeviceDefinitions(key, path string, deviceTypePtr gojso
 		err = nil // the template hasn't setup_schema field, it is ok, continue
 	}
 
+	channelsNode, _, err := ptr.channels.Get(parsed)
+	if err != nil {
+		wbgo.Debug.Printf("enumLoader.loadDeviceDefinitions(): %s channels JSON pointer deref failed: %s", path, err)
+		return
+	}
+	channels, ok := channelsNode.([]interface{})
+	if !ok {
+		return errors.New(path + " channels JSON Pointer target is not an array")
+	}
+
 	vals := e.deviceDefinitionValues[key]
 	if vals == nil {
 		vals = make(map[string]*deviceDefinition)
 		e.deviceDefinitionValues[key] = vals
 	}
-	vals[path] = &deviceDefinition{deviceType, setupSchema}
+	vals[path] = &deviceDefinition{deviceType, setupSchema, channels}
 	return
 }
 
-func (e *enumLoader) liveLoadDeviceDefinitions(key, path string, deviceTypePtr gojsonpointer.JsonPointer, setupSchemaPtr gojsonpointer.JsonPointer) error {
+func (e *enumLoader) liveLoadDeviceDefinitions(key, path string, ptr deviceDefinitionPointers) error {
 	e.Lock()
 	defer e.Unlock()
 	e.dirty = true
-	return e.loadDeviceDefinitions(key, path, deviceTypePtr, setupSchemaPtr)
+	return e.loadDeviceDefinitions(key, path, ptr)
 }
 
 func (e *enumLoader) removeDeviceDefinitions(key, path string) {
@@ -287,13 +303,23 @@ func (e *enumLoader) removeDeviceDefinitions(key, path string) {
 	}
 }
 
-func (e *enumLoader) ensureDeviceDefinitionsDirLoaded(path, pattern, deviceTypePtrString string, setupSchemaPtrString string) (err error) {
-	deviceTypePtr, err := gojsonpointer.NewJsonPointer(deviceTypePtrString)
+func (e *enumLoader) ensureDeviceDefinitionsDirLoaded(path,
+													  pattern,
+													  deviceTypePtrString  string,
+													  setupSchemaPtrString string,
+													  channelsPtrString    string) (err error) {
+	var ptr deviceDefinitionPointers
+	ptr.deviceType, err = gojsonpointer.NewJsonPointer(deviceTypePtrString)
 	if err != nil {
 		return
 	}
 
-	setupSchemaPtr, err := gojsonpointer.NewJsonPointer(setupSchemaPtrString)
+	ptr.setupSchema, err = gojsonpointer.NewJsonPointer(setupSchemaPtrString)
+	if err != nil {
+		return
+	}
+
+	ptr.channels, err = gojsonpointer.NewJsonPointer(channelsPtrString)
 	if err != nil {
 		return
 	}
@@ -302,7 +328,7 @@ func (e *enumLoader) ensureDeviceDefinitionsDirLoaded(path, pattern, deviceTypeP
 	if e.watchers[key] != nil {
 		return
 	}
-	client := &deviceDefinitionsWatcherClient{e: e, key: key, deviceTypePtr: deviceTypePtr, setupSchemaPtr: setupSchemaPtr}
+	client := &deviceDefinitionsWatcherClient{e, key, ptr}
 	watcher := wbgo.NewDirWatcher(pattern, client)
 	e.watchers[key] = watcher
 	watcher.Load(path)
@@ -311,7 +337,7 @@ func (e *enumLoader) ensureDeviceDefinitionsDirLoaded(path, pattern, deviceTypeP
 
 //	{ "$_devicesDefinitions": {
 //			"directories": ["/usr/share/wb-mqtt-serial/templates"],
-//			"pointer": [ "/device_type", "/setup_schema"]
+//			"pointer": [ "/device_type", "/setup_schema", "/device/channels"]
 //			"pattern": "^.*\\.json$"
 //		}
 //	}
@@ -322,7 +348,7 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 	}
 
 	ptrArray, ok := node["pointer"].([]interface{})
-	if !ok || (len(ptrArray) < 2) {
+	if !ok || (len(ptrArray) < 3) {
 		return nil, errors.New("enumLoader.deviceDefinitions(): pointer field is not an array")
 	}
 
@@ -334,6 +360,11 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 	setupSchemaPtrString, ok := ptrArray[1].(string)
 	if !ok {
 		return nil, errors.New("enumLoader.deviceDefinitions(): pointers second element is not a string")
+	}
+
+	channelsPtrString, ok := ptrArray[2].(string)
+	if !ok {
+		return nil, errors.New("enumLoader.deviceDefinitions(): pointers third element is not a string")
 	}
 
 	pattern, ok := node["pattern"].(string)
@@ -348,7 +379,7 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 
 	for _, path := range paths {
 		wbgo.Debug.Printf("enumLoader.deviceDefinitions(): loading path %s", path)
-		curErr := e.ensureDeviceDefinitionsDirLoaded(path, pattern, deviceTypePtrString, setupSchemaPtrString)
+		curErr := e.ensureDeviceDefinitionsDirLoaded(path, pattern, deviceTypePtrString, setupSchemaPtrString, channelsPtrString)
 		if curErr != nil {
 			wbgo.Debug.Printf("enumLoader.deviceDefinitions(): path load error: %s", curErr)
 		}
@@ -380,22 +411,75 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 //		"properties": {
 //			"device_type": {
 //				"type": "string",
-//				"enum": [ deviceType ],
-//				"propertyOrder": 1,
+//				"enum": [ DEVICE_TYPE ],
 //				"options": {
 //					"hidden": true
-//				}
+//				},
+//				"propertyOrder": 5
 //			},
-//			"setup": setupSchema
-//		}
+//			"setup": setupSchema,
+//			"channels": {
+//				"type": "array",
+//				"_format": "table",
+//				"title": "List of standard channels",
+//				"minItems": CHANNELS_COUNT,
+//				"description": "Lists device registers and their corresponding controls",
+//				"items": { "$ref": "#/definitions/channelSettings" },
+//				"default": [
+//					{
+//						"hidden_name": CHANNEL_NAME,
+//						"poll_interval": POLL_INTERVAL
+//					},
+//					....
+//				],
+//				"options": {
+//					"disable_array_delete": true,
+//					"disable_array_reorder": true,
+//					"disable_array_add": true
+//				},
+//				"propertyOrder": 9
+//			},
+//			"custom_channels": {
+//				"type": "array",
+//				"title": "List of custom channels",
+//				"description": "Lists nonstandard device registers and their corresponding controls",
+//				"items": { "$ref": "#/definitions/channel" },
+//				"propertyOrder": 10
+//			}
+//		},
+//		"required": ["device_type"]
 //	}
-func (e *enumLoader) makeDeviceDefinitionProperties(deviceType string, setupSchema map[string]interface{}) map[string]interface{} {
+func (e *enumLoader) makeDeviceDefinitionProperties(deviceType  string,
+													setupSchema map[string]interface{},
+													channels    []interface{}) map[string]interface{} {
 	r := map[string]interface{} {
 			"device_type": map[string]interface{} {
 				"type": "string",
-				"propertyOrder": 1,
 				"options": map[string]interface{} { "hidden": true },
 				"enum": []interface{} { deviceType },
+				"propertyOrder": 5,
+			},
+			"channels": map[string]interface{} {
+				"type": "array",
+				"title": "List of standard channels",
+				"_format": "table",
+				"minItems": len(channels),
+				"description": "Lists device registers and their corresponding controls",
+				"items": map[string]interface{} { "$ref": "#/definitions/channelSettings" },
+				"default": e.makeDefaultChannels(channels),
+				"options": map[string]interface{} {
+					"disable_array_delete": true,
+					"disable_array_reorder": true,
+					"disable_array_add": true,
+				},
+				"propertyOrder": 9,
+			},
+			"custom_channels": map[string]interface{} {
+				"type": "array",
+				"title": "List of custom channels",
+				"description": "Lists nonstandard device registers and their corresponding controls",
+				"items": map[string]interface{} { "$ref": "#/definitions/channel" },
+				"propertyOrder": 10,
 			},
 		}
 
@@ -405,14 +489,32 @@ func (e *enumLoader) makeDeviceDefinitionProperties(deviceType string, setupSche
 	return r
 }
 
-func (e *enumLoader) makeDeviceDefinition(deviceType string, setupSchema map[string]interface{}) map[string]interface{} {
+func (e *enumLoader) makeDefaultChannels(channels []interface{}) []interface{} {
+	r := make([]interface{}, 0, len(channels))
+	for _, v := range channels {
+		t, ok := v.(map[string]interface{})
+		if ok {
+			ch := map[string]interface{} {
+					"hidden_name": t["name"],
+				}
+			pi, exists := t["poll_interval"]
+			if exists {
+				ch["poll_interval"] = pi
+			}
+			r = append(r, ch)
+		}
+	}
+	return r
+}
+
+func (e *enumLoader) makeDeviceDefinition(deviceType string, setupSchema map[string]interface{}, channels []interface{}) map[string]interface{} {
 	return map[string]interface{} {
 				"type": "object",
 				"title": deviceType,
-				"properties": e.makeDeviceDefinitionProperties(deviceType, setupSchema),
+				"properties": e.makeDeviceDefinitionProperties(deviceType, setupSchema, channels),
+				"required": []interface{} { "device_type" },
 			}
 }
-
 
 func (e *enumLoader) tryToLoadDeviceDefinitions(item interface{}) ([]interface{}, bool) {
 	msi, ok := item.(map[string]interface{})
@@ -439,7 +541,7 @@ func (e *enumLoader) tryToLoadDeviceDefinitions(item interface{}) ([]interface{}
 	}
 
 	for _, v := range vals {
-		r = append(r, e.makeDeviceDefinition(v.deviceType, v.setupSchema))
+		r = append(r, e.makeDeviceDefinition(v.deviceType, v.setupSchema, v.channels))
 	}
 
 	return r, true

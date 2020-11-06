@@ -1,3 +1,10 @@
 {
-  "device_type": "MSU21"
+  "device_type": "MSU21",
+  "device": {
+    "channels": [
+      {
+        "name": "test"
+      }
+    ]
+  }
 }

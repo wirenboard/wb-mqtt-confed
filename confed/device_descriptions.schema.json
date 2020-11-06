@@ -37,7 +37,7 @@
         { "$ref": "#/definitions/customDevice" },
         { "$_devicesDefinitions": {
                 "directories":  ["/sample_devtypes2", "/sample_devtypes3"],
-                "pointer": ["/device_type", "/setup_schema"],
+                "pointer": ["/device_type", "/setup_schema", "/device/channels"],
                 "pattern": "^.*\\.json$"
             }
         }

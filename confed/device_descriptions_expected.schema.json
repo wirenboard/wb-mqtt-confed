@@ -39,11 +39,32 @@
         },
         "propertyOrder": 1,
         "type": "string"
-       }
+       },
+       "channels": {
+         "type": "array",
+         "_format": "table",
+         "title": "List of channels",
+         "minItems": 1,
+         "description": "Lists device registers and their corresponding controls",
+         "items": { "$ref": "#/definitions/channelSettings" },
+         "default": [
+           {
+             "hidden_name": "test"
+           }
+         ],
+         "options": {
+           "disable_array_delete": true,
+           "disable_array_reorder": true,
+           "disable_array_add": true
+         },
+         "propertyOrder": 9
+        }
       },
       "title": "MSU21",
-      "type": "object"
+      "type": "object",
+      "required": ["device_type"]
      },
+
      {
       "properties": {
        "device_type": {
@@ -66,10 +87,30 @@
          "a": 1,
          "b": 2
         }
+       },
+       "channels": {
+        "type": "array",
+        "_format": "table",
+        "title": "List of channels",
+        "minItems": 1,
+        "description": "Lists device registers and their corresponding controls",
+        "items": { "$ref": "#/definitions/channelSettings" },
+        "default": [
+          {
+            "hidden_name": "test"
+          }
+        ],
+        "options": {
+          "disable_array_delete": true,
+          "disable_array_reorder": true,
+          "disable_array_add": true
+        },
+        "propertyOrder": 9
        }
       },
       "title": "WB-MRM2",
-      "type": "object"
+      "type": "object",
+      "required": ["device_type"]
      },
      {
       "properties": {
@@ -93,10 +134,31 @@
          "a": 1,
          "b": 2
         }
+       },
+       "channels": {
+        "type": "array",
+        "_format": "table",
+        "title": "List of channels",
+        "minItems": 1,
+        "description": "Lists device registers and their corresponding controls",
+        "items": { "$ref": "#/definitions/channelSettings" },
+        "default": [
+          {
+            "hidden_name": "test",
+            "poll_interval": 20
+          }
+        ],
+        "options": {
+          "disable_array_delete": true,
+          "disable_array_reorder": true,
+          "disable_array_add": true
+        },
+        "propertyOrder": 9
        }
       },
       "title": "WB-MRM2 v2",
-      "type": "object"
+      "type": "object",
+      "required": ["device_type"]
      }
     ],
     "options": {

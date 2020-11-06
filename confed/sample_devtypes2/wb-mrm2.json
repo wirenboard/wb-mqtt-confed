@@ -6,5 +6,12 @@
       "a": 1,
       "b": 2
     }
+  },
+  "device": {
+    "channels": [
+      {
+        "name": "test"
+      }
+    ]
   }
 }
