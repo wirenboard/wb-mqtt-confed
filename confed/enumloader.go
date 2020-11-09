@@ -407,7 +407,7 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 
 //	{
 //		"type": "object"
-//		"title": deviceType
+//		"title": DEVICE_TYPE
 //		"properties": {
 //			"device_type": {
 //				"type": "string",
@@ -418,7 +418,7 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 //				"propertyOrder": 5
 //			},
 //			"setup": setupSchema,
-//			"channels": {
+//			"standard_channels": {
 //				"type": "array",
 //				"_format": "table",
 //				"title": "List of standard channels",
@@ -438,13 +438,6 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 //					"disable_array_add": true
 //				},
 //				"propertyOrder": 9
-//			},
-//			"custom_channels": {
-//				"type": "array",
-//				"title": "List of custom channels",
-//				"description": "Lists nonstandard device registers and their corresponding controls",
-//				"items": { "$ref": "#/definitions/channel" },
-//				"propertyOrder": 10
 //			}
 //		},
 //		"required": ["device_type"]
@@ -459,7 +452,7 @@ func (e *enumLoader) makeDeviceDefinitionProperties(deviceType  string,
 				"enum": []interface{} { deviceType },
 				"propertyOrder": 5,
 			},
-			"channels": map[string]interface{} {
+			"standard_channels": map[string]interface{} {
 				"type": "array",
 				"title": "List of standard channels",
 				"_format": "table",
@@ -473,13 +466,6 @@ func (e *enumLoader) makeDeviceDefinitionProperties(deviceType  string,
 					"disable_array_add": true,
 				},
 				"propertyOrder": 9,
-			},
-			"custom_channels": map[string]interface{} {
-				"type": "array",
-				"title": "List of custom channels",
-				"description": "Lists nonstandard device registers and their corresponding controls",
-				"items": map[string]interface{} { "$ref": "#/definitions/channel" },
-				"propertyOrder": 10,
 			},
 		}
 
