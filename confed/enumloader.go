@@ -412,11 +412,13 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 //			"device_type": {
 //				"type": "string",
 //				"enum": [ DEVICE_TYPE ],
+//				"default": DEVICE_TYPE,
 //				"options": {
 //					"hidden": true
 //				},
 //				"propertyOrder": 5
 //			},
+//			"slave_id": { "$ref": "#/definitions/slave_id" },
 //			"setup": setupSchema,
 //			"standard_channels": {
 //				"type": "array",
@@ -440,18 +442,21 @@ func (e *enumLoader) deviceDefinitions(node map[string]interface{}) (r []*device
 //				"propertyOrder": 9
 //			}
 //		},
-//		"required": ["device_type"]
+//		"required": ["device_type", "slave_id"],
+//		"defaultProperties": ["device_type", "slave_id"],
 //	}
-func (e *enumLoader) makeDeviceDefinitionProperties(deviceType  string,
+func (e *enumLoader) makeDeviceDefinitionProperties(deviceType  string,	
 													setupSchema map[string]interface{},
 													channels    []interface{}) map[string]interface{} {
 	r := map[string]interface{} {
 			"device_type": map[string]interface{} {
 				"type": "string",
-				"options": map[string]interface{} { "hidden": true },
+				"options": map[string]interface{} { "hidden": true, "forceDefault": true },
+				"default": deviceType,
 				"enum": []interface{} { deviceType },
 				"propertyOrder": 5,
 			},
+			"slave_id": map[string]interface{} { "$ref": "#/definitions/slave_id" },
 			"standard_channels": map[string]interface{} {
 				"type": "array",
 				"title": "List of standard channels",
@@ -498,7 +503,8 @@ func (e *enumLoader) makeDeviceDefinition(deviceType string, setupSchema map[str
 				"type": "object",
 				"title": deviceType,
 				"properties": e.makeDeviceDefinitionProperties(deviceType, setupSchema, channels),
-				"required": []interface{} { "device_type" },
+				"required": []interface{} { "device_type" , "slave_id" },
+				"defaultProperties": []interface{} { "device_type", "slave_id" },
 			}
 }
 
