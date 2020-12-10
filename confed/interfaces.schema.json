@@ -98,8 +98,8 @@
               }
             }
           },
-          "defaultProperties": ["mode"],
-          "required": ["method", "mode"]
+          "defaultProperties": ["name", "method", "mode"],
+          "required": ["name", "method", "mode"]
         }
       ]
     },
@@ -187,7 +187,7 @@
               "defaultProperties": ["address", "netmask", "gateway", "mtu"]
             }
           },
-          "defaultProperties": ["auto", "mode", "method", "options"],
+          "defaultProperties": ["name", "auto", "mode", "method", "options"],
           "required": ["name", "mode", "method"]
         }
       ]
@@ -237,7 +237,7 @@
               "defaultProperties": "hostname"
             }
           },
-          "defaultProperties": ["auto", "mode", "method", "options"],
+          "defaultProperties": ["name", "auto", "mode", "method", "options"],
           "required": ["name", "mode", "method"]
         }
       ]
@@ -276,7 +276,7 @@
             "required": ["bitrate"]
             }
           },
-          "defaultProperties": ["allow-hotplug", "mode", "method", "options"],
+          "defaultProperties": ["name", "allow-hotplug", "mode", "method", "options"],
           "required": ["name", "mode", "method"]
         }
       ]
@@ -326,7 +326,7 @@
               "defaultProperties": ["provider"]
             }
           },
-          "defaultProperties": ["auto", "mode", "method", "options"],
+          "defaultProperties": ["name", "auto", "mode", "method", "options"],
           "required": ["name", "mode", "method"]
         }
       ]
@@ -371,7 +371,7 @@
               "defaultProperties": ["mtu"]
             }
           },
-          "defaultProperties": ["auto", "mode", "method"],
+          "defaultProperties": ["name", "auto", "mode", "method"],
           "required": ["name", "mode", "method"]
         }
       ]
