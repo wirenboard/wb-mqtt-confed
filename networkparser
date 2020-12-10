@@ -180,7 +180,7 @@ class NetworkParser(object):
                        "pointtopoint|metric|hwaddress|mtu|hostname|"
                        "leasehours|leasetime|vendor|client|bootfile|server"
                        "|mode|endpoint|dstaddr|local|ttl|provider|unit"
-                       "|options|frame|netnum|media|wpa-[\w-]*")
+                       "|options|frame|bitrate|netnum|media|wpa-[\w-]*")
     _eol = Literal("\n").suppress()
     option = Forward()
     option << Group(space
@@ -194,7 +194,7 @@ class NetworkParser(object):
                              + interface
                              + Optional(
                                  space
-                                 + Regex("inet")
+                                 + Regex("inet|can")
                                  + method
                                  + Group(ZeroOrMore(option))))
 
