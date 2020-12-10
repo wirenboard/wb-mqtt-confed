@@ -276,7 +276,7 @@
             "required": ["bitrate"]
             }
           },
-          "defaultProperties": ["auto", "mode", "method", "options"],
+          "defaultProperties": ["allow-hotplug", "mode", "method", "options"],
           "required": ["name", "mode", "method"]
         }
       ]
