@@ -390,7 +390,10 @@
           { "$ref": "#/definitions/method_ppp" },
           { "$ref": "#/definitions/method_can" },
           { "$ref": "#/definitions/method_manual" }
-        ]
+        ],
+        "options": {
+          "keep_oneof_values": false
+        }
       },
       "_format": "tabs"
     }
