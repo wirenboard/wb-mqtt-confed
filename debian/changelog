@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.5) stable; urgency=medium
+
+  * JSON schema validation library update
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 16 Dec 2020 20:16:00 +0500
+
 wb-mqtt-confed (1.2.4) stable; urgency=medium
 
   * JSON schema for network interfaces corrections

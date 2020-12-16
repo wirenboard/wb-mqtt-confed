@@ -7,3 +7,4 @@ import:
   version: ~0.0.6
 - package: github.com/xeipuuv/gojsonpointer
 - package: github.com/xeipuuv/gojsonschema
+  version: v1.2.0
