@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.6) stable; urgency=medium
+
+  * Option for disabling JSON schema validation during config loading is added
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 16 Mar 2021 10:34:00 +0500
+
 wb-mqtt-confed (1.2.5) stable; urgency=medium
 
   * JSON schema validation library update
