@@ -3,6 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -20,6 +21,7 @@ type JSONSchemaProps struct {
 	toJSONCommand      []string
 	service            string
 	restartDelayMS     int
+	shouldValidate     bool
 }
 
 type JSONSchema struct {
@@ -97,6 +99,11 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
+	shouldValidate, ok := configFile["validate"].(bool)
+	if !ok {
+		shouldValidate = true
+	}
+
 	service, _ := configFile["service"].(string)
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 
@@ -122,6 +129,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			toJSONCommand:      toJSONCommand,
 			service:            service,
 			restartDelayMS:     int(restartDelayMS),
+			shouldValidate:     shouldValidate,
 		},
 		enumLoader: newEnumLoader(root),
 	}
@@ -208,6 +216,10 @@ func (s *JSONSchema) Service() string {
 
 func (s *JSONSchema) RestartDelayMS() int {
 	return s.props.restartDelayMS
+}
+
+func (s *JSONSchema) ShouldValidate() bool {
+	return s.props.shouldValidate
 }
 
 func (s *JSONSchema) Properties() *JSONSchemaProps {

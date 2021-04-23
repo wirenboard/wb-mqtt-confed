@@ -3,11 +3,12 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contactless/wbgo"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"sync"
+
+	"github.com/contactless/wbgo"
 )
 
 const (
@@ -218,17 +219,19 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		return invalidConfigError
 	}
 
-	r, err := schema.ValidateContent(bs)
-	if err != nil {
-		wbgo.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
-		return invalidConfigError
-	}
-	if !r.Valid() {
-		wbgo.Error.Printf("Invalid config file %s", schema.PhysicalConfigPath())
-		for _, desc := range r.Errors() {
-			wbgo.Error.Printf("- %s\n", desc)
+	if schema.ShouldValidate() {
+		r, err := schema.ValidateContent(bs)
+		if err != nil {
+			wbgo.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
+			return invalidConfigError
 		}
-		return invalidConfigError
+		if !r.Valid() {
+			wbgo.Error.Printf("Invalid config file %s", schema.PhysicalConfigPath())
+			for _, desc := range r.Errors() {
+				wbgo.Error.Printf("- %s\n", desc)
+			}
+			return invalidConfigError
+		}
 	}
 
 	content := json.RawMessage(bs) // TBD: use parsed config
@@ -252,9 +255,19 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	if err != nil {
 		return err
 	}
-	r, err := schema.ValidateContent(*args.Content)
-	if err != nil || !r.Valid() {
-		return invalidConfigError
+	if schema.ShouldValidate() {
+		r, err := schema.ValidateContent(*args.Content)
+		if err != nil {
+			wbgo.Error.Printf("Failed to validate config file: %s", err)
+			return invalidConfigError
+		}
+		if !r.Valid() {
+			wbgo.Error.Printf("Invalid config file")
+			for _, desc := range r.Errors() {
+				wbgo.Error.Printf("- %s\n", desc)
+			}
+			return invalidConfigError
+		}
 	}
 
 	var bs []byte
