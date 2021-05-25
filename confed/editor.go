@@ -232,6 +232,10 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 			}
 			return invalidConfigError
 		}
+	} else {
+		if !json.Valid(bs) {
+			return invalidConfigError
+		}
 	}
 
 	content := json.RawMessage(bs) // TBD: use parsed config

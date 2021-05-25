@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.7) stable; urgency=medium
+
+  * Report error on invalid config file
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 25 May 2021 17:23:00 +0500
+
 wb-mqtt-confed (1.2.6) stable; urgency=medium
 
   * Option for disabling JSON schema validation during config loading is added
