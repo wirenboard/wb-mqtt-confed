@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.3.0) stable; urgency=medium
+
+  * use go 1.15 compiler
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Thu, 03 Jun 2021 23:24:00 +0300
+
 wb-mqtt-confed (1.2.8) stable; urgency=medium
 
   * NTP key configuration schema is fixed
