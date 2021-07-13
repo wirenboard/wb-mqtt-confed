@@ -31,6 +31,7 @@ import json
 import sys
 import codecs
 import netaddr
+import os
 from pyparsing import White, Word, alphanums, CharsNotIn
 from pyparsing import Forward, Group, OneOrMore
 from pyparsing import pythonStyleComment
@@ -180,7 +181,7 @@ class NetworkParser(object):
                        "pointtopoint|metric|hwaddress|mtu|hostname|"
                        "leasehours|leasetime|vendor|client|bootfile|server"
                        "|mode|endpoint|dstaddr|local|ttl|provider|unit"
-                       "|options|frame|bitrate|netnum|media|wpa-[\w-]*")
+                       "|options|frame|netnum|media|wpa-[\w-]*")
     _eol = Literal("\n").suppress()
     option = Forward()
     option << Group(space
@@ -194,7 +195,7 @@ class NetworkParser(object):
                              + interface
                              + Optional(
                                  space
-                                 + Regex("inet|can")
+                                 + Regex("inet")
                                  + method
                                  + Group(ZeroOrMore(option))))
 
@@ -214,6 +215,7 @@ class NetworkParser(object):
             self._read()
         if self.content is not None:
             self.interfaces = self.get_interfaces()
+        self.providers = self.get_providers()
 
     def _read(self):
         """
@@ -267,11 +269,9 @@ class NetworkParser(object):
         :return: string
         """
         output = ""
-        if not isinstance(self.interfaces, dict) or "interfaces" not in self.interfaces:
-            raise ParseError("no interfaces key")
-        if not isinstance(self.interfaces["interfaces"], list):
+        if not isinstance(self.interfaces, list):
             raise ParseError("bad interfaces value")
-        for iface in self.interfaces["interfaces"]:
+        for iface in self.interfaces:
             if not isinstance(iface, dict):
                 raise ParseError("bad interface definition")
             try:
@@ -287,7 +287,7 @@ class NetworkParser(object):
             if iface.get("allow-hotplug"):
                 output += "allow-hotplug %s\n" % name
 
-            output += "iface %s %s %s\n" % (name, iface.get("mode", "inet"), iface.get("method", "manual"))
+            output += "iface %s inet %s\n" % (name, iface.get("method", "manual"))
             # options
             options = iface.get("options", {})
             if not isinstance(options, dict):
@@ -299,12 +299,94 @@ class NetworkParser(object):
             output += "\n"
         return output
 
+    def get_providers(self):
+        """
+        return the configuration using the following structure
+
+        [
+            {
+              "name": "provider",
+              "tty":"/dev/ttyGSM",
+              "apn": "apn.provider.com",
+              "user": "user",
+              "passwd": "passwd"
+            }
+        ]
+
+        :return: list
+        """
+        r = []
+        users = {}
+        for l in open("/etc/ppp/chap-secrets","r"):
+            if l.startswith("#"): continue
+            l = l.split(" ")
+            if len(l) == 4: users[l[0]] = l[2]
+        for p in os.listdir("/etc/ppp/peers"):
+            peer = {"name":p,"tty":"","sim":"","user":"","passwd":""}
+            for l in open(os.path.join("/etc/ppp/peers", p),"r"):
+                if l.startswith("init"): peer["sim"] = "sim2" if "sim2" in l else "sim1"
+                if l.startswith("/"): peer["tty"] = l
+                if l.startswith("user"): 
+                    peer["user"] = l.split(" ")[1]
+                    peer["passwd"] = users[peer["user"]] if peer["user"] in users else peer["user"]
+            for l in open(os.path.join("/etc/chatscripts", p),"r"):
+                if l.startswith("OK AT+CGDCONT"):
+                    l = l.split(",")
+                    if len(l)==3:
+                        peer["apn"]=l[2].replace('"','')
+            r.append(peer)
+        return r
+
+    def dump_providers(self):
+        users = {}
+        for l in open("/etc/ppp/chap-secrets","r"):
+            if l.startswith("#"): continue
+            l = l.split(" ")
+            if len(l) == 4: users[l[0]] = l
+        for p in os.listdir("/etc/ppp/peers"):
+            os.remove(os.path.join("/etc/ppp/peers", p))
+        for p in os.listdir("/etc/chatscripts"):
+            os.remove(os.path.join("/etc/chatscripts", p))
+        for peer in self.providers:
+            with open(os.path.join("/etc/ppp/peers", peer["name"]),"w") as fp:
+                fp.write("""
+{tty}
+
+115200
+nocrtscts
+noipdefault
+usepeerdns
+defaultroute
+persist
+noauth
+maxfail 0
+lcp-echo-interval 10
+lcp-echo-failure 3
+holdoff 10
+init "/usr/bin/wb-gsm restart_if_broken {sim}"
+user {user}
+connect "/usr/sbin/chat -v -f /etc/chatscripts/{name}"
+""".format(**peer))
+            with open(os.path.join("/etc/chatscripts", peer["name"]),"w") as fp:
+                fp.write("""ABORT "BUSY"
+ABORT "NO ANSWER"
+ABORT "NO CARRIER"
+ABORT "ERROR"
+TIMEOUT 30
+"" ATZ
+OK AT+CGDCONT=1,"IP","{apn}"
+OK ATD*99***1#
+CONNECT
+""".format(**peer))
+            if peer["user"] not in users:
+                with open("/etc/ppp/chap-secrets","a") as fp:
+                    fp.write("{user} * {passwd} *\n".format(**peer))
+
     def get_interfaces(self):
         """
         return the configuration using the following structure
 
-        {
-          "interfaces": [
+        [
             {
               "name": "eth0",
               "auto": True,
@@ -316,8 +398,7 @@ class NetworkParser(object):
                 "dns-nameserver": "1.2.3.4"
               }
             }
-          ]
-        }
+        ]
 
         :return: list
         """
@@ -341,8 +422,6 @@ class NetworkParser(object):
             if idefinition[0] == "allow-hotplug":
                 iface["allow-hotplug"] = True
             elif idefinition[0] == "iface":
-                mode = idefinition[2]
-                iface["mode"] = mode
                 method = idefinition[3]
                 iface["method"] = method
             # check for options
@@ -351,7 +430,7 @@ class NetworkParser(object):
                 for o in idefinition[4]:
                     options[o[0]] = o[1]
                 iface["options"] = options
-        return dict(interfaces=r)
+        return r
 
 
 _cached_serial = None
@@ -394,11 +473,11 @@ def to_json():
     # FIXME
     serial = get_serial()
     if serial is not None:
-        for iface in np.interfaces["interfaces"]:
+        for iface in np.interfaces:
             if iface.get("name") == PRIMARY_IFACE:
                 iface.setdefault("options", {})["hwaddress"] = serial
                 break
-    json.dump(np.interfaces, sys.stdout, sort_keys=True, indent=JSON_INDENT_LEVEL)
+    json.dump({"providers":np.providers,"interfaces":np.interfaces}, sys.stdout, sort_keys=True, indent=JSON_INDENT_LEVEL)
 
 
 def from_json():
@@ -409,9 +488,15 @@ def from_json():
         sys.exit(1)
 
     np = NetworkParser()
-    np.interfaces = d
+    np.interfaces = d["interfaces"]
+    np.providers = d["providers"]
     try:
         sys.stdout.write(np.format() + link_local_section())
+    except ParseError, e:
+        print >>sys.stderr, "Error parsing JSON definitions: %s" % e
+        sys.exit(1)
+    try:
+        np.dump_providers()
     except ParseError, e:
         print >>sys.stderr, "Error parsing JSON definitions: %s" % e
         sys.exit(1)
