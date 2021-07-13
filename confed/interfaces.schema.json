@@ -77,13 +77,6 @@
         {
           "type": "object",
           "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["inet"]
-            },
             "method": {
               "type": "string",
               "options": {
@@ -98,8 +91,7 @@
               }
             }
           },
-          "defaultProperties": ["name", "method", "mode"],
-          "required": ["name", "method", "mode"]
+          "required": ["method"]
         }
       ]
     },
@@ -110,13 +102,6 @@
         {
           "type": "object",
           "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["inet"]
-            },
             "method": {
               "type": "string",
               "options": {
@@ -187,8 +172,8 @@
               "defaultProperties": ["address", "netmask", "gateway", "mtu"]
             }
           },
-          "defaultProperties": ["name", "auto", "mode", "method", "options"],
-          "required": ["name", "mode", "method"]
+          "defaultProperties": ["auto", "method", "options"],
+          "required": ["name", "method"]
         }
       ]
     },
@@ -199,13 +184,6 @@
         {
           "type": "object",
           "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["inet"]
-            },
             "method": {
               "type": "string",
               "options": {
@@ -237,47 +215,8 @@
               "defaultProperties": "hostname"
             }
           },
-          "defaultProperties": ["name", "auto", "mode", "method", "options"],
-          "required": ["name", "mode", "method"]
-        }
-      ]
-    },
-    "method_can": {
-      "title": "CAN",
-      "allOf": [
-        { "$ref": "#/definitions/iface_common" },
-        {
-          "type": "object",
-          "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["can"]
-            },
-            "method": {
-              "type": "string",
-              "options": {
-                "hidden": true
-              },
-              "enum": ["static"]
-            },
-            "options": {
-              "type": "object",
-              "title": "Options",
-              "properties": {
-                "bitrate": {
-                  "type": "string",
-                  "title": "Bitrate",
-                  "propertyOrder": 11
-                }
-              },
-            "required": ["bitrate"]
-            }
-          },
-          "defaultProperties": ["name", "allow-hotplug", "mode", "method", "options"],
-          "required": ["name", "mode", "method"]
+          "defaultProperties": ["auto", "method", "options"],
+          "required": ["name", "method"]
         }
       ]
     },
@@ -288,13 +227,6 @@
         {
           "type": "object",
           "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["inet"]
-            },
             "method": {
               "type": "string",
               "options": {
@@ -309,6 +241,9 @@
                 "provider": {
                   "type": "string",
                   "title": "Provider name",
+                  "enum":[ "mts","tele2","beeline","megafon","provider1","provider2","provider3","provider4" ],
+                  "default":"МТС",
+                  "options":{"enum_titles":["МТС","Теле 2","Билайн","Мегафон","Провайдер 1","Провайдер 2","Провайдер 3","Провайдер 4"]},
                   "description": "Refers to the file in /etc/ppp/peers",
                   "propertyOrder": 11
                 },
@@ -326,8 +261,8 @@
               "defaultProperties": ["provider"]
             }
           },
-          "defaultProperties": ["name", "auto", "mode", "method", "options"],
-          "required": ["name", "mode", "method"]
+          "defaultProperties": ["auto", "method", "options"],
+          "required": ["name", "method"]
         }
       ]
     },
@@ -338,13 +273,6 @@
         {
           "type": "object",
           "properties": {
-            "mode": {
-              "type": "string",
-              "options": {
-                    "hidden": true
-                  },
-              "enum": ["inet"]
-            },
             "method": {
               "type": "string",
               "options": {
@@ -371,16 +299,73 @@
               "defaultProperties": ["mtu"]
             }
           },
-          "defaultProperties": ["name", "auto", "mode", "method"],
-          "required": ["name", "mode", "method"]
+          "defaultProperties": ["auto", "method"],
+          "required": ["name", "method"]
         }
       ]
+    },
+    "provider":{
+        "type":"object",
+        "title":"Провайдер",
+        "headerTemplate": "{{self.name}}",
+        "properties": {
+            "name":{
+                "type":"string",
+                "title":"Наименование",
+                "propertyOrder": 1,
+                "enum":[ "mts","tele2","beeline","megafon","provider1","provider2","provider3","provider4" ],
+                "default":"МТС",
+                "options":{"enum_titles":["МТС","Теле 2","Билайн","Мегафон","Провайдер 1","Провайдер 2","Провайдер 3","Провайдер 4"]}
+            },
+            "tty":{
+                "type":"string",
+                "title":"Порт модема",
+                "propertyOrder": 2,
+                "default":"/dev/ttyGSM"
+            },
+            "sim":{
+                "type":"string",
+                "title":"Слот",
+                "propertyOrder": 3,
+                "enum":["sim1","sim2"],
+                "default":"",
+                "options":{"enum_titles":["Sim 1","Sim 2"]}
+            },
+            "apn":{
+                "type":"string",
+                "title":"Точка доступа APN",
+                "propertyOrder": 4,
+                "default":""
+            },
+            "user":{
+                "type":"string",
+                "title":"Пользователь",
+                "propertyOrder": 5,
+                "default":""
+            },
+            "passwd":{
+                "type":"string",
+                "title":"Пароль",
+                "propertyOrder": 6,
+                "default":""
+            }
+        }
     }
   },
   "properties": {
+    "providers": {
+        "type": "array",
+        "title": "Провайдеры",
+        "description": "Список провайдеров GSM",
+        "propertyOrder": 1,
+        "items": { "$ref": "#/definitions/provider" },
+        "_format": "table",
+        "options": { "disable_collapse": true }
+    },
     "interfaces": {
       "type": "array",
       "title": "List of network interfaces",
+      "propertyOrder": 2,
       "items": {
         "headerTemplate": "Interface{{ |self.name}}",
         "oneOf": [
@@ -388,12 +373,8 @@
           { "$ref": "#/definitions/method_static" },
           { "$ref": "#/definitions/method_dhcp" },
           { "$ref": "#/definitions/method_ppp" },
-          { "$ref": "#/definitions/method_can" },
           { "$ref": "#/definitions/method_manual" }
-        ],
-        "options": {
-          "keep_oneof_values": false
-        }
+        ]
       },
       "_format": "tabs"
     }
