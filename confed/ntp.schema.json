@@ -48,8 +48,7 @@
           "maximum": 17,
           "default": 6
         }
-      },
-      "required": ["type", "address"]
+      }
     },
     "plus_maxpoll": {
       "type": "object",
@@ -93,40 +92,59 @@
       }
     },
     "plus_key": {
-      "type": "object",
-      "anyOf": [
-        {
-          "oneOf": [
+        "oneOf": [
             {
-              "required": ["autokey"],
-              "properties": {
-                "autokey": {
-                  "type": "boolean",
-                  "title": "Autokey",
-                  "_format": "checkbox",
-                  "default": false
+                "type": "object",
+                "title": "without encryption key",
+                "properties": {
+                    "key": {
+                        "not": {},
+                        "options": { "hidden": true }
+                    },
+                    "autokey": {
+                        "not": {},
+                        "options": { "hidden": true }
+                    }
                 }
-              }
             },
             {
-              "required": ["key"],
-              "properties": {
-                "key": {
-                  "type": "integer",
-                  "title": "Encryption key",
-                  "minimum": 1,
-                  "maximum": 65534
+                "type": "object",
+                "title": "with encryption key",
+                "required": ["key"],
+                "defaultProperties": ["key"],
+                "not": {
+                    "required": ["autokey"]
+                },
+                "properties": {
+                    "key": {
+                        "type": "integer",
+                        "title": "Encryption key",
+                        "minimum": 1,
+                        "maximum": 65534
+                    }
                 }
-              }
+            },
+            {
+                "type": "object",
+                "title": "with automatic encryption key",
+                "required": ["autokey"],
+                "defaultProperties": ["autokey"],
+                "not": {
+                    "required": ["key"]
+                },
+                "properties": {
+                    "autokey": {
+                        "type": "boolean",
+                        "title": "Autokey",
+                        "_format": "checkbox",
+                        "default": false
+                    }
+                }
             }
-          ]
-        },
-        {
-          "not": {
-            "required": ["key", "autokey"]
-          }
+        ],
+        "options": {
+            "keep_oneof_values": false
         }
-      ]
     },
     "entry_pool": {
         "allOf": [

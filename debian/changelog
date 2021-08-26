@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.2.8) stable; urgency=medium
+
+  * NTP key configuration schema is fixed
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 25 Aug 2021 14:24:55 +0500
+
 wb-mqtt-confed (1.2.7) stable; urgency=medium
 
   * Report error on invalid config file
