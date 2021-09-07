@@ -15,6 +15,8 @@ ifeq ($(DEB_TARGET_ARCH),i386)
 GO_ENV := GOARCH=386 CC=i586-linux-gnu-gcc
 endif
 
+GO ?= go
+
 all: clean wb-mqtt-confed
 
 clean:
@@ -24,8 +26,7 @@ amd64:
 	$(MAKE) DEB_TARGET_ARCH=amd64
 
 wb-mqtt-confed: main.go confed/*.go
-	$(GO_ENV) glide install
-	$(GO_ENV) go build
+	$(GO_ENV) $(GO) build
 
 install:
 	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/etc/init.d/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
