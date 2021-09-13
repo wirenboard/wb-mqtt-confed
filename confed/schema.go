@@ -12,16 +12,18 @@ const (
 )
 
 type JSONSchemaProps struct {
-	Title              string `json:"title"`
-	Description        string `json:"description"`
-	ConfigPath         string `json:"configPath"`
-	SchemaPath         string `json:"schemaPath"`
-	physicalConfigPath string
-	fromJSONCommand    []string
-	toJSONCommand      []string
-	service            string
-	restartDelayMS     int
-	shouldValidate     bool
+	Title                   string `json:"title"`
+	Description             string `json:"description"`
+	ConfigPath              string `json:"configPath"`
+	SchemaPath              string `json:"schemaPath"`
+	physicalConfigPath      string
+	fromJSONCommand         []string
+	toJSONCommand           []string
+	service                 string
+	restartDelayMS          int
+	shouldValidate          bool
+	TitleTranslations       map[string]string `json:"titleTranslations,omitempty"`
+	DescriptionTranslations map[string]string `json:"descriptionTranslations,omitempty"`
 }
 
 type JSONSchema struct {
@@ -62,6 +64,16 @@ func extractCommand(msi map[string]interface{}, key string) ([]string, error) {
 		}
 	}
 	return r, nil
+}
+
+func addTranslation(strings map[string]interface{}, lang string, key string, dst map[string] string) {
+	translated, ok := strings[key]
+	if ok {
+		res, ok := translated.(string)
+		if ok {
+			dst[lang] = res
+		}
+	}
 }
 
 func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
@@ -114,22 +126,46 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	if err != nil {
 		return
 	}
+
+	// A shema could contain "translations" property
+	// Expected structure of the property:
+	// "translations": {
+	//     "lang": {
+	//         "english_string": "translated_string",
+	//         ...
+	//     }
+	// }
+	titleTranslations       := map[string]string{}
+	descriptionTranslations := map[string]string{}
+	translations, ok        := parsed["translations"].(map[string]interface{})
+	if ok {
+		for lang, val := range translations {
+			strings, ok := val.(map[string]interface{})
+			if ok {
+				addTranslation(strings, lang, title,       titleTranslations)
+				addTranslation(strings, lang, description, descriptionTranslations)
+			}
+		}
+	}
+
 	s = &JSONSchema{
 		path:    schemaPathFromRoot,
 		schema:  nil,
 		content: content,
 		parsed:  parsed,
 		props: JSONSchemaProps{
-			ConfigPath:         configPath,
-			SchemaPath:         schemaPathFromRoot,
-			physicalConfigPath: physicalConfigPath,
-			Title:              title,
-			Description:        description,
-			fromJSONCommand:    fromJSONCommand,
-			toJSONCommand:      toJSONCommand,
-			service:            service,
-			restartDelayMS:     int(restartDelayMS),
-			shouldValidate:     shouldValidate,
+			ConfigPath:              configPath,
+			SchemaPath:              schemaPathFromRoot,
+			physicalConfigPath:      physicalConfigPath,
+			Title:                   title,
+			Description:             description,
+			fromJSONCommand:         fromJSONCommand,
+			toJSONCommand:           toJSONCommand,
+			service:                 service,
+			restartDelayMS:          int(restartDelayMS),
+			shouldValidate:          shouldValidate,
+			TitleTranslations:       titleTranslations,
+			DescriptionTranslations: descriptionTranslations,
 		},
 		enumLoader: newEnumLoader(root),
 	}
