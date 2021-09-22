@@ -13,7 +13,19 @@ import (
 	"github.com/wirenboard/wbgong"
 )
 
-const DRIVER_CLIENT_ID = "confed"
+const (
+	DRIVER_CLIENT_ID    = "confed"
+	MOSQUITTO_SOCK_FILE = "/var/run/mosquitto/mosquitto.sock"
+	DEFAULT_BROKER_URL  = "tcp://localhost:1883"
+)
+
+func isSocket(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.Mode()&os.ModeSocket != 0
+}
 
 var version = "unknown"
 
@@ -107,6 +119,11 @@ func main() {
 		wbgong.Error.Fatalf("no valid schemas found")
 	}
 	confed.RunRestarter(editor.RestartCh)
+
+	if *brokerAddress == DEFAULT_BROKER_URL && isSocket(MOSQUITTO_SOCK_FILE) {
+		wbgong.Info.Println("broker URL is default and mosquitto socket detected, trying to connect via it")
+		*brokerAddress = "unix://" + MOSQUITTO_SOCK_FILE
+	}
 
 	mqttClient := wbgong.NewPahoMQTTClient(*brokerAddress, DRIVER_CLIENT_ID)
 	rpc := wbgong.NewMQTTRPCServer("confed", mqttClient)
