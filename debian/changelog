@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.5.0) stable; urgency=medium
+
+  * Import confed from new path (fix import of current version)
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Tue, 28 Sep 2021 11:00:32 +0300
+
 wb-mqtt-confed (1.4.0) stable; urgency=medium
 
   * Translations of title and description of config files are added to Editor.List RPC response
