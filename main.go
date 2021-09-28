@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/contactless/wb-mqtt-confed/confed"
-	"github.com/contactless/wbgo"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/contactless/wbgo"
+	"github.com/wirenboard/wb-mqtt-confed/confed"
 )
 
 const DRIVER_CLIENT_ID = "confed"

@@ -2,8 +2,6 @@ github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e h1:rv5
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e/go.mod h1:GCzqZQHydohgVLSIqRKZeTt8IGb1Y4NaFfim3H40uUI=
 github.com/contactless/org.eclipse.paho.mqtt.golang v0.0.0-20160512050345-bc107ec72972 h1:itvKwLlIg3MLdjVqhPuYFd0y9RsrQQxSIhZXUeNFtmA=
 github.com/contactless/org.eclipse.paho.mqtt.golang v0.0.0-20160512050345-bc107ec72972/go.mod h1:ISd8VT87v5vB6N33PDJrbWYlI0+r46JxZ9+yEDTKThc=
-github.com/contactless/wb-mqtt-confed v1.2.5 h1:voMffet56yEoJDf9E/0FRW5dUFeCjDJkIwLmJPRLDEg=
-github.com/contactless/wb-mqtt-confed v1.2.5/go.mod h1:mjbRGuewElrhBOTTxlOHWr3HUxUyxxL8nyDDtzLubMA=
 github.com/contactless/wbgo v0.0.0-20170113112953-645ba6f5f8fd h1:0eOGK7ytp7a5qUDOi4zOeywmcfyzGZOnvui4tamc5so=
 github.com/contactless/wbgo v0.0.0-20170113112953-645ba6f5f8fd/go.mod h1:zpSgGrFuNosiXs0VtRMXlWLyddi9QYrq5v+a4WuUU9s=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
