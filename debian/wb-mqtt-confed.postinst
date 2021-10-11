@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+# (re)start wb-mqtt-confed after upgrade from initscript version
+# because systemd makes this service failed sometimes
+deb-systemd-invoke restart wb-mqtt-confed
+
+exit 0
