@@ -1,4 +1,0 @@
-#!/bin/sh
-
-update-rc.d wb-mqtt-confed defaults
-invoke-rc.d wb-mqtt-confed start

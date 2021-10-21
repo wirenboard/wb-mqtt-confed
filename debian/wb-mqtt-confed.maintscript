@@ -1,0 +1,1 @@
+rm_conffile /etc/init.d/wb-mqtt-confed 1.6.0~
