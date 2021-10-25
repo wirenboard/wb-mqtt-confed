@@ -79,6 +79,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -86,6 +87,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -93,6 +95,7 @@
                         },
                         "options": {
                             "type": "object",
+                            "title": "Options",
                             "options": {
                                 "hidden": true
                             }
@@ -116,6 +119,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -123,6 +127,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -171,6 +176,7 @@
                                 "pointopoint": {
                                     "type": "string",
                                     "title": "Point-to-point address",
+                                    "description": "For point-to-point configuration",
                                     "format": "ipv4",
                                     "propertyOrder": 17
                                 },
@@ -188,6 +194,13 @@
                                         "link",
                                         "host"
                                     ],
+                                    "options": {
+                                        "enum_titles": [
+                                            "global",
+                                            "link",
+                                            "host"
+                                        ]
+                                    },
                                     "propertyOrder": 19
                                 }
                             },
@@ -220,6 +233,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -227,6 +241,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -276,6 +291,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -283,6 +299,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -321,6 +338,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -328,6 +346,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -379,6 +398,7 @@
                     "properties": {
                         "mode": {
                             "type": "string",
+                            "title": "Mode",
                             "options": {
                                 "hidden": true
                             },
@@ -386,6 +406,7 @@
                         },
                         "method": {
                             "type": "string",
+                            "title": "Method",
                             "options": {
                                 "hidden": true
                             },
@@ -448,5 +469,54 @@
             "_format": "tabs"
         }
     },
-    "required": ["interfaces"]
+    "required": ["interfaces"],
+
+    "translations": {
+        "ru": {
+            "Network Interface Configuration": "Сетевые интерфейсы",
+            "Specifies network configuration of the system": "Конфигурация сетевых интерфейсов контроллера",
+            "Auto": "Включать автоматически",
+            "Name": "Имя интерфейса",
+            "Allow hotplug": "Разрешить горячее подключение",
+            "Pre-up command": "Команды перед включением интерфейса",
+            "Up command": "Команда включения интерфейса",
+            "Post-up command": "Комада после включения интерфейса",
+            "Down command": "Команда выключения интерфейса",
+            "Pre-down command": "Комадна перед выключением интерфейса",
+            "Post-down command": "Команда после выключения интерфейса",
+            "Loopback interface": "Loopback-интерфейс",
+            "name": "имя",
+            "Static IP": "Статический IP-адрес",
+            "IP address": "IP-адрес",
+            "Network mask": "Маска подсети",
+            "Broadcast address": "Широковещательный адрес",
+            "Default gateway": "Основной шлюз",
+            "Routing metric for default gateway": "Метрика основного шлюза",
+            "MAC address": "MAC-адрес",
+            "Address validity scope": "Область действия адреса",
+            "global": "глобальный",
+            "link": "подключение",
+            "host": "узел",
+            "address": "адрес",
+            "netmask": "маска подсети",
+            "gateway": "шлюз",
+            "auto": "автоматически",
+            "Mode": "Режим",
+            "Method": "Метод",
+            "Options": "Параметры",
+            "Hostname to be requested": "Запрашиваемое имя узла",
+            "Client identifier": "Идентификатор клиента",
+            "Bitrate": "Скорость передачи",
+            "allow-hotplug": "горячее подключение",
+            "Provider name": "Имя провайдера",
+            "PPP unit number": "Номер устройства PPP",
+            "Additional options": "Дополнительные параметры",
+            "Manual": "Включается вручную",
+            "List of network interfaces": "Список сетевых интерфейсов",
+            "Interface{{ |self.name}}": "Интерфейс {{ |self.name}}",
+            "Point-to-point address": "Адрес конечного узла",
+            "For point-to-point configuration": "Для конфигурации соединения точка-точка",
+            "Refers to the file in /etc/ppp/peers": "Указать имя файла конфигурации из директории /etc/ppp/peers"
+        }
+    }
 }
