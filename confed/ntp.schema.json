@@ -235,19 +235,19 @@
     "translations": {
         "en": {
             "NTP_configuration_description": "Specifies NTP network time sync daemon configuration",
-            "description_minpoll": "Specified in seconds as number a power of 2",
-            "description_maxpoll": "Specified in seconds as number a power of 2"
+            "description_minpoll": "Specified in seconds as number a power of 2 (value 6 sets interval to 64 seconds)",
+            "description_maxpoll": "Specified in seconds as number a power of 2 (value 6 sets interval to 64 seconds)"
         },
         "ru": {
             "NTP configuration": "Настройки NTP",
             "NTP_configuration_description": "Настройки синхронизации времени по протоколу NTP",
-            "Entry type": "Тип синхронизации",
+            "Entry type": "Режим синхронизации",
             "Server address": "Адрес сервера",
             "NTP version": "Версия протокола NTP",
             "Minimum poll interval": "Минимальный интервал синхронизации",
-            "description_minpoll": "Задается в секундах в виде степени числа 2",
+            "description_minpoll": "Задается в секундах в виде степени числа 2 (число 6 установит интервал в 64 с) ",
             "Maximum poll interval": "Максимальный интервал синхронизации",
-            "description_maxpoll": "Задается в секундах виде степени числа 2",
+            "description_maxpoll": "Задается в секундах в виде степени числа 2 (число 6 установит интервал в 64 с)",
             "Burst if server is reachable (burst)": "Отправка множественных запросов, если сервер доступен",
             "Burst if server is unreachable (iburst)": "Отправка множественных запросов, если сервер не доступен",
             "without encryption key": "Без ключа шифрования",
