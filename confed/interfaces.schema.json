@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "title": "Network Interfaces",
+    "title": "Network Interface Configuration",
     "description": "Specifies network configuration of the system",
     "configFile": {
         "path": "/etc/network/interfaces",
@@ -473,7 +473,7 @@
 
     "translations": {
         "ru": {
-            "Network Interfaces": "Сетевые интерфейсы",
+            "Network Interface Configuration": "Сетевые интерфейсы",
             "Specifies network configuration of the system": "Конфигурация сетевых интерфейсов контроллера",
             "Auto": "Включать автоматически",
             "Name": "Имя интерфейса",
