@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.6.1) stable; urgency=medium
+
+  * NTP schema translation to Russian
+
+ -- Dmitry Vorobjev <d.vorobjev@wirenboard.ru>  Tue, 02 Nov 2021 14:05:28 +0300
+
 wb-mqtt-confed (1.6.0) stable; urgency=medium
 
   * Use systemd service file instead of initscript
