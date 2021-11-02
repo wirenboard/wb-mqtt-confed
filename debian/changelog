@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.6.2) stable; urgency=medium
+
+  * Interfaces schema translation to Russian
+
+ -- Dmitry Vorobjev <d.vorobjev@wirenboard.ru>  Tue, 02 Nov 2021 14:07:57 +0300
+
 wb-mqtt-confed (1.6.0) stable; urgency=medium
 
   * Use systemd service file instead of initscript
