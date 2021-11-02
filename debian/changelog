@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.7.0) stable; urgency=medium
+
+  * Support for loading schemas from /var/lib/wb-mqtt-confed/schemas
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 02 Nov 2021 14:19:47 +0500
+
 wb-mqtt-confed (1.6.0) stable; urgency=medium
 
   * Use systemd service file instead of initscript

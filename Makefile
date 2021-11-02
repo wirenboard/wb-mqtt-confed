@@ -29,7 +29,7 @@ wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
+	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
 	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
 	install -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
 	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
