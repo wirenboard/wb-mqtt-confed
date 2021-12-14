@@ -175,7 +175,9 @@ func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error
 
 	*reply = make([]*JSONSchemaProps, 0, len(editor.schemasBySchemaPath))
 	for _, schema := range editor.schemasBySchemaPath {
-		*reply = append(*reply, schema.Properties())
+		if !schema.HideFromList() {
+			*reply = append(*reply, schema.Properties())
+		}
 	}
 	sort.Sort(ByConfigThenSchemaPath(*reply))
 	return

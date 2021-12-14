@@ -22,6 +22,7 @@ type JSONSchemaProps struct {
 	service                 string
 	restartDelayMS          int
 	shouldValidate          bool
+	hideFromList            bool
 	TitleTranslations       map[string]string `json:"titleTranslations,omitempty"`
 	DescriptionTranslations map[string]string `json:"descriptionTranslations,omitempty"`
 }
@@ -116,6 +117,11 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		shouldValidate = true
 	}
 
+	hideFromList, ok := configFile["hide"].(bool)
+	if !ok {
+		hideFromList = false
+	}
+
 	service, _ := configFile["service"].(string)
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 
@@ -127,7 +133,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	// A shema could contain "translations" property
+	// A schema could contain "translations" property
 	// Expected structure of the property:
 	// "translations": {
 	//     "lang": {
@@ -164,6 +170,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			service:                 service,
 			restartDelayMS:          int(restartDelayMS),
 			shouldValidate:          shouldValidate,
+			hideFromList:            hideFromList,
 			TitleTranslations:       titleTranslations,
 			DescriptionTranslations: descriptionTranslations,
 		},
@@ -256,6 +263,10 @@ func (s *JSONSchema) RestartDelayMS() int {
 
 func (s *JSONSchema) ShouldValidate() bool {
 	return s.props.shouldValidate
+}
+
+func (s *JSONSchema) HideFromList() bool {
+	return s.props.hideFromList
 }
 
 func (s *JSONSchema) Properties() *JSONSchemaProps {
