@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "title": "NTP configuration",
+    "title": "Clock synchronization (NTP)",
     "description": "ntp_configuration_description",
     "configFile": {
         "path": "/etc/ntp.conf",
@@ -239,7 +239,7 @@
             "description_maxpoll": "Specified in seconds as number a power of 2 (value 6 sets interval to 64 seconds)"
         },
         "ru": {
-            "NTP configuration": "Настройки NTP",
+            "Clock synchronization (NTP)": "Синхронизация даты и времени (NTP)",
             "ntp_configuration_description": "Настройки синхронизации времени по протоколу NTP",
             "Entry type": "Режим синхронизации",
             "Server address": "Адрес сервера",
