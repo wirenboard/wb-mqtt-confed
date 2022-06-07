@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.8.1) stable; urgency=medium
+
+  * more readable config names for ntp and network
+
+ -- Evgeny Boger <boger@wirenboard.com>  Sat, 04 Jun 2022 13:44:14 +0300
+
 wb-mqtt-confed (1.8.0) stable; urgency=medium
 
   * Support for option "hide" is added to "configFile" section of a config's schema. 
