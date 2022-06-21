@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- mode: python; coding: utf-8 -*-
 #
 # Based on https://github.com/privacyidea/networkparser
@@ -219,9 +219,8 @@ class NetworkParser(object):
         """
         Reread the contents from the disk
         """
-        f = codecs.open(self.filename, "r", "utf-8")
-        self.content = f.read()
-        f.close()
+        with codecs.open(self.filename, "r", encoding="utf-8") as f:
+            self.content = f.read()
 
     def get(self):
         """
@@ -276,11 +275,11 @@ class NetworkParser(object):
                 raise ParseError("bad interface definition")
             try:
                 name = iface["name"]
-            except KeyError:
-                raise ParseError("interface without name")
+            except KeyError as e:
+                raise ParseError("interface without name") from e
             if name == RESERVED_IFACE:
                 continue
-            if not isinstance(name, basestring):
+            if not isinstance(name, str):
                 raise ParseError("bad interface name")
             if iface.get("auto"):
                 output += "auto %s\n" % name
@@ -356,6 +355,10 @@ class NetworkParser(object):
         return dict(interfaces=r)
 
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 _cached_serial = None
 
 
@@ -366,7 +369,7 @@ def get_serial():
             with open(SERIAL_FILE, "r") as f:
                 _cached_serial = (f.readline().strip(),)
         except IOError:
-            print >>sys.stderr, "cannot find %s" % SERIAL_FILE
+            eprint("cannot find %s" % SERIAL_FILE)
             _cached_serial = (None,)
     return _cached_serial[0]
 
@@ -377,7 +380,7 @@ def link_local_addr_low_bs():
         return DEFAULT_LINK_LOCAL_LOW_BS
     m = re.match(r"^(?:[0-9A-Fa-f]{2}:){4}([0-9A-Fa-f]{2}):([0-9A-Fa-f]{2})", serial)
     if not m:
-        print >>sys.stderr, "bad serial: %r" % serial
+        eprint("bad serial: %r" % serial)
         return DEFAULT_LINK_LOCAL_LOW_BS
     r = tuple(int(x, 16) for x in m.groups())
     return (0, 1) if r in ((0, 0), (255, 255)) else r
@@ -391,8 +394,8 @@ def link_local_section():
 def to_json():
     try:
         np = NetworkParser(content=sys.stdin.read())
-    except ParseError, e:
-        print >>sys.stdout, "Error parsing interfaces: %s" % e
+    except ParseError as e:
+        eprint("Error parsing interfaces: %s" % e)
     # FIXME
     serial = get_serial()
     if serial is not None:
@@ -407,15 +410,15 @@ def from_json():
     try:
         d = json.load(sys.stdin)
     except ValueError:
-        print >>sys.stdout, "Invalid JSON"
+        eprint("Invalid JSON")
         sys.exit(1)
 
     np = NetworkParser()
     np.interfaces = d
     try:
         sys.stdout.write(np.format() + link_local_section())
-    except ParseError, e:
-        print >>sys.stderr, "Error parsing JSON definitions: %s" % e
+    except ParseError as e:
+        eprint("Error parsing JSON definitions: %s" % e)
         sys.exit(1)
 
 
