@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.10.0) stable; urgency=medium
+
+  * Add python3 support for converter scripts
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Tue, 21 Jun 2022 14:44:23 +0300
+
 wb-mqtt-confed (1.9.0) stable; urgency=medium
 
   * using of wbgong plugin system
