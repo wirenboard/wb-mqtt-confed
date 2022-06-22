@@ -3,7 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
-	"github.com/contactless/wbgong"
+	"github.com/wirenboard/wbgong"
 	"github.com/xeipuuv/gojsonpointer"
 	"reflect"
 	"sort"

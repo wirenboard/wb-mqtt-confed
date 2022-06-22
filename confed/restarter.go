@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"github.com/contactless/wbgong"
+	"github.com/wirenboard/wbgong"
 	"time"
 )
 
