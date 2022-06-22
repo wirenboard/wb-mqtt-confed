@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/contactless/wb-mqtt-confed/confed"
-	"github.com/contactless/wbgong"
+	"github.com/wirenboard/wb-mqtt-confed/confed"
+	"github.com/wirenboard/wbgong"
 )
 
 const DRIVER_CLIENT_ID = "confed"

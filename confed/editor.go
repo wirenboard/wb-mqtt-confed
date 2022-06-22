@@ -3,13 +3,11 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contactless/wbgong"
+	"github.com/wirenboard/wbgong"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"sync"
-
-	"github.com/contactless/wbgo"
 )
 
 const (
@@ -265,13 +263,13 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	if schema.ShouldValidate() {
 		r, err := schema.ValidateContent(*args.Content)
 		if err != nil {
-			wbgo.Error.Printf("Failed to validate config file: %s", err)
+			wbgong.Error.Printf("Failed to validate config file: %s", err)
 			return invalidConfigError
 		}
 		if !r.Valid() {
-			wbgo.Error.Printf("Invalid config file")
+			wbgong.Error.Printf("Invalid config file")
 			for _, desc := range r.Errors() {
-				wbgo.Error.Printf("- %s\n", desc)
+				wbgong.Error.Printf("- %s\n", desc)
 			}
 			return invalidConfigError
 		}
