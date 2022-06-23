@@ -2,17 +2,18 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "title": "Network Interfaces",
-    "description": "Specifies network configuration of the system",
     "configFile": {
         "path": "/etc/network/interfaces",
         "toJSON": "networkparser",
         "fromJSON": ["networkparser", "-s"],
         "restartDelayMS": 4000,
-        "service": "networking"
+        "service": "networking",
+        "needReload": true
     },
     "definitions": {
         "iface_common": {
             "type": "object",
+            "description": "Managed by /etc/network/interfaces",
             "properties": {
                 "auto": {
                     "type": "boolean",
@@ -67,6 +68,11 @@
                     "title": "Post-down command",
                     "type": "string",
                     "propertyOrder": 105
+                }
+            },
+            "options": {
+                "wb": {
+                    "disable_panel": true
                 }
             }
         },
@@ -222,7 +228,12 @@
                     ],
                     "required": ["name", "mode", "method"]
                 }
-            ]
+            ],
+            "options": {
+                "wb": {
+                    "hide_from_selection": true
+                }
+            }
         },
         "method_dhcp": {
             "title": "DHCP",
@@ -280,7 +291,12 @@
                     ],
                     "required": ["name", "mode", "method"]
                 }
-            ]
+            ],
+            "options": {
+                "wb": {
+                    "hide_from_selection": true
+                }
+            }
         },
         "method_can": {
             "title": "CAN",
@@ -387,7 +403,12 @@
                     ],
                     "required": ["name", "mode", "method"]
                 }
-            ]
+            ],
+            "options": {
+                "wb": {
+                    "hide_from_selection": true
+                }
+            }
         },
         "method_manual": {
             "title": "Manual",
@@ -440,6 +461,305 @@
                     "required": ["name", "mode", "method"]
                 }
             ]
+        },
+        "method_nm_ethernet": {
+            "title": "Ethernet",
+            "type": "object",
+            "description": "Managed by NetworkManager",
+            "properties": {
+                "auto": {
+                    "type": "boolean",
+                    "default": true,
+                    "title": "Auto",
+                    "_format": "checkbox",
+                    "propertyOrder": 1
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Interface",
+                    "minLength": 1,
+                    "propertyOrder": 2
+                },
+                "method": {
+                    "type": "string",
+                    "title": "Method",
+                    "options": {
+                        "hidden": true
+                    },
+                    "enum": ["nm_ethernet"]
+                },
+                "uuid": {
+                    "type": "string",
+                    "options": {
+                        "hidden": true
+                    },
+                    "default": ""
+                },
+                "hwaddress": {
+                    "type": "string",
+                    "title": "MAC address",
+                    "pattern": "^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$",
+                    "propertyOrder": 16,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "mtu": {
+                    "type": "string",
+                    "title": "MTU",
+                    "default": 1500,
+                    "propertyOrder": 18,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "ipv4": {
+                    "oneOf": [
+                        {"$ref": "#/definitions/nm_ipv4_auto"},
+                        {"$ref": "#/definitions/nm_ipv4_manual"}
+                    ],
+                    "options": {
+                        "keep_oneof_values": false
+                    }
+                }
+            },
+            "required": ["name", "uuid", "method", "ipv4"],
+            "options": {
+                "disable_edit_json": true,
+                "disable_properties": true,
+                "wb": {
+                    "disable_panel": true
+                }
+            }
+        },
+        "method_nm_wifi": {
+            "title": "Wi-Fi",
+            "type": "object",
+            "description": "Managed by NetworkManager",
+            "properties": {
+                "auto": {
+                    "type": "boolean",
+                    "default": true,
+                    "title": "Auto",
+                    "_format": "checkbox",
+                    "propertyOrder": 1
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Interface",
+                    "minLength": 1,
+                    "propertyOrder": 2
+                },
+                "method": {
+                    "type": "string",
+                    "title": "Method",
+                    "options": {
+                        "hidden": true
+                    },
+                    "enum": ["nm_wifi"]
+                },
+                "uuid": {
+                    "type": "string",
+                    "options": {
+                        "hidden": true
+                    },
+                    "default": ""
+                },
+                "ssid": {
+                    "type": "string",
+                    "title": "SSID",
+                    "propertyOrder": 3,
+                    "minLength": 1
+                },
+                "wpa-psk": {
+                    "type": "string",
+                    "title": "WPA PSK",
+                    "propertyOrder": 4,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "hwaddress": {
+                    "type": "string",
+                    "title": "MAC address",
+                    "pattern": "^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$",
+                    "propertyOrder": 5,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "mtu": {
+                    "type": "string",
+                    "title": "MTU",
+                    "default": 1500,
+                    "propertyOrder": 6,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "ipv4": {
+                    "title": "IPv4",
+                    "oneOf": [
+                        {"$ref": "#/definitions/nm_ipv4_auto"},
+                        {"$ref": "#/definitions/nm_ipv4_manual"}
+                    ],
+                    "propertyOrder": 7,
+                    "options": {
+                        "keep_oneof_values": false
+                    }
+                }
+            },
+            "required": ["name", "uuid", "method", "ssid", "ipv4"],
+            "options": {
+                "disable_edit_json": true,
+                "disable_properties": true,
+                "wb": {
+                    "disable_panel": true
+                }
+            }
+        },
+        "method_nm_gsm_ppp": {
+            "title": "GSM PPP",
+            "type": "object",
+            "description": "Managed by NetworkManager",
+            "properties": {
+                "auto": {
+                    "type": "boolean",
+                    "default": true,
+                    "title": "Auto",
+                    "_format": "checkbox",
+                    "propertyOrder": 1
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Interface",
+                    "minLength": 1,
+                    "propertyOrder": 2
+                },
+                "method": {
+                    "type": "string",
+                    "title": "Method",
+                    "options": {
+                        "hidden": true
+                    },
+                    "enum": ["nm_gsm_ppp"]
+                },
+                "uuid": {
+                    "type": "string",
+                    "options": {
+                        "hidden": true
+                    },
+                    "default": ""
+                },
+                "apn": {
+                    "type": "string",
+                    "title": "APN",
+                    "minLength": 1,
+                    "propertyOrder": 3,
+                    "description": "apn_description",
+                    "options": {
+                        "show_opt_in": true
+                    }
+                }
+            },
+            "required": ["name", "uuid", "method"],
+            "options": {
+                "disable_edit_json": true,
+                "disable_properties": true,
+                "wb": {
+                    "disable_panel": true
+                }
+            }
+        },
+        "nm_ipv4_manual": {
+            "type": "object",
+            "title": "Static IP",
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "title": "IPv4 method",
+                    "options": {
+                        "hidden": true
+                    },
+                    "enum": ["manual"]
+                },
+                "address": {
+                    "type": "string",
+                    "title": "IP address",
+                    "format": "ipv4",
+                    "propertyOrder": 11
+                },
+                "netmask": {
+                    "type": "string",
+                    "title": "Network mask",
+                    "format": "ipv4",
+                    "default": "255.255.255.0",
+                    "propertyOrder": 12,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "gateway": {
+                    "type": "string",
+                    "title": "Default gateway",
+                    "format": "ipv4",
+                    "propertyOrder": 14,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "metric": {
+                    "type": "string",
+                    "title": "Routing metric for default gateway",
+                    "format": "ipv4",
+                    "propertyOrder": 15,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                }
+            },
+            "required": ["method", "address"],
+            "options": {
+                "disable_collapse": true,
+                "disable_properties": true,
+                "disable_edit_json": true
+            }
+        },
+        "nm_ipv4_auto": {
+            "type": "object",
+            "title": "DHCP",
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "title": "IPv4 method",
+                    "options": {
+                        "hidden": true
+                    },
+                    "enum": ["auto"]
+                },
+                "hostname": {
+                    "type": "string",
+                    "title": "Hostname to be requested",
+                    "propertyOrder": 12,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                },
+                "client": {
+                    "type": "string",
+                    "title": "Client identifier",
+                    "propertyOrder": 13,
+                    "options": {
+                        "show_opt_in": true
+                    }
+                }
+            },
+            "required": ["method"],
+            "options": {
+                "disable_collapse": true,
+                "disable_properties": true,
+                "disable_edit_json": true
+            }
         }
     },
     "properties": {
@@ -447,42 +767,56 @@
             "type": "array",
             "title": "List of network interfaces",
             "items": {
+                "title": "interface_title",
                 "headerTemplate": "Interface{{ |self.name}}",
                 "oneOf": [
-                    {
-                        "$ref": "#/definitions/method_loopback"
-                    },
-                    {
-                        "$ref": "#/definitions/method_static"
-                    },
+                    { "$ref": "#/definitions/method_nm_ethernet" },
+                    { "$ref": "#/definitions/method_nm_wifi" },
+                    { "$ref": "#/definitions/method_nm_gsm_ppp" },
+                    { "$ref": "#/definitions/method_loopback" },
+                    { "$ref": "#/definitions/method_static" },
                     { "$ref": "#/definitions/method_dhcp" },
                     { "$ref": "#/definitions/method_ppp" },
                     { "$ref": "#/definitions/method_can" },
-                    {
-                        "$ref": "#/definitions/method_manual"
-                    }
+                    { "$ref": "#/definitions/method_manual" }
                 ],
                 "options": {
-                    "keep_oneof_values": false
-                }
+                    "keep_oneof_values": false,
+                    "disable_collapse": true
+                },
+                "_format": "wb-multiple"
+            },
+            "options": {
+                "array_controls_top": true,
+                "disable_array_delete_last_row": true,
+                "disable_array_reorder": true,
+                "disable_collapse": true
             },
             "_format": "tabs"
         }
     },
     "required": ["interfaces"],
+    "options": {
+        "wb": {
+            "disable_title": true
+        }
+    },
 
     "translations": {
+        "en": {
+            "interface_title": "Interface",
+            "apn_description": "If not set, NetworkManager will try to define it according to information from SIM-card"
+        },
         "ru": {
             "Network Interfaces": "Сетевые интерфейсы",
-            "Specifies network configuration of the system": "Конфигурация сетевых интерфейсов контроллера",
             "Auto": "Включать автоматически",
             "Name": "Имя интерфейса",
             "Allow hotplug": "Разрешить горячее подключение",
             "Pre-up command": "Команды перед включением интерфейса",
             "Up command": "Команда включения интерфейса",
-            "Post-up command": "Комада после включения интерфейса",
+            "Post-up command": "Команда после включения интерфейса",
             "Down command": "Команда выключения интерфейса",
-            "Pre-down command": "Комадна перед выключением интерфейса",
+            "Pre-down command": "Команда перед выключением интерфейса",
             "Post-down command": "Команда после выключения интерфейса",
             "Loopback interface": "Loopback-интерфейс",
             "name": "имя",
@@ -516,7 +850,12 @@
             "Interface{{ |self.name}}": "Интерфейс {{ |self.name}}",
             "Point-to-point address": "Адрес конечного узла",
             "For point-to-point configuration": "Для конфигурации соединения точка-точка",
-            "Refers to the file in /etc/ppp/peers": "Указать имя файла конфигурации из директории /etc/ppp/peers"
+            "Refers to the file in /etc/ppp/peers": "Указать имя файла конфигурации из директории /etc/ppp/peers",
+            "Managed by /etc/network/interfaces": "Управляется через /etc/network/interfaces",
+            "Managed by NetworkManager": "Управляется через NetworkManager",
+            "Interface": "Имя интерфейса",
+            "interface_title": "Интерфейс",
+            "apn_description": "Если APN не задан, NetworkManager попытается определить его автоматически на основании информации об операторе SIM-карты"
         }
     }
 }

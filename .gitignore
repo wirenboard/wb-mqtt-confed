@@ -6,6 +6,11 @@
 # Folders
 _obj
 _test
+netconf/build
+netconf/dist
+netconf/__pycache__
+netconf/networkparser/__pycache__
+netconf/networkparser.egg-info
 
 # Architecture specific extensions/prefixes
 *.[568vq]
