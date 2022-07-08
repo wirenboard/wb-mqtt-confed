@@ -3,12 +3,11 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/wirenboard/wbgong"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"sync"
-
-	"github.com/contactless/wbgo"
 )
 
 const (
@@ -91,7 +90,7 @@ var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
 func NewEditor(root string) *Editor {
 	confRoot, err := filepath.Abs(root)
 	if err != nil {
-		wbgo.Error.Printf("invalid root path %s, using /", root)
+		wbgong.Error.Printf("invalid root path %s, using /", root)
 		confRoot = root
 	}
 	return &Editor{
@@ -106,10 +105,10 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
-	wbgo.Debug.Printf("Loading schema file: %s", path)
+	wbgong.Debug.Printf("Loading schema file: %s", path)
 	schema, err := NewJSONSchemaWithRoot(path, editor.root)
 	if err != nil {
-		wbgo.Error.Printf("Error loading schema: %s", err)
+		wbgong.Error.Printf("Error loading schema: %s", err)
 		return
 	}
 
@@ -217,20 +216,20 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 
 	bs, err := loadConfigBytes(schema.PhysicalConfigPath(), schema.ToJSONCommand())
 	if err != nil {
-		wbgo.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
+		wbgong.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
 
 	if schema.ShouldValidate() {
 		r, err := schema.ValidateContent(bs)
 		if err != nil {
-			wbgo.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
+			wbgong.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
 			return invalidConfigError
 		}
 		if !r.Valid() {
-			wbgo.Error.Printf("Invalid config file %s", schema.PhysicalConfigPath())
+			wbgong.Error.Printf("Invalid config file %s", schema.PhysicalConfigPath())
 			for _, desc := range r.Errors() {
-				wbgo.Error.Printf("- %s\n", desc)
+				wbgong.Error.Printf("- %s\n", desc)
 			}
 			return invalidConfigError
 		}
@@ -264,13 +263,13 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	if schema.ShouldValidate() {
 		r, err := schema.ValidateContent(*args.Content)
 		if err != nil {
-			wbgo.Error.Printf("Failed to validate config file: %s", err)
+			wbgong.Error.Printf("Failed to validate config file: %s", err)
 			return invalidConfigError
 		}
 		if !r.Valid() {
-			wbgo.Error.Printf("Invalid config file")
+			wbgong.Error.Printf("Invalid config file")
 			for _, desc := range r.Errors() {
-				wbgo.Error.Printf("- %s\n", desc)
+				wbgong.Error.Printf("- %s\n", desc)
 			}
 			return invalidConfigError
 		}
@@ -281,21 +280,21 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		var buf *bytes.Buffer
 		buf, err = extPreprocess(schema.FromJSONCommand(), *args.Content)
 		if err != nil {
-			wbgo.Error.Printf("external command error, %s: %s", schema.PhysicalConfigPath(), err)
+			wbgong.Error.Printf("external command error, %s: %s", schema.PhysicalConfigPath(), err)
 			return writeError
 		}
 		bs = buf.Bytes()
 	} else {
 		var indented bytes.Buffer
 		if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {
-			wbgo.Error.Printf("json.Indent() error, %s: %s", schema.PhysicalConfigPath(), err)
+			wbgong.Error.Printf("json.Indent() error, %s: %s", schema.PhysicalConfigPath(), err)
 			return writeError
 		}
 		bs = indented.Bytes()
 	}
 
 	if err = ioutil.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
-		wbgo.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
+		wbgong.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}
 
@@ -320,7 +319,7 @@ type EditorDirWatcherClient struct {
 	editor *Editor
 }
 
-func NewEditorDirWatcherClient(editor *Editor) wbgo.DirWatcherClient {
+func NewEditorDirWatcherClient(editor *Editor) wbgong.DirWatcherClient {
 	return &EditorDirWatcherClient{editor}
 }
 

@@ -1,8 +1,8 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo/testutils"
 	"github.com/stretchr/objx"
+	"github.com/wirenboard/wbgong/testutils"
 	"io/ioutil"
 	"os"
 	"strings"

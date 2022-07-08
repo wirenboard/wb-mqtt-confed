@@ -1,8 +1,9 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo/testutils"
 	"testing"
+
+	"github.com/wirenboard/wbgong/testutils"
 )
 
 type ConfFixture struct {

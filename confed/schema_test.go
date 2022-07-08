@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo/testutils"
+	"github.com/wirenboard/wbgong/testutils"
 	"github.com/xeipuuv/gojsonschema"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"github.com/contactless/wbgo"
+	"github.com/wirenboard/wbgong"
 	"time"
 )
 
@@ -18,13 +18,13 @@ func RunRestarter(ch chan RestartRequest) {
 	go func() {
 		for {
 			req := <-ch
-			wbgo.Debug.Printf("Restarting service %s (delay %d ms)",
+			wbgong.Debug.Printf("Restarting service %s (delay %d ms)",
 				req.Name, req.DelayMS)
 			if req.DelayMS > 0 {
 				time.Sleep(time.Duration(req.DelayMS) * time.Millisecond)
 			}
 			if err := restartService(req.Name); err != nil {
-				wbgo.Error.Printf("Error restarting %s: %s", req.Name, err)
+				wbgong.Error.Printf("Error restarting %s: %s", req.Name, err)
 			}
 		}
 	}()
