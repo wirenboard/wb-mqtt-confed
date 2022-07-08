@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 	errInit := wbgong.Init(*wbgoso)
 	if errInit != nil {
-		log.Fatalf("ERROR in init wbgo.so: '%s'", errInit)
+		log.Fatalf("ERROR: wbgo.so init failed: '%s'", errInit)
 	}
 	if flag.NArg() < 1 {
 		wbgong.Error.Fatal("must specify schema(s) / schema directory(ies)")
