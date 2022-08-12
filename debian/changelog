@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.9.2) stable; urgency=medium
+
+  * Fix display of "Auto" checkbox for network interface
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Fri, 12 Aug 2022 17:43:25 +0500
+
 wb-mqtt-confed (1.9.1) stable; urgency=medium
 
   * NTP and network interfaces config editors UI update.

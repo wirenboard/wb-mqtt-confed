@@ -338,6 +338,8 @@ class NetworkParser(object):
             # auto?
             if idefinition[0] == "auto":
                 iface["auto"] = True
+            else
+                iface["auto"] = False
             if idefinition[0] == "allow-hotplug":
                 iface["allow-hotplug"] = True
             elif idefinition[0] == "iface":
