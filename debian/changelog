@@ -1,3 +1,10 @@
+wb-mqtt-confed (1.10.0) stable; urgency=medium
+
+  * add mosquitto UNIX socket connection support
+    This is required for Bullseye migration, where mosquitto 2.0 is used.
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Fri, 29 Jul 2022 18:04:00 +0300
+
 wb-mqtt-confed (1.9.1) stable; urgency=medium
 
   * NTP and network interfaces config editors UI update.
