@@ -1,8 +1,15 @@
-wb-mqtt-confed (1.9.2) stable; urgency=medium
+wb-mqtt-confed (1.10.1) stable; urgency=medium
 
   * Fix display of "Auto" checkbox for network interface
 
- -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Fri, 12 Aug 2022 17:43:25 +0500
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 24 Aug 2022 11:27:20 +0500
+
+wb-mqtt-confed (1.10.0) stable; urgency=medium
+
+  * add mosquitto UNIX socket connection support
+    This is required for Bullseye migration, where mosquitto 2.0 is used.
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Fri, 29 Jul 2022 18:04:00 +0300
 
 wb-mqtt-confed (1.9.1) stable; urgency=medium
 
