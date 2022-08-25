@@ -1,8 +1,6 @@
 wb-mqtt-confed (1.11.0) stable; urgency=medium
 
   * Add python3 support for converter scripts
-  * Add mosquitto UNIX socket connection support
-    These changes are required for Debian bullseye support
 
  -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Thu, 25 Aug 2022 16:36:52 +0300
 
