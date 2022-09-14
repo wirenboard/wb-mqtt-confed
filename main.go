@@ -41,7 +41,7 @@ func main() {
 	useSyslog := flag.Bool("syslog", false, "Use syslog for logging")
 	validate := flag.Bool("validate", false, "Validate specified config file and exit")
 	dump := flag.Bool("dump", false, "Dump preprocessed schema and exit")
-	wbgoso := flag.String("wbgo", "/usr/share/wb-mqtt-confed/wbgo.so", "Location to wbgo.so file")
+	wbgoso := flag.String("wbgo", "/usr/lib/wb-mqtt-confed/wbgo.so", "Location to wbgo.so file")
 	flag.Parse()
 	errInit := wbgong.Init(*wbgoso)
 	if errInit != nil {

@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.11.1) stable; urgency=medium
+
+  * move wbgo.so plugin to /usr/lib to make lintian happier
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Wed, 14 Sep 2022 17:45:33 +0300
+
 wb-mqtt-confed (1.11.0) stable; urgency=medium
 
   * Add python3 support for converter scripts
