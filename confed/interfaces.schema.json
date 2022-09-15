@@ -4,8 +4,8 @@
     "title": "Network Interfaces",
     "configFile": {
         "path": "/etc/network/interfaces",
-        "toJSON": "networkparser",
-        "fromJSON": ["networkparser", "-s"],
+        "toJSON": "/usr/lib/wb-mqtt-confed/parsers/networkparser",
+        "fromJSON": ["/usr/lib/wb-mqtt-confed/parsers/networkparser", "-s"],
         "restartDelayMS": 4000,
         "service": "networking"
     },

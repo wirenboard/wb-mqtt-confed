@@ -29,13 +29,13 @@ wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin/ $(DESTDIR)/usr/share/wb-mqtt-confed/schemas $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
-	install -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
-	install -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
-	install -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/
-	install -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/share/wb-mqtt-confed/wbgo.so
-	install -m 0755 networkparser $(DESTDIR)/usr/bin/
-	install -m 0755 ntpparser $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
+	install -D -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
+	install -D -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
+	install -D -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/wb-mqtt-confed
+	install -D -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/lib/wb-mqtt-confed/wbgo.so
+	install -D -m 0755 networkparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/networkparser
+	install -D -m 0755 ntpparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/ntpparser
 
 deb:
 	$(GO_ENV) dpkg-buildpackage -b -a$(DEB_TARGET_ARCH) -us -uc

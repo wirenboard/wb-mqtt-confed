@@ -4,8 +4,8 @@
     "title": "Clock synchronization (NTP)",
     "configFile": {
         "path": "/etc/ntp.conf",
-        "toJSON": "ntpparser",
-        "fromJSON": ["ntpparser", "-s"],
+        "toJSON": "/usr/lib/wb-mqtt-confed/parsers/ntpparser",
+        "fromJSON": ["/usr/lib/wb-mqtt-confed/parsers/ntpparser", "-s"],
         "restartDelayMS": 4000,
         "service": "ntp"
     },
