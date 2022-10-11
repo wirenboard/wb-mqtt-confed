@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.11.2) stable; urgency=medium
+
+  * fix networkparser syntax error
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Tue, 11 Oct 2022 14:56:13 +0600
+
 wb-mqtt-confed (1.11.1) stable; urgency=medium
 
   * move wbgo.so plugin to /usr/lib to make lintian happier
