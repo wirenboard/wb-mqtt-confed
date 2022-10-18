@@ -1,12 +1,12 @@
 package confed
 
 import (
-	"github.com/stretchr/objx"
-	"github.com/wirenboard/wbgong/testutils"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/objx"
+	"github.com/wirenboard/wbgong/testutils"
 )
 
 const (
@@ -117,22 +117,6 @@ const (
 }
 `
 
-	EXPECTED_INTERFACES_JSON = `
-{
-  "interfaces": [
-    {
-      "auto": true,
-      "method": "static",
-      "name": "eth0",
-      "options": {
-        "address": "172.16.200.77",
-        "broadcast": "172.16.200.255",
-        "gateway": "172.16.200.10",
-        "netmask": "255.255.255.0"
-      }
-    }
-  ]
-}`
 )
 
 type EditorSuite struct {
@@ -166,14 +150,13 @@ func (s *EditorSuite) TearDownTest() {
 }
 
 func (s *EditorSuite) setupPathEnvVar() {
-	// add directory with 'networkparser' to the front of $PATH
+	// add project's root directory in front of $PATH
 	path := os.Getenv("PATH")
 	if path == "" {
 		os.Setenv("PATH", s.SourceDir()+"/..")
 	} else {
 		os.Setenv("PATH", s.SourceDir()+"/..:"+path)
 	}
-
 }
 
 func (s *EditorSuite) verifyInitialSchemaList() {
@@ -319,22 +302,9 @@ func (s *EditorSuite) TestRemoveSchema() {
 	})
 }
 
-func (s *EditorSuite) loadInterfacesConf() {
-	s.CopyDataFilesToTempDir(
-		"interfaces.schema.json",
-		"interfaces:etc/network/interfaces")
-	s.Ck("s.editor.loadSchema()", s.editor.loadSchema(s.DataFilePath("interfaces.schema.json")))
-}
 
 func (s *EditorSuite) TestListPreprocessed() {
-	s.loadInterfacesConf()
 	s.VerifyRpc("List", objx.Map{}, []objx.Map{
-		{
-			"configPath":  "/etc/network/interfaces",
-			"schemaPath":  "/interfaces.schema.json",
-			"title":       "Network Interface Configuration",
-			"description": "Specifies network configuration of the system",
-		},
 		{
 			"configPath":  "/sample.json",
 			"schemaPath":  "/sample.schema.json",
@@ -342,65 +312,6 @@ func (s *EditorSuite) TestListPreprocessed() {
 			"description": "Just an example",
 		},
 	})
-}
-
-func (s *EditorSuite) TestLoadPreprocessed() {
-	s.loadInterfacesConf()
-	s.VerifyRpc("Load", objx.Map{"path": "/etc/network/interfaces"}, objx.Map{
-		"configPath": "/etc/network/interfaces",
-		"content":    objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
-		"schema": objx.MustFromJSON(
-			strings.Replace(
-				s.ReadSourceDataFile("interfaces.schema.json"),
-				"_format", "format", -1)),
-	})
-}
-
-var newIfacesContent = objx.Map{
-	"interfaces": []interface{}{
-		map[string]interface{}{
-			"name":   "eth0",
-			"auto":   true,
-			"method": "dhcp",
-			"options": map[string]interface{}{
-				"hostname": "WirenBoard",
-			},
-		},
-	},
-}
-
-func (s *EditorSuite) TestSavePreprocessed() {
-	s.loadInterfacesConf()
-	s.VerifyRpc("Save", objx.Map{
-		"path":    "/etc/network/interfaces",
-		"content": newIfacesContent,
-	}, objx.Map{
-		"path": "/etc/network/interfaces",
-	})
-	s.verifyTextFile("etc/network/interfaces", `auto eth0
-iface eth0 inet dhcp
-  hostname WirenBoard
-
-`)
-	// FIXME: link-local section is disabled for now
-	//
-	// auto eth0:42
-	// iface eth0:42 inet static
-	//   address 169.254.42.42
-	//   netmask 255.255.0.0
-	// `)
-}
-
-func (s *EditorSuite) TestRestart() {
-	s.loadInterfacesConf()
-	s.VerifyRpc("Save", objx.Map{
-		"path":    "/etc/network/interfaces",
-		"content": newIfacesContent,
-	}, objx.Map{
-		"path": "/etc/network/interfaces",
-	})
-	restart := <-s.editor.RestartCh
-	s.Equal(RestartRequest{"networking", 4000}, restart)
 }
 
 func (s *EditorSuite) TestMultipleSchemasPerConfig() {

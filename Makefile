@@ -34,7 +34,6 @@ install:
 	install -D -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
 	install -D -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/wb-mqtt-confed
 	install -D -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/lib/wb-mqtt-confed/wbgo.so
-	install -D -m 0755 networkparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/networkparser
 	install -D -m 0755 ntpparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/ntpparser
 
 deb:

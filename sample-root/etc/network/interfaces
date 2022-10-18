@@ -1,9 +1,0 @@
-auto eth0
-iface eth0 inet static
-  address 172.16.200.77
-  broadcast 172.16.200.255
-  gateway 172.16.200.10
-  netmask 255.255.255.0
-
-auto eth1
-iface eth1 inet dhcp
