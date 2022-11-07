@@ -331,14 +331,12 @@ class NetworkParser(object):
             if name in interfaces:
                 iface = interfaces[name]
             else:
-                iface = dict(name=name)
+                iface = dict(name=name, auto=False)
                 interfaces[name] = iface
                 r.append(iface)
             # auto?
             if idefinition[0] == "auto":
                 iface["auto"] = True
-            else:
-                iface["auto"] = False
             if idefinition[0] == "allow-hotplug":
                 iface["allow-hotplug"] = True
             elif idefinition[0] == "iface":
