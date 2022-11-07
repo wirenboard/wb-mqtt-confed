@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.11.3) stable; urgency=medium
+
+  * fix networkparser logic error while parsing 'auto' stanza
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Mon, 07 Nov 2022 14:44:50 +0600
+
 wb-mqtt-confed (1.11.2) stable; urgency=medium
 
   * fix networkparser syntax error
