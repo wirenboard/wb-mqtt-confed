@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.11.4) stable; urgency=medium
+
+  * update wbgo in go.mod
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Mon, 07 Nov 2022 16:03:46 +0600
+
 wb-mqtt-confed (1.11.3) stable; urgency=medium
 
   * fix networkparser logic error while parsing 'auto' stanza
