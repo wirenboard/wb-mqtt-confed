@@ -467,8 +467,7 @@
                     "wb": {
                         "disable_panel": true
                     }
-            },
-                "_format": "wb-multiple"
+                }
             },
             "_format": "tabs",
             "options": {
