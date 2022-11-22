@@ -161,9 +161,8 @@
                                     "propertyOrder": 14
                                 },
                                 "metric": {
-                                    "type": "string",
+                                    "type": "integer",
                                     "title": "Routing metric for default gateway",
-                                    "format": "ipv4",
                                     "propertyOrder": 15
                                 },
                                 "hwaddress": {

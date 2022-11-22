@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.11.6) stable; urgency=medium
+
+  * Fix metric format for default gateway
+
+ -- Roman Kochkin <roman.kochkin@wirenboard.ru>  Tue, 22 Nov 2022 11:59:07 +0300
+
 wb-mqtt-confed (1.11.5) stable; urgency=medium
 
   * Fix /etc/network/interfaces editing
