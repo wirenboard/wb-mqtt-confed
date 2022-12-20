@@ -208,19 +208,25 @@ class NetworkParser(object):
         self.filename = None
         self.content = None
         if content:
-            self.content = content
+            self._set_content(content)
         elif infile is not None:
             self.filename = infile
             self._read()
         if self.content is not None:
             self.interfaces = self.get_interfaces()
 
+    def _set_content(self, content):
+        if not content.endswith("\n"):
+            self.content = content + "\n"
+        else:
+            self.content = content
+
     def _read(self):
         """
         Reread the contents from the disk
         """
         f = codecs.open(self.filename, "r", "utf-8")
-        self.content = f.read()
+        self._set_content(f.read())
         f.close()
 
     def get(self):

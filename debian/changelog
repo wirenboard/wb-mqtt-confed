@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.8.1-wb100) stable; urgency=medium
+
+  * Fix parsing of /etc/network/interfaces without new line at the end of a file
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Tue, 20 Dec 2022 12:15:47 +0500
+
 wb-mqtt-confed (1.8.1) stable; urgency=medium
 
   * more readable config names for ntp and network
