@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.12.0) stable; urgency=medium
+
+  * Support editor property in config schemas
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Mon, 16 Jan 2023 16:59:40 +0500
+
 wb-mqtt-confed (1.11.7) stable; urgency=medium
 
   * Fix parsing of /etc/network/interfaces without new line at the end of a file

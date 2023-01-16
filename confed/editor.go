@@ -194,6 +194,7 @@ type EditorContentResponse struct {
 	ConfigPath string                 `json:"configPath"`
 	Content    *json.RawMessage       `json:"content"`
 	Schema     map[string]interface{} `json:"schema"`
+	Editor     string                 `json:"editor"`
 }
 
 func (editor *Editor) locateSchema(path string) (*JSONSchema, error) {
@@ -243,6 +244,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 	reply.ConfigPath = schema.ConfigPath()
 	reply.Content = &content
 	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]interface{})
+	reply.Editor = schema.Editor()
 
 	return nil
 }
