@@ -25,6 +25,7 @@ type JSONSchemaProps struct {
 	hideFromList            bool
 	TitleTranslations       map[string]string `json:"titleTranslations,omitempty"`
 	DescriptionTranslations map[string]string `json:"descriptionTranslations,omitempty"`
+	Editor                  string `json:"editor"`
 }
 
 type JSONSchema struct {
@@ -124,6 +125,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 
 	service, _ := configFile["service"].(string)
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
+	editor, _ := configFile["editor"].(string)
 
 	title, _ := parsed["title"].(string)
 	description, _ := parsed["description"].(string)
@@ -173,6 +175,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			hideFromList:            hideFromList,
 			TitleTranslations:       titleTranslations,
 			DescriptionTranslations: descriptionTranslations,
+			Editor:                  editor,
 		},
 		enumLoader: newEnumLoader(root),
 	}
@@ -275,4 +278,8 @@ func (s *JSONSchema) Properties() *JSONSchemaProps {
 
 func (s *JSONSchema) StopWatchingSubconfigs() {
 	s.enumLoader.StopWatchingSubconfigs()
+}
+
+func (s *JSONSchema) Editor() string {
+	return s.props.Editor
 }
