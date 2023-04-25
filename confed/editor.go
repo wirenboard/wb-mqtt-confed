@@ -300,10 +300,14 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return writeError
 	}
 
+	if err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
+		wbgong.Error.Printf("error sync file %s: %s", schema.PhysicalConfigPath(), err)
+	}
+
 	reply.Path = args.Path
 	if schema.Services() != nil {
 		for _, service := range schema.Services() {
-			editor.RestartCh <- RestartRequest{service, schema.RestartDelayMS()}
+			editor.RestartCh <- RestartRequest{service}
 		}
 	}
 	return nil
