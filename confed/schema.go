@@ -42,7 +42,7 @@ func subconfKey(path, pattern, ptrString string) string {
 	return path + "\x00" + pattern + "\x00" + ptrString
 }
 
-func extractStringList(msi map[string]interface{}, key string) ([]string, error) {
+func extractStringOrStringList(msi map[string]interface{}, key string) ([]string, error) {
 	cmd, found := msi[key]
 	if !found {
 		return nil, nil
@@ -103,12 +103,12 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	fromJSONCommand, err := extractStringList(configFile, "fromJSON")
+	fromJSONCommand, err := extractStringOrStringList(configFile, "fromJSON")
 	if err != nil {
 		return
 	}
 
-	toJSONCommand, err := extractStringList(configFile, "toJSON")
+	toJSONCommand, err := extractStringOrStringList(configFile, "toJSON")
 	if err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		hideFromList = false
 	}
 
-	service, _ := extractStringList(configFile,"service")
+	service, _ := extractStringOrStringList(configFile,"service")
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 	editor, _ := configFile["editor"].(string)
 
