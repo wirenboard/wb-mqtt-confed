@@ -10,7 +10,7 @@ const (
 )
 
 func restartService(name string) (err error) {
-	_, err = runCommand(false, nil, SERVICE_CMD, name, "restart")
+	_, err = runCommand(false, nil, SERVICE_CMD, name, "restart-or-reload")
 	return
 }
 

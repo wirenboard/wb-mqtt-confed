@@ -19,7 +19,7 @@ type JSONSchemaProps struct {
 	physicalConfigPath      string
 	fromJSONCommand         []string
 	toJSONCommand           []string
-	service                 string
+	service                 []string
 	restartDelayMS          int
 	shouldValidate          bool
 	hideFromList            bool
@@ -42,7 +42,7 @@ func subconfKey(path, pattern, ptrString string) string {
 	return path + "\x00" + pattern + "\x00" + ptrString
 }
 
-func extractCommand(msi map[string]interface{}, key string) ([]string, error) {
+func extractStringList(msi map[string]interface{}, key string) ([]string, error) {
 	cmd, found := msi[key]
 	if !found {
 		return nil, nil
@@ -103,12 +103,12 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	fromJSONCommand, err := extractCommand(configFile, "fromJSON")
+	fromJSONCommand, err := extractStringList(configFile, "fromJSON")
 	if err != nil {
 		return
 	}
 
-	toJSONCommand, err := extractCommand(configFile, "toJSON")
+	toJSONCommand, err := extractStringList(configFile, "toJSON")
 	if err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		hideFromList = false
 	}
 
-	service, _ := configFile["service"].(string)
+	service, _ := extractStringList(configFile,"service")
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 	editor, _ := configFile["editor"].(string)
 
@@ -256,7 +256,7 @@ func (s *JSONSchema) Description() string {
 	return s.props.Description
 }
 
-func (s *JSONSchema) Service() string {
+func (s *JSONSchema) Service() []string {
 	return s.props.service
 }
 
