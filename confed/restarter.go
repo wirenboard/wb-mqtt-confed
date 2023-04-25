@@ -2,7 +2,6 @@ package confed
 
 import (
 	"github.com/wirenboard/wbgong"
-	"time"
 )
 
 const (
@@ -18,11 +17,7 @@ func RunRestarter(ch chan RestartRequest) {
 	go func() {
 		for {
 			req := <-ch
-			wbgong.Debug.Printf("Restarting service %s (delay %d ms)",
-				req.Name, req.DelayMS)
-			if req.DelayMS > 0 {
-				time.Sleep(time.Duration(req.DelayMS) * time.Millisecond)
-			}
+			wbgong.Debug.Printf("Restarting service %s", req.Name)
 			if err := restartService(req.Name); err != nil {
 				wbgong.Error.Printf("Error restarting %s: %s", req.Name, err)
 			}

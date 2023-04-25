@@ -41,7 +41,6 @@ func fixFormatProps(v interface{}) interface{} {
 
 type RestartRequest struct {
 	Name    string
-	DelayMS int
 }
 
 type Editor struct {
@@ -300,7 +299,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return writeError
 	}
 
-	if err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
+	if _, err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
 		wbgong.Error.Printf("error sync file %s: %s", schema.PhysicalConfigPath(), err)
 	}
 

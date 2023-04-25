@@ -400,7 +400,7 @@ func (s *EditorSuite) TestRestart() {
 		"path": "/etc/network/interfaces",
 	})
 	restart := <-s.editor.RestartCh
-	s.Equal(RestartRequest{"networking", 4000}, restart)
+	s.Equal(RestartRequest{"networking"}, restart)
 }
 
 func (s *EditorSuite) TestMultipleSchemasPerConfig() {
