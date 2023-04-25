@@ -301,8 +301,8 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	reply.Path = args.Path
-	if schema.Service() != nil {
-		for _, service := range schema.Service() {
+	if schema.Services() != nil {
+		for _, service := range schema.Services() {
 			editor.RestartCh <- RestartRequest{service, schema.RestartDelayMS()}
 		}
 	}
