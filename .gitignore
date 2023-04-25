@@ -32,3 +32,4 @@ vendor
 
 debian/files
 debian/wb-mqtt-confed*
+debian/debhelper-build-stamp
