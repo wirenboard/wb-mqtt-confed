@@ -1,3 +1,10 @@
+wb-mqtt-confed (1.13.0) stable; urgency=medium
+
+  * Support several services to restart
+  * Relace services restart to restart-or-reload
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.ru>  Tue, 25 Apr 2023 13:41:26 +0300
+
 wb-mqtt-confed (1.12.0) stable; urgency=medium
 
   * Support editor property in config schemas
