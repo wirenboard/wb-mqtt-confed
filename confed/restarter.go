@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	SERVICE_CMD = "/usr/sbin/service"
+	SERVICE_CMD = "systemctl"
 )
 
 func restartService(name string) (err error) {
-	_, err = runCommand(false, nil, SERVICE_CMD, name, "restart-or-reload")
+	_, err = runCommand(false, nil, SERVICE_CMD, "reload-or-restart", name)
 	return
 }
 
