@@ -2,6 +2,7 @@ wb-mqtt-confed (1.13.0) stable; urgency=medium
 
   * Support several services to restart
   * Relace services restart to reload-or-restart
+  * Restart services with systemctl instead of service
 
  -- Ekaterina Volkova <ekaterina.volkova@wirenboard.ru>  Tue, 25 Apr 2023 13:41:26 +0300
 
