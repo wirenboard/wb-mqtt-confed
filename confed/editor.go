@@ -301,7 +301,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	if schema.RestartDelayMS() > 0 {
-		delay = schema.RestartDelayMS()
+		var delay int = schema.RestartDelayMS()
 		wbgong.Debug.Printf("Delay %d ms before restarting services", delay)
 		time.Sleep(time.Duration(delay) * time.Millisecond)
 	} else {
