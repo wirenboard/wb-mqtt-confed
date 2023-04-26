@@ -20,6 +20,7 @@ type JSONSchemaProps struct {
 	fromJSONCommand         []string
 	toJSONCommand           []string
 	services                []string
+	restartDelayMS          int
 	shouldValidate          bool
 	hideFromList            bool
 	TitleTranslations       map[string]string `json:"titleTranslations,omitempty"`
@@ -123,6 +124,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	}
 
 	services, _ := extractStringOrStringList(configFile,"service")
+	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 	editor, _ := configFile["editor"].(string)
 
 	title, _ := parsed["title"].(string)
@@ -168,6 +170,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			fromJSONCommand:         fromJSONCommand,
 			toJSONCommand:           toJSONCommand,
 			services:                services,
+			restartDelayMS:          int(restartDelayMS),
 			shouldValidate:          shouldValidate,
 			hideFromList:            hideFromList,
 			TitleTranslations:       titleTranslations,
@@ -255,6 +258,10 @@ func (s *JSONSchema) Description() string {
 
 func (s *JSONSchema) Services() []string {
 	return s.props.services
+}
+
+func (s *JSONSchema) RestartDelayMS() int {
+	return s.props.restartDelayMS
 }
 
 func (s *JSONSchema) ShouldValidate() bool {

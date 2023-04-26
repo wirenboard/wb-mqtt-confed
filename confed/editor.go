@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"time"
 )
 
 const (
@@ -299,9 +300,15 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return writeError
 	}
 
-	if _, err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
-		wbgong.Error.Printf("error sync file %s: %s", schema.PhysicalConfigPath(), err)
-	}
+	if schema.RestartDelayMS() > 0 {
+		delay = schema.RestartDelayMS()
+		wbgong.Debug.Printf("Delay %d ms before restarting services", delay)
+		time.Sleep(time.Duration(delay) * time.Millisecond)
+	} else {
+		if _, err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
+			wbgong.Error.Printf("error sync file %s: %s", schema.PhysicalConfigPath(), err)
+		}
+	}	
 
 	reply.Path = args.Path
 	if schema.Services() != nil {
