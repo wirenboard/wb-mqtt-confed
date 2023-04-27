@@ -399,8 +399,10 @@ func (s *EditorSuite) TestRestart() {
 	}, objx.Map{
 		"path": "/etc/network/interfaces",
 	})
-	restart := <-s.editor.RestartCh
-	s.Equal(RestartRequest{"networking"}, restart)
+	restart := <-s.editor.RequestCh
+	s.Equal(Request{Sleep,map[string]string{"delay":"4000"}}, restart)
+	restart = <-s.editor.RequestCh
+	s.Equal(Request{Restart,map[string]string{"service":"networking"}}, restart)
 }
 
 func (s *EditorSuite) TestMultipleSchemasPerConfig() {

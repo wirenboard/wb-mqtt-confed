@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
-	"time"
+	"strconv"	
 )
 
 const (
@@ -40,8 +40,16 @@ func fixFormatProps(v interface{}) interface{} {
 	}
 }
 
-type RestartRequest struct {
-	Name    string
+type RequestType int64
+const (
+	Sleep RequestType = iota
+	Sync
+	Restart
+)
+
+type Request struct {
+	requestType RequestType
+	properties map[string]string
 }
 
 type Editor struct {
@@ -49,7 +57,7 @@ type Editor struct {
 	root                string
 	schemasByConfigPath map[string][]*JSONSchema
 	schemasBySchemaPath map[string]*JSONSchema
-	RestartCh           chan RestartRequest
+	RequestCh           chan Request
 }
 
 type EditorError struct {
@@ -97,7 +105,7 @@ func NewEditor(root string) *Editor {
 		root:                confRoot,
 		schemasByConfigPath: make(map[string][]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
-		RestartCh:           make(chan RestartRequest, RESTART_QUEUE_LEN),
+		RequestCh:           make(chan Request, RESTART_QUEUE_LEN),
 	}
 }
 
@@ -301,19 +309,15 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	if schema.RestartDelayMS() > 0 {
-		var delay int = schema.RestartDelayMS()
-		wbgong.Debug.Printf("Delay %d ms before restarting services", delay)
-		time.Sleep(time.Duration(delay) * time.Millisecond)
+		editor.RequestCh <- Request{Sleep,map[string]string{"delay":strconv.Itoa(schema.RestartDelayMS())}}
 	} else {
-		if _, err = runCommand(false, nil, "sync", schema.PhysicalConfigPath()); err != nil {
-			wbgong.Error.Printf("error sync file %s: %s", schema.PhysicalConfigPath(), err)
-		}
+		editor.RequestCh <- Request{Sync,map[string]string{"path":schema.PhysicalConfigPath()}}
 	}	
 
 	reply.Path = args.Path
 	if schema.Services() != nil {
 		for _, service := range schema.Services() {
-			editor.RestartCh <- RestartRequest{service}
+			editor.RequestCh <- Request{Restart,map[string]string{"service":service}}
 		}
 	}
 	return nil

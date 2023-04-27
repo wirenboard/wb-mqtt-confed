@@ -118,7 +118,7 @@ func main() {
 	if !gotSome {
 		wbgong.Error.Fatalf("no valid schemas found")
 	}
-	confed.RunRestarter(editor.RestartCh)
+	confed.RunRequestHandler(editor.RequestCh)
 
 	if *brokerAddress == DEFAULT_BROKER_URL && isSocket(MOSQUITTO_SOCK_FILE) {
 		wbgong.Info.Println("broker URL is default and mosquitto socket detected, trying to connect via it")
