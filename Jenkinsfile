@@ -1,1 +1,1 @@
-buildDebGolangWbgo()
+buildDebGolangWbgo defaultTargets: 'bullseye-armhf'

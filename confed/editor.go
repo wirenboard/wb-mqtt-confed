@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"strconv"	
 )
 
 const (
@@ -39,9 +40,16 @@ func fixFormatProps(v interface{}) interface{} {
 	}
 }
 
-type RestartRequest struct {
-	Name    string
-	DelayMS int
+type RequestType int64
+const (
+	Sleep RequestType = iota
+	Sync
+	Restart
+)
+
+type Request struct {
+	requestType RequestType
+	properties map[string]string
 }
 
 type Editor struct {
@@ -49,7 +57,7 @@ type Editor struct {
 	root                string
 	schemasByConfigPath map[string][]*JSONSchema
 	schemasBySchemaPath map[string]*JSONSchema
-	RestartCh           chan RestartRequest
+	RequestCh           chan Request
 }
 
 type EditorError struct {
@@ -97,7 +105,7 @@ func NewEditor(root string) *Editor {
 		root:                confRoot,
 		schemasByConfigPath: make(map[string][]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
-		RestartCh:           make(chan RestartRequest, RESTART_QUEUE_LEN),
+		RequestCh:           make(chan Request, RESTART_QUEUE_LEN),
 	}
 }
 
@@ -300,9 +308,17 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return writeError
 	}
 
+	if schema.RestartDelayMS() > 0 {
+		editor.RequestCh <- Request{Sleep,map[string]string{"delay":strconv.Itoa(schema.RestartDelayMS())}}
+	} else {
+		editor.RequestCh <- Request{Sync,map[string]string{"path":schema.PhysicalConfigPath()}}
+	}	
+
 	reply.Path = args.Path
-	if schema.Service() != "" {
-		editor.RestartCh <- RestartRequest{schema.Service(), schema.RestartDelayMS()}
+	if schema.Services() != nil {
+		for _, service := range schema.Services() {
+			editor.RequestCh <- Request{Restart,map[string]string{"service":service}}
+		}
 	}
 	return nil
 }
