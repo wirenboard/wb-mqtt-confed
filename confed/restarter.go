@@ -38,7 +38,7 @@ func RunRequestHandler(ch chan Request) {
 					wbgong.Error.Printf("Error restarting %s: %s", service, err)
 				}
 			default:
-				wbgong.Debug.Printf("Unknown request type %d", req.requestType)
+				wbgong.Error.Printf("Unknown request type %d", req.requestType)
 			}
 		}
 	}()
