@@ -2,7 +2,6 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "title": "Network Interfaces",
-    "description": "Specifies network configuration of the system",
     "configFile": {
         "path": "/etc/network/interfaces",
         "toJSON": "networkparser",
@@ -162,9 +161,8 @@
                                     "propertyOrder": 14
                                 },
                                 "metric": {
-                                    "type": "string",
+                                    "type": "integer",
                                     "title": "Routing metric for default gateway",
-                                    "format": "ipv4",
                                     "propertyOrder": 15
                                 },
                                 "hwaddress": {
@@ -463,18 +461,30 @@
                     }
                 ],
                 "options": {
-                    "keep_oneof_values": false
+                    "keep_oneof_values": false,
+                    "disable_collapse": true,
+                    "wb": {
+                        "disable_panel": true
+                    }
                 }
             },
-            "_format": "tabs"
+            "_format": "tabs",
+            "options": {
+                "disable_collapse": true,
+                "disable_array_delete_last_row": true
+            }
         }
     },
     "required": ["interfaces"],
+    "options": {
+        "wb": {
+            "disable_title": true
+        }
+    },
 
     "translations": {
         "ru": {
             "Network Interfaces": "Сетевые интерфейсы",
-            "Specifies network configuration of the system": "Конфигурация сетевых интерфейсов контроллера",
             "Auto": "Включать автоматически",
             "Name": "Имя интерфейса",
             "Allow hotplug": "Разрешить горячее подключение",

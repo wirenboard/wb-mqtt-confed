@@ -338,7 +338,7 @@ class NetworkParser(object):
             if name in interfaces:
                 iface = interfaces[name]
             else:
-                iface = dict(name=name)
+                iface = dict(name=name, auto=False)
                 interfaces[name] = iface
                 r.append(iface)
             # auto?
