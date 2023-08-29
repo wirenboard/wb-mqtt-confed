@@ -83,7 +83,7 @@ func (s *EnumLoaderSuite) verifyEnum(enumSubst string) {
 	bs, err := loadConfigBytes(s.DataFilePath("sample.schema.json"), nil)
 	s.Ck("loadConfigBytes()", err)
 	var m map[string]interface{}
-	s.Ck("Unmarshal JSON", json.Unmarshal(bs, &m))
+	s.Ck("Unmarshal JSON", json.Unmarshal(bs.content, &m))
 	// TBD: specify the base directory for Preprocess
 	s.Equal(s.expectedContent(enumSubst), s.enumLoader.Preprocess(m))
 	s.False(s.enumLoader.IsDirty())

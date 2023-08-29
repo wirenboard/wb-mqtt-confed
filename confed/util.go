@@ -14,16 +14,18 @@ import (
 	"syscall"
 )
 
-func runCommand(captureStdout bool, stdin io.Reader, command string, args ...string) (*bytes.Buffer, error) {
+type RunCommandResult struct {
+	stdout bytes.Buffer
+	stderr bytes.Buffer
+}
+
+func runCommand(captureStdout bool, stdin io.Reader, command string, args ...string) (res RunCommandResult, err error) {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = stdin
-	var stdout *bytes.Buffer
 	if captureStdout {
-		stdout = new(bytes.Buffer)
-		cmd.Stdout = stdout
+		cmd.Stdout = &res.stdout
 	}
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
+	cmd.Stderr = &res.stderr
 	if err := cmd.Run(); err != nil {
 		exitErr, ok := err.(*exec.ExitError)
 		if ok {
@@ -32,25 +34,29 @@ func runCommand(captureStdout bool, stdin io.Reader, command string, args ...str
 			if ok {
 				status = ws.ExitStatus()
 			}
-			return nil, fmt.Errorf("exit status %d from %s %s: %s",
+			err = fmt.Errorf("exit status %d from %s %s: %s",
 				status, command, strings.Join(args, " "),
-				string(stderr.Bytes()))
+				string(res.stderr.Bytes()))
 		}
-		return nil, err
 	}
 
-	return stdout, nil
+	return
 }
 
-func extPreprocess(commandAndArgs []string, in []byte) (*bytes.Buffer, error) {
+func extPreprocess(commandAndArgs []string, in []byte) (RunCommandResult, error) {
 	if len(commandAndArgs) < 1 {
-		return nil, errors.New("commandAndArgs must not be empty")
+		return RunCommandResult{}, errors.New("commandAndArgs must not be empty")
 	}
 
 	return runCommand(true, bytes.NewBuffer(in), commandAndArgs[0], commandAndArgs[1:]...)
 }
 
-func loadConfigBytes(path string, preprocessCmd []string) (bs []byte, err error) {
+type LoadConfigResult struct {
+	content []byte
+	preprocessErrors string
+}
+
+func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult, err error) {
 	in, err := os.Open(path)
 	if err != nil {
 		return
@@ -64,14 +70,20 @@ func loadConfigBytes(path string, preprocessCmd []string) (bs []byte, err error)
 		if err != nil {
 			return
 		}
-		jsonInput, err = extPreprocess(preprocessCmd, tmpBs)
+		var output RunCommandResult
+		output, err = extPreprocess(preprocessCmd, tmpBs)
 		if err != nil {
 			return
+		}
+		jsonInput = &output.stdout
+		if output.stderr.Len() != 0 {
+			res.preprocessErrors = output.stderr.String()
 		}
 	}
 
 	reader := JsonConfigReader.New(jsonInput)
-	return ioutil.ReadAll(reader)
+	res.content, err = ioutil.ReadAll(reader)
+	return
 }
 
 func pathFromRoot(root, path string) (r string, err error) {

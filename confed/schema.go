@@ -79,7 +79,8 @@ func addTranslation(strings map[string]interface{}, lang string, key string, dst
 }
 
 func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
-	content, err := loadConfigBytes(schemaPath, nil)
+	bs, err := loadConfigBytes(schemaPath, nil)
+	content := bs.content
 	if err != nil {
 		return
 	}
@@ -221,7 +222,7 @@ func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err
 	if err != nil {
 		return
 	}
-	return s.ValidateContent(bs)
+	return s.ValidateContent(bs.content)
 }
 
 func (s *JSONSchema) Path() string {

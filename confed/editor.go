@@ -228,9 +228,12 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		wbgong.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
+	if len(bs.preprocessErrors) != 0 {
+		wbgong.Warn.Printf("Load config warning, %s: %s", schema.PhysicalConfigPath(), bs.preprocessErrors)
+	}
 
 	if schema.ShouldValidate() {
-		r, err := schema.ValidateContent(bs)
+		r, err := schema.ValidateContent(bs.content)
 		if err != nil {
 			wbgong.Error.Printf("Failed to validate config file %s: %s", schema.PhysicalConfigPath(), err)
 			return invalidConfigError
@@ -243,12 +246,12 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 			return invalidConfigError
 		}
 	} else {
-		if !json.Valid(bs) {
+		if !json.Valid(bs.content) {
 			return invalidConfigError
 		}
 	}
 
-	content := json.RawMessage(bs) // TBD: use parsed config
+	content := json.RawMessage(bs.content) // TBD: use parsed config
 	reply.ConfigPath = schema.ConfigPath()
 	reply.Content = &content
 	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]interface{})
@@ -286,14 +289,17 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	var bs []byte
+	var output RunCommandResult
 	if schema.FromJSONCommand() != nil {
-		var buf *bytes.Buffer
-		buf, err = extPreprocess(schema.FromJSONCommand(), *args.Content)
+		output, err = extPreprocess(schema.FromJSONCommand(), *args.Content)
 		if err != nil {
 			wbgong.Error.Printf("external command error, %s: %s", schema.PhysicalConfigPath(), err)
 			return writeError
 		}
-		bs = buf.Bytes()
+		bs = output.stdout.Bytes()
+		if output.stderr.Len() != 0 {
+			wbgong.Warn.Printf("external command warning, %s: %s", schema.PhysicalConfigPath(), output.stderr.String())
+		}
 	} else {
 		var indented bytes.Buffer
 		if err = json.Indent(&indented, *args.Content, "", "    "); err != nil {

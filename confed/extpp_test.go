@@ -12,7 +12,7 @@ func TestExtPreprocess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
-	if string(out.Bytes()) != "abc:def:ghi" {
+	if string(out.stdout.Bytes()) != "abc:def:ghi" {
 		t.Fatalf("unexpected output: %s", out)
 	}
 }
