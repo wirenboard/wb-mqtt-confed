@@ -229,7 +229,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		return invalidConfigError
 	}
 	if len(bs.preprocessErrors) != 0 {
-		wbgong.Warn.Printf("Load config warning, %s: %s", schema.PhysicalConfigPath(), bs.preprocessErrors)
+		wbgong.Warn.Printf("Load config %s: %s", schema.PhysicalConfigPath(), bs.preprocessErrors)
 	}
 
 	if schema.ShouldValidate() {
@@ -298,7 +298,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		}
 		bs = output.stdout.Bytes()
 		if output.stderr.Len() != 0 {
-			wbgong.Warn.Printf("external command warning, %s: %s", schema.PhysicalConfigPath(), output.stderr.String())
+			wbgong.Warn.Printf("save config %s: %s", schema.PhysicalConfigPath(), output.stderr.String())
 		}
 	} else {
 		var indented bytes.Buffer
