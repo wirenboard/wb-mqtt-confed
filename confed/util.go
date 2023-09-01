@@ -53,7 +53,7 @@ func extPreprocess(commandAndArgs []string, in []byte) (RunCommandResult, error)
 
 type LoadConfigResult struct {
 	content []byte
-	preprocessErrors string
+	preprocessorErrors string
 }
 
 func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult, err error) {
@@ -77,7 +77,7 @@ func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult,
 		}
 		jsonInput = &output.stdout
 		if output.stderr.Len() != 0 {
-			res.preprocessErrors = output.stderr.String()
+			res.preprocessorErrors = output.stderr.String()
 		}
 	}
 

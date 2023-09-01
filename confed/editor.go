@@ -228,8 +228,8 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		wbgong.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
-	if len(bs.preprocessErrors) != 0 {
-		wbgong.Warn.Printf("Load config %s: %s", schema.PhysicalConfigPath(), bs.preprocessErrors)
+	if len(bs.preprocessorErrors) != 0 {
+		wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", schema.PhysicalConfigPath(), bs.preprocessorErrors)
 	}
 
 	if schema.ShouldValidate() {
@@ -298,7 +298,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		}
 		bs = output.stdout.Bytes()
 		if output.stderr.Len() != 0 {
-			wbgong.Warn.Printf("save config %s: %s", schema.PhysicalConfigPath(), output.stderr.String())
+			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", schema.PhysicalConfigPath(), output.stderr.String())
 		}
 	} else {
 		var indented bytes.Buffer
