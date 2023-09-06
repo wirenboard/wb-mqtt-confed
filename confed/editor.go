@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
-	"strconv"	
+	"strconv"
+	"strings"	
 )
 
 const (
@@ -37,6 +38,12 @@ func fixFormatProps(v interface{}) interface{} {
 		return r
 	default:
 		return v
+	}
+}
+
+func printPreprocessorErrors(configPath string, errors string) {
+	for _, err := range strings.Split(errors, "\n") {
+		wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", configPath, err)
 	}
 }
 
@@ -228,9 +235,7 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 		wbgong.Error.Printf("Failed to read config file %s: %s", schema.PhysicalConfigPath(), err)
 		return invalidConfigError
 	}
-	if len(bs.preprocessorErrors) != 0 {
-		wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", schema.PhysicalConfigPath(), bs.preprocessorErrors)
-	}
+	printPreprocessorErrors(schema.PhysicalConfigPath(), bs.preprocessorErrors)
 
 	if schema.ShouldValidate() {
 		r, err := schema.ValidateContent(bs.content)
@@ -298,7 +303,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		}
 		bs = output.stdout.Bytes()
 		if output.stderr.Len() != 0 {
-			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", schema.PhysicalConfigPath(), output.stderr.String())
+			printPreprocessorErrors(schema.PhysicalConfigPath(), output.stderr.String())
 		}
 	} else {
 		var indented bytes.Buffer
