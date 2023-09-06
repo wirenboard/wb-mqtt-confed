@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.13.1) stable; urgency=medium
+
+  * Output config preprocessing warnings
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Tue, 29 Aug 2023 11:49:03 +0500
+
 wb-mqtt-confed (1.13.0) stable; urgency=medium
 
   * Support several services to restart
