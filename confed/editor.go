@@ -9,6 +9,7 @@ import (
 	"sort"
 	"sync"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -42,7 +43,7 @@ func fixFormatProps(v interface{}) interface{} {
 
 func printPreprocessorErrors(configPath string, errors string) {
 	if len(errors) > 0 {
-		for _, err := range errors.splitlines() {
+		for _, err := range strings.Split(errors, "\n") {
 			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", configPath, err)
 		}
 	}
