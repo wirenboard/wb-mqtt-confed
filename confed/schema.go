@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/wirenboard/wbgong"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -25,7 +26,7 @@ type JSONSchemaProps struct {
 	hideFromList            bool
 	TitleTranslations       map[string]string `json:"titleTranslations,omitempty"`
 	DescriptionTranslations map[string]string `json:"descriptionTranslations,omitempty"`
-	Editor                  string `json:"editor"`
+	Editor                  string            `json:"editor"`
 }
 
 type JSONSchema struct {
@@ -36,6 +37,7 @@ type JSONSchema struct {
 	preprocessed map[string]interface{}
 	props        JSONSchemaProps
 	enumLoader   *enumLoader
+	patchLoader  *patchLoader
 }
 
 func subconfKey(path, pattern, ptrString string) string {
@@ -68,7 +70,7 @@ func extractStringOrStringList(msi map[string]interface{}, key string) ([]string
 	return r, nil
 }
 
-func addTranslation(strings map[string]interface{}, lang string, key string, dst map[string] string) {
+func addTranslation(strings map[string]interface{}, lang string, key string, dst map[string]string) {
 	translated, ok := strings[key]
 	if ok {
 		res, ok := translated.(string)
@@ -124,7 +126,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		hideFromList = false
 	}
 
-	services, _ := extractStringOrStringList(configFile,"service")
+	services, _ := extractStringOrStringList(configFile, "service")
 	restartDelayMS, _ := configFile["restartDelayMS"].(float64)
 	editor, _ := configFile["editor"].(string)
 
@@ -144,14 +146,14 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	//         ...
 	//     }
 	// }
-	titleTranslations       := map[string]string{}
+	titleTranslations := map[string]string{}
 	descriptionTranslations := map[string]string{}
-	translations, ok        := parsed["translations"].(map[string]interface{})
+	translations, ok := parsed["translations"].(map[string]interface{})
 	if ok {
 		for lang, val := range translations {
 			strings, ok := val.(map[string]interface{})
 			if ok {
-				addTranslation(strings, lang, title,       titleTranslations)
+				addTranslation(strings, lang, title, titleTranslations)
 				addTranslation(strings, lang, description, descriptionTranslations)
 			}
 		}
@@ -178,7 +180,8 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			DescriptionTranslations: descriptionTranslations,
 			Editor:                  editor,
 		},
-		enumLoader: newEnumLoader(root),
+		enumLoader:  newEnumLoader(root),
+		patchLoader: newPatchLoader(schemaPathFromRoot),
 	}
 	return
 }
@@ -188,6 +191,14 @@ func NewJSONSchema(schemaPath string) (s *JSONSchema, err error) {
 }
 
 func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
+	if s.patchLoader.IsDirty() {
+		err := json.Unmarshal(s.patchLoader.Patch(s.content), &s.parsed)
+		if err != nil {
+			wbgong.Warn.Printf("Failed to parse patched schema %s: %s", s.path, err)
+		} else {
+			s.preprocessed = nil
+		}
+	}
 	if s.preprocessed == nil || s.enumLoader.IsDirty() {
 		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]interface{}) // FIXME
 	}
@@ -195,7 +206,7 @@ func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
 }
 
 func (s *JSONSchema) getSchema() (schema *gojsonschema.Schema, err error) {
-	if s.schema != nil && !s.enumLoader.IsDirty() {
+	if s.schema != nil && !s.enumLoader.IsDirty() && !s.patchLoader.IsDirty() {
 		return s.schema, nil
 	}
 

@@ -1,3 +1,10 @@
+wb-mqtt-confed (1.14.0) stable; urgency=medium
+
+  * Support for RFC7396 JSON merge patches for config schemas.
+    Patches must be located in schema folder and have corresponding schema name with .patch postfix
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Thu, 21 Dec 2023 10:49:56 +0500
+
 wb-mqtt-confed (1.13.1) stable; urgency=medium
 
   * Output config preprocessing warnings
