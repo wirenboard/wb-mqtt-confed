@@ -15,18 +15,18 @@ import (
 
 type patchLoader struct {
 	sync.Mutex
-	baseSchemaPath string
-	dirty          bool
-	watcher        wbgong.DirWatcher
-	patchPaths     []string
+	baseSchemaPath   string
+	dirty            bool
+	watcher          wbgong.DirWatcher
+	sortedPatchPaths []string
 }
 
 func newPatchLoader(baseSchemaPath string) *patchLoader {
 	return &patchLoader{
-		baseSchemaPath: baseSchemaPath,
-		dirty:          true,
-		watcher:        nil,
-		patchPaths:     []string{},
+		baseSchemaPath:   baseSchemaPath,
+		dirty:            true,
+		watcher:          nil,
+		sortedPatchPaths: []string{},
 	}
 }
 
@@ -54,14 +54,14 @@ func (pl *patchLoader) patchIsChanged(path string) {
 	pl.Lock()
 	defer pl.Unlock()
 	pl.dirty = true
-	index := sort.SearchStrings(pl.patchPaths, path)
-	if index == len(pl.patchPaths) {
-		pl.patchPaths = append(pl.patchPaths, path)
+	index := sort.SearchStrings(pl.sortedPatchPaths, path)
+	if index == len(pl.sortedPatchPaths) {
+		pl.sortedPatchPaths = append(pl.sortedPatchPaths, path)
 	} else {
-		if pl.patchPaths[index] != path {
-			pl.patchPaths = append(pl.patchPaths, "")
-			copy(pl.patchPaths[index+1:], pl.patchPaths[index:])
-			pl.patchPaths[index] = path
+		if pl.sortedPatchPaths[index] != path {
+			pl.sortedPatchPaths = append(pl.sortedPatchPaths, "")
+			copy(pl.sortedPatchPaths[index+1:], pl.sortedPatchPaths[index:])
+			pl.sortedPatchPaths[index] = path
 		}
 	}
 }
@@ -70,10 +70,10 @@ func (pl *patchLoader) removePatch(path string) {
 	wbgong.Debug.Printf("patchLoader.removePatch: %s", path)
 	pl.Lock()
 	defer pl.Unlock()
-	index := sort.SearchStrings(pl.patchPaths, path)
-	if index != len(pl.patchPaths) && pl.patchPaths[index] == path {
+	index := sort.SearchStrings(pl.sortedPatchPaths, path)
+	if index != len(pl.sortedPatchPaths) && pl.sortedPatchPaths[index] == path {
 		pl.dirty = true
-		pl.patchPaths = append(pl.patchPaths[:index], pl.patchPaths[index+1:]...)
+		pl.sortedPatchPaths = append(pl.sortedPatchPaths[:index], pl.sortedPatchPaths[index+1:]...)
 	}
 }
 
@@ -86,8 +86,8 @@ func (pl *patchLoader) Patch(schema []byte) []byte {
 	}
 	pl.Lock()
 	pl.dirty = false
-	patchPaths := make([]string, len(pl.patchPaths))
-	copy(patchPaths, pl.patchPaths)
+	patchPaths := make([]string, len(pl.sortedPatchPaths))
+	copy(patchPaths, pl.sortedPatchPaths)
 	pl.Unlock()
 	for _, patchPath := range patchPaths {
 		in, err := os.Open(patchPath)
