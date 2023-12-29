@@ -288,8 +288,9 @@ func (s *JSONSchema) Properties() *JSONSchemaProps {
 	return &s.props
 }
 
-func (s *JSONSchema) StopWatchingSubconfigs() {
+func (s *JSONSchema) StopWatchingDependentFiles() {
 	s.enumLoader.StopWatchingSubconfigs()
+	s.patchLoader.StopWatchingPatches()
 }
 
 func (s *JSONSchema) Editor() string {

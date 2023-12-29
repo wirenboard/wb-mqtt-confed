@@ -118,10 +118,8 @@ func (pl *patchLoader) IsDirty() (dirty bool) {
 	return pl.dirty
 }
 
-func (pl *enumLoader) StopWatchingPatches() {
+func (pl *patchLoader) StopWatchingPatches() {
 	pl.Lock()
 	defer pl.Unlock()
-	for _, watcher := range pl.watchers {
-		watcher.Stop()
-	}
+	pl.watcher.Stop()
 }
