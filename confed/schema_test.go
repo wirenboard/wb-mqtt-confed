@@ -1,9 +1,10 @@
 package confed
 
 import (
+	"testing"
+
 	"github.com/wirenboard/wbgong/testutils"
 	"github.com/xeipuuv/gojsonschema"
-	"testing"
 )
 
 type SchemaSuite struct {
@@ -21,7 +22,7 @@ func (s *SchemaSuite) SetupTest() {
 }
 
 func (s *SchemaSuite) TearDownTest() {
-	s.schema.StopWatchingSubconfigs()
+	s.schema.StopWatchingDependentFiles()
 	s.TearDownDataFiles()
 	s.Suite.TearDownTest()
 }
@@ -43,7 +44,7 @@ func (s *SchemaSuite) verifyInvalid(docPath string) {
 func (s *SchemaSuite) verifyError(docPath, schemaPath string) {
 	schema, err := NewJSONSchemaWithRoot(schemaPath, s.DataFileTempDir())
 	s.Ck("error loading schema", err)
-	defer schema.StopWatchingSubconfigs()
+	defer schema.StopWatchingDependentFiles()
 	_, validationError := schema.ValidateFile(docPath)
 	s.NotNil(validationError)
 }

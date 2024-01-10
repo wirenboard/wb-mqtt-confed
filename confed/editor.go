@@ -3,13 +3,14 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/wirenboard/wbgong"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
-	"sync"
 	"strconv"
 	"strings"
+	"sync"
+
+	"github.com/wirenboard/wbgong"
 )
 
 const (
@@ -50,6 +51,7 @@ func printPreprocessorErrors(configPath string, errors string) {
 }
 
 type RequestType int64
+
 const (
 	Sleep RequestType = iota
 	Sync
@@ -58,7 +60,7 @@ const (
 
 type Request struct {
 	requestType RequestType
-	properties map[string]string
+	properties  map[string]string
 }
 
 type Editor struct {
@@ -145,7 +147,7 @@ func (editor *Editor) doRemoveSchema(path string) {
 		return
 	}
 
-	schema.StopWatchingSubconfigs()
+	schema.StopWatchingDependentFiles()
 	delete(editor.schemasBySchemaPath, schema.Path())
 	l := editor.schemasByConfigPath[schema.ConfigPath()]
 	if l == nil {
@@ -322,23 +324,23 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	}
 
 	if schema.RestartDelayMS() > 0 {
-		editor.RequestCh <- Request{Sleep,map[string]string{"delay":strconv.Itoa(schema.RestartDelayMS())}}
+		editor.RequestCh <- Request{Sleep, map[string]string{"delay": strconv.Itoa(schema.RestartDelayMS())}}
 	} else {
-		editor.RequestCh <- Request{Sync,map[string]string{"path":schema.PhysicalConfigPath()}}
-	}	
+		editor.RequestCh <- Request{Sync, map[string]string{"path": schema.PhysicalConfigPath()}}
+	}
 
 	reply.Path = args.Path
 	if schema.Services() != nil {
 		for _, service := range schema.Services() {
-			editor.RequestCh <- Request{Restart,map[string]string{"service":service}}
+			editor.RequestCh <- Request{Restart, map[string]string{"service": service}}
 		}
 	}
 	return nil
 }
 
-func (editor *Editor) stopWatchingSubconfigs() {
+func (editor *Editor) stopWatchingDependentFiles() {
 	for _, schema := range editor.schemasBySchemaPath {
-		schema.StopWatchingSubconfigs()
+		schema.StopWatchingDependentFiles()
 	}
 }
 

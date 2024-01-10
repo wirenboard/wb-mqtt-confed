@@ -1,12 +1,13 @@
 package confed
 
 import (
-	"github.com/stretchr/objx"
-	"github.com/wirenboard/wbgong/testutils"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/objx"
+	"github.com/wirenboard/wbgong/testutils"
 )
 
 const (
@@ -159,7 +160,7 @@ func (s *EditorSuite) SetupTest() {
 }
 
 func (s *EditorSuite) TearDownTest() {
-	s.editor.stopWatchingSubconfigs()
+	s.editor.stopWatchingDependentFiles()
 	s.TearDownRPC()
 	s.TearDownDataFiles()
 	s.Suite.TearDownTest()
@@ -400,9 +401,9 @@ func (s *EditorSuite) TestRestart() {
 		"path": "/etc/network/interfaces",
 	})
 	restart := <-s.editor.RequestCh
-	s.Equal(Request{Sleep,map[string]string{"delay":"4000"}}, restart)
+	s.Equal(Request{Sleep, map[string]string{"delay": "4000"}}, restart)
 	restart = <-s.editor.RequestCh
-	s.Equal(Request{Restart,map[string]string{"service":"networking"}}, restart)
+	s.Equal(Request{Restart, map[string]string{"service": "networking"}}, restart)
 }
 
 func (s *EditorSuite) TestMultipleSchemasPerConfig() {
