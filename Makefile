@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 PREFIX = /usr
-DEB_TARGET_ARCH ?= armel
+DEB_TARGET_ARCH ?= armhf
 
 ifeq ($(DEB_TARGET_ARCH),armel)
 GO_ENV := GOARCH=arm GOARM=5 CC_FOR_TARGET=arm-linux-gnueabi-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
