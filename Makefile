@@ -1,5 +1,6 @@
-.PHONY: all prepare clean
+.PHONY: all clean
 
+PREFIX = /usr
 DEB_TARGET_ARCH ?= armel
 
 ifeq ($(DEB_TARGET_ARCH),armel)
@@ -33,12 +34,12 @@ wb-mqtt-confed: main.go confed/*.go
 
 install:
 	mkdir -p $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
-	install -D -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
-	install -D -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
-	install -D -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/wb-mqtt-confed
-	install -D -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/lib/wb-mqtt-confed/wbgo.so
-	install -D -m 0755 networkparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/networkparser
-	install -D -m 0755 ntpparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/ntpparser
+	install -Dm0644 confed/interfaces.schema.json -t $(DESTDIR)$(PREFIX)/share/wb-mqtt-confed/schemas
+	install -Dm0644 confed/ntp.schema.json -t $(DESTDIR)$(PREFIX)/share/wb-mqtt-confed/schemas
+	install -Dm0755 wb-mqtt-confed -t $(DESTDIR)$(PREFIX)/bin
+	install -Dm0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/wbgo.so
+	install -Dm0755 networkparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
+	install -Dm0755 ntpparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
 
 deb:
 	$(GO_ENV) dpkg-buildpackage -b -a$(DEB_TARGET_ARCH) -us -uc
