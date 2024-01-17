@@ -31,7 +31,7 @@ amd64:
 
 test:
 	cp amd64.wbgo.so confed/wbgo.so
-	CC=x86_64-linux-gnu-gcc go test -trimpath -ldflags="-s -w" ./confed
+	CC=x86_64-linux-gnu-gcc go test -v -trimpath -ldflags="-s -w" ./confed
 
 wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
