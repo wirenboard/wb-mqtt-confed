@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
-	"time"
+	"syscall"
 
 	"github.com/wirenboard/wb-mqtt-confed/confed"
 	"github.com/wirenboard/wbgong"
@@ -120,6 +121,10 @@ func main() {
 	}
 	confed.RunRequestHandler(editor.RequestCh)
 
+	// prepare exit signal channel
+	exitCh := make(chan os.Signal, 1)
+	signal.Notify(exitCh, syscall.SIGINT, syscall.SIGTERM)
+
 	if *brokerAddress == DEFAULT_BROKER_URL && isSocket(MOSQUITTO_SOCK_FILE) {
 		wbgong.Info.Println("broker URL is default and mosquitto socket detected, trying to connect via it")
 		*brokerAddress = "unix://" + MOSQUITTO_SOCK_FILE
@@ -130,7 +135,8 @@ func main() {
 	rpc.Register(editor)
 	rpc.Start()
 
-	for {
-		time.Sleep(1 * time.Second)
-	}
+	// wait for quit signal
+	<-exitCh
+
+	rpc.Stop()
 }

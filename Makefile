@@ -16,6 +16,7 @@ GO_ENV := GOARCH=386 CC=i586-linux-gnu-gcc
 endif
 
 GO ?= go
+GO_FLAGS = -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
 
 all: clean wb-mqtt-confed
 
@@ -26,7 +27,7 @@ amd64:
 	$(MAKE) DEB_TARGET_ARCH=amd64
 
 wb-mqtt-confed: main.go confed/*.go
-	$(GO_ENV) $(GO) build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
+	$(GO_ENV) $(GO) build -trimpath $(GO_FLAGS)
 
 install:
 	mkdir -p $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
