@@ -26,18 +26,27 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import re
-import json
-import sys
 import codecs
-import netaddr
-from pyparsing import White, Word, alphanums, CharsNotIn
-from pyparsing import Forward, Group, OneOrMore
-from pyparsing import pythonStyleComment
-from pyparsing import Literal
-from pyparsing import Optional, ZeroOrMore
-from pyparsing import Regex, SkipTo
+import json
+import re
+import sys
 
+import netaddr
+from pyparsing import (
+    CharsNotIn,
+    Forward,
+    Group,
+    Literal,
+    OneOrMore,
+    Optional,
+    Regex,
+    SkipTo,
+    White,
+    Word,
+    ZeroOrMore,
+    alphanums,
+    pythonStyleComment,
+)
 
 JSON_INDENT_LEVEL = 2
 DEFAULT_LINK_LOCAL_LOW_BS = (42, 42)
@@ -89,9 +98,18 @@ class Interface(object):
         dns-nameservers 172.16.200.10
     """
 
-    def __init__(self, iface, mode, ip=None, netmask="255.255.255.0",
-                 network=None,
-                 broadcast=None, gateway=None, nameserver=None, options=None):
+    def __init__(
+        self,
+        iface,
+        mode,
+        ip=None,
+        netmask="255.255.255.0",
+        network=None,
+        broadcast=None,
+        gateway=None,
+        nameserver=None,
+        options=None,
+    ):
         """
         Creates a new interface object
 
@@ -113,10 +131,18 @@ class Interface(object):
         self.options = options or []
         self.iface = iface
         self.mode = mode
-        if self.mode not in ["auto", "manual", "dhcp", "static", "ppp",
-                             "bootp", "tunnel", "wvdial", "ipv4ll"]:
-            raise ParseError("No valid mode. Valid modes are 'auto', "
-                             "'manual', 'dhcp' or 'static'.")
+        if self.mode not in [
+            "auto",
+            "manual",
+            "dhcp",
+            "static",
+            "ppp",
+            "bootp",
+            "tunnel",
+            "wvdial",
+            "ipv4ll",
+        ]:
+            raise ParseError("No valid mode. Valid modes are 'auto', 'manual', 'dhcp' or 'static'.")
         self.ip = ip
         self.netmask = netmask
         self.network = network
@@ -166,37 +192,35 @@ class Interface(object):
 
 
 class NetworkParser(object):
-
     interface = Word(alphanums + ":")
     key = Word(alphanums + "-_")
     space = White().suppress()
     value = CharsNotIn("{}\n#")
     line = Regex("^.*$")
-    comment = ("#")
+    comment = "#"
     method = Regex("loopback|manual|dhcp|static|ppp|bootp|tunnel|wvdial|ipv4ll")
     stanza = Regex("auto|iface|mapping|allow-hotplug")
-    option_key = Regex("bridge_\w*|post-\w*|up|down|pre-\w*|address"
-                       "|network|netmask|gateway|broadcast|dns-\w*|scope|"
-                       "pointtopoint|metric|hwaddress|mtu|hostname|"
-                       "leasehours|leasetime|vendor|client|bootfile|server"
-                       "|mode|endpoint|dstaddr|local|ttl|provider|unit"
-                       "|options|frame|bitrate|netnum|media|wpa-[\w-]*")
+    option_key = Regex(
+        "bridge_\w*|post-\w*|up|down|pre-\w*|address"
+        "|network|netmask|gateway|broadcast|dns-\w*|scope|"
+        "pointtopoint|metric|hwaddress|mtu|hostname|"
+        "leasehours|leasetime|vendor|client|bootfile|server"
+        "|mode|endpoint|dstaddr|local|ttl|provider|unit"
+        "|options|frame|bitrate|netnum|media|wpa-[\w-]*"
+    )
     _eol = Literal("\n").suppress()
     option = Forward()
-    option << Group(space
-                    # + Regex("^\s*")
-                    + option_key
-                    + space
-                    + SkipTo(_eol))
+    option << Group(
+        space
+        # + Regex("^\s*")
+        + option_key
+        + space
+        + SkipTo(_eol)
+    )
     interface_block = Forward()
-    interface_block << Group(stanza
-                             + space
-                             + interface
-                             + Optional(
-                                 space
-                                 + Regex("inet|can")
-                                 + method
-                                 + Group(ZeroOrMore(option))))
+    interface_block << Group(
+        stanza + space + interface + Optional(space + Regex("inet|can") + method + Group(ZeroOrMore(option)))
+    )
 
     # + Group(ZeroOrMore(assignment)))
 
@@ -431,6 +455,7 @@ def main():
         from_json()
     else:
         to_json()
+
 
 if __name__ == "__main__":
     main()
