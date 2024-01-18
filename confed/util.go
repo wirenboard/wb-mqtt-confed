@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/DisposaBoy/JsonConfigReader"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"github.com/DisposaBoy/JsonConfigReader"
 )
 
 type RunCommandResult struct {
@@ -26,7 +27,8 @@ func runCommand(captureStdout bool, stdin io.Reader, command string, args ...str
 		cmd.Stdout = &res.stdout
 	}
 	cmd.Stderr = &res.stderr
-	if err := cmd.Run(); err != nil {
+	err = cmd.Run()
+	if err != nil {
 		exitErr, ok := err.(*exec.ExitError)
 		if ok {
 			status := -1 // FIXME
@@ -52,7 +54,7 @@ func extPreprocess(commandAndArgs []string, in []byte) (RunCommandResult, error)
 }
 
 type LoadConfigResult struct {
-	content []byte
+	content            []byte
 	preprocessorErrors string
 }
 
