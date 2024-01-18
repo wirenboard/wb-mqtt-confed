@@ -1,12 +1,16 @@
-.PHONY: all prepare clean
+.PHONY: all clean
 
-DEB_TARGET_ARCH ?= armel
+PREFIX = /usr
+DEB_TARGET_ARCH ?= armhf
 
 ifeq ($(DEB_TARGET_ARCH),armel)
 GO_ENV := GOARCH=arm GOARM=5 CC_FOR_TARGET=arm-linux-gnueabi-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
 endif
 ifeq ($(DEB_TARGET_ARCH),armhf)
 GO_ENV := GOARCH=arm GOARM=6 CC_FOR_TARGET=arm-linux-gnueabihf-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
+endif
+ifeq ($(DEB_TARGET_ARCH),arm64)
+GO_ENV := GOARCH=arm64 GOARM=6 CC_FOR_TARGET=aarch64-linux-gnu-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
 endif
 ifeq ($(DEB_TARGET_ARCH),amd64)
 GO_ENV := GOARCH=amd64 CC=x86_64-linux-gnu-gcc
@@ -25,17 +29,21 @@ clean:
 amd64:
 	$(MAKE) DEB_TARGET_ARCH=amd64
 
+test:
+	cp amd64.wbgo.so confed/wbgo.so
+	CC=x86_64-linux-gnu-gcc go test -v -trimpath -ldflags="-s -w" ./confed
+
 wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
 
 install:
 	mkdir -p $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
-	install -D -m 0644 confed/interfaces.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/interfaces.schema.json
-	install -D -m 0644 confed/ntp.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/ntp.schema.json
-	install -D -m 0755 wb-mqtt-confed $(DESTDIR)/usr/bin/wb-mqtt-confed
-	install -D -m 0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)/usr/lib/wb-mqtt-confed/wbgo.so
-	install -D -m 0755 networkparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/networkparser
-	install -D -m 0755 ntpparser $(DESTDIR)/usr/lib/wb-mqtt-confed/parsers/ntpparser
+	install -Dm0644 confed/interfaces.schema.json -t $(DESTDIR)$(PREFIX)/share/wb-mqtt-confed/schemas
+	install -Dm0644 confed/ntp.schema.json -t $(DESTDIR)$(PREFIX)/share/wb-mqtt-confed/schemas
+	install -Dm0755 wb-mqtt-confed -t $(DESTDIR)$(PREFIX)/bin
+	install -Dm0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/wbgo.so
+	install -Dm0755 networkparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
+	install -Dm0755 ntpparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
 
 deb:
 	$(GO_ENV) dpkg-buildpackage -b -a$(DEB_TARGET_ARCH) -us -uc

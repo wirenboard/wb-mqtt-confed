@@ -110,10 +110,11 @@ def to_json():
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == '-s':
+    if len(sys.argv) > 1 and sys.argv[1] == "-s":
         from_json()
     else:
         to_json()
+
 
 if __name__ == "__main__":
     main()
