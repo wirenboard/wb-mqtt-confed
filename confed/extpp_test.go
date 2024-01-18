@@ -17,7 +17,7 @@ func TestExtPreprocess(t *testing.T) {
 	}
 }
 
-func SkipTestExtError(t *testing.T) {
+func TestExtError(t *testing.T) {
 	_, err := extPreprocess([]string{
 		"--no-such-command--please-don't-create-it--",
 	}, []byte("abc-def-ghi"))
@@ -26,7 +26,7 @@ func SkipTestExtError(t *testing.T) {
 	}
 }
 
-func SkipTestExtCaptureStderr(t *testing.T) {
+func TestExtCaptureStderr(t *testing.T) {
 	_, err := extPreprocess([]string{
 		"sh", "-c", "echo 'zzz qqq' 1>&2; exit 42",
 	}, []byte("foobar"))
