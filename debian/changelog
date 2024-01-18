@@ -1,8 +1,14 @@
-wb-mqtt-confed (1.14.1) stable; urgency=medium
+wb-mqtt-confed (1.14.2) stable; urgency=medium
 
   * Stop rpc server on quit
 
- -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 17 Jan 2023 10:34:00 +0400
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 18 Jan 2023 11:34:00 +0400
+
+wb-mqtt-confed (1.14.1) stable; urgency=medium
+
+  * Fix service crash on schema change
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Thu, 18 Jan 2024 10:49:45 +0500
 
 wb-mqtt-confed (1.14.0) stable; urgency=medium
 

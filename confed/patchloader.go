@@ -121,5 +121,7 @@ func (pl *patchLoader) IsDirty() (dirty bool) {
 func (pl *patchLoader) StopWatchingPatches() {
 	pl.Lock()
 	defer pl.Unlock()
-	pl.watcher.Stop()
+	if pl.watcher != nil {
+		pl.watcher.Stop()
+	}
 }
