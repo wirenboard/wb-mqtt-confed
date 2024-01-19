@@ -10,7 +10,7 @@ ifeq ($(DEB_TARGET_ARCH),armhf)
 GO_ENV := GOARCH=arm GOARM=6 CC_FOR_TARGET=arm-linux-gnueabihf-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
 endif
 ifeq ($(DEB_TARGET_ARCH),arm64)
-GO_ENV := GOARCH=arm64 GOARM=6 CC_FOR_TARGET=aarch64-linux-gnu-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
+GO_ENV := GOARCH=arm64 CC_FOR_TARGET=aarch64-linux-gnu-gcc CC=$$CC_FOR_TARGET CGO_ENABLED=1
 endif
 ifeq ($(DEB_TARGET_ARCH),amd64)
 GO_ENV := GOARCH=amd64 CC=x86_64-linux-gnu-gcc
@@ -20,6 +20,7 @@ GO_ENV := GOARCH=386 CC=i586-linux-gnu-gcc
 endif
 
 GO ?= go
+GO_FLAGS = -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
 
 all: clean wb-mqtt-confed
 
@@ -34,7 +35,7 @@ test:
 	CC=x86_64-linux-gnu-gcc go test -v -trimpath -ldflags="-s -w" ./confed
 
 wb-mqtt-confed: main.go confed/*.go
-	$(GO_ENV) $(GO) build -trimpath -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
+	$(GO_ENV) $(GO) build -trimpath $(GO_FLAGS)
 
 install:
 	mkdir -p $(DESTDIR)/var/lib/wb-mqtt-confed/schemas
