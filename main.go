@@ -134,9 +134,8 @@ func main() {
 	rpc := wbgong.NewMQTTRPCServer("confed", mqttClient)
 	rpc.Register(editor)
 	rpc.Start()
+	defer rpc.Stop()
 
 	// wait for quit signal
 	<-exitCh
-
-	rpc.Stop()
 }
