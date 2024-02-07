@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.14.5) stable; urgency=medium
+
+  * Fix false positive error: 'plugin.Open("./wbgo.so"): realpath failed'
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 07 Feb 2024 14:33:00 +0400
+
 wb-mqtt-confed (1.14.4) stable; urgency=medium
 
   * Stop rpc server on quit
