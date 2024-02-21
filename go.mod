@@ -3,7 +3,7 @@ module github.com/wirenboard/wb-mqtt-confed
 go 1.15
 
 require (
-	github.com/DisposaBoy/JsonConfigReader v0.0.0-20130112093355-33a99fdf1d5e
+	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
 	github.com/evanphx/json-patch/v5 v5.7.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/objx v0.3.0
