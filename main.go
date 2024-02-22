@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -43,7 +45,15 @@ func main() {
 	validate := flag.Bool("validate", false, "Validate specified config file and exit")
 	dump := flag.Bool("dump", false, "Dump preprocessed schema and exit")
 	wbgoso := flag.String("wbgo", "/usr/lib/wb-mqtt-confed/wbgo.so", "Location to wbgo.so file")
+	profile := flag.String("profile", "", "Run pprof server")
 	flag.Parse()
+
+	if *profile != "" {
+		go func() {
+			log.Println(http.ListenAndServe(*profile, nil))
+		}()
+	}
+
 	errInit := wbgong.Init(*wbgoso)
 	if errInit != nil {
 		log.Fatalf("ERROR: wbgo.so init failed: '%s'", errInit)
