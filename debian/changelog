@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.14.7) stable; urgency=medium
+
+  * Wiren Board 8 support
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 24 Apr 2024 15:40:00 +0400
+
 wb-mqtt-confed (1.14.6) stable; urgency=medium
 
   * Add -profile flag to enable profiling with pprof
