@@ -45,6 +45,7 @@ install:
 	install -Dm0644 $(DEB_TARGET_ARCH).wbgo.so $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/wbgo.so
 	install -Dm0755 networkparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
 	install -Dm0755 ntpparser -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-confed/parsers
+	install -Dm0644 wb-mqtt-confed.wbconfigs $(DESTDIR)/etc/wb-configs.d/15wb-mqtt-confed
 
 deb:
 	$(GO_ENV) dpkg-buildpackage -b -a$(DEB_TARGET_ARCH) -us -uc
