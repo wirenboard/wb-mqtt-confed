@@ -20,7 +20,7 @@ GO_ENV := GOARCH=386 CC=i586-linux-gnu-gcc
 endif
 
 GO ?= go
-GO_FLAGS = -ldflags "-w -X main.version=`git describe --tags --always --dirty`"
+GO_FLAGS = -ldflags "-s -w -X main.version=`git describe --tags --always --dirty`"
 
 all: clean wb-mqtt-confed
 
