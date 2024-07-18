@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.14.9) stable; urgency=medium
+
+  * service: use /etc/default/wb-mqtt-confed
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Thu, 18 Jul 2024 10:20:00 +0400
+
 wb-mqtt-confed (1.14.8) stable; urgency=medium
 
   * Backup /etc/ntp.conf by moving to /mnt/data
