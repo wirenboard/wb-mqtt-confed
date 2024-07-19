@@ -34,6 +34,8 @@ debian/files
 debian/wb-mqtt-confed*
 debian/debhelper-build-stamp
 
+.devcontainer
+
 ### direnv ###
 .direnv
 .envrc
