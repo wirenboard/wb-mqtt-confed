@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.14.12) stable; urgency=medium
+
+  * update wbgo.so library, republish retained messages on reconnect to mqtt broker
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 17 Sep 2024 13:45:00 +0400
+
 wb-mqtt-confed (1.14.11) stable; urgency=medium
 
   * update wbgo.so library, improve stability on Wiren Board 8
