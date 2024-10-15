@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.15.0) stable; urgency=medium
+
+  * update wbgo.so library, fix log priority
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 14 Oct 2024 18:45:00 +0400
+
 wb-mqtt-confed (1.14.12) stable; urgency=medium
 
   * update wbgo.so library, republish retained messages on reconnect to mqtt broker
