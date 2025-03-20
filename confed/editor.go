@@ -3,7 +3,7 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -318,7 +318,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		bs = indented.Bytes()
 	}
 
-	if err = ioutil.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
+	if err = os.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
 		wbgong.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}

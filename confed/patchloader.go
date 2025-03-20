@@ -1,7 +1,7 @@
 package confed
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"regexp"
@@ -99,7 +99,7 @@ func (pl *patchLoader) Patch(schema []byte) []byte {
 
 		reader := JsonConfigReader.New(in)
 		var patch []byte
-		patch, err = ioutil.ReadAll(reader)
+		patch, err = io.ReadAll(reader)
 		if err != nil {
 			wbgong.Warn.Printf("Failed to read patch file %s: %s", patchPath, err)
 			continue

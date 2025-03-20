@@ -1,7 +1,6 @@
 package confed
 
 import (
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -222,13 +221,13 @@ func (s *EditorSuite) SkipTestLoadFile() {
 }
 
 func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
-	bs, err := ioutil.ReadFile(s.DataFilePath(path))
+	bs, err := os.ReadFile(s.DataFilePath(path))
 	s.Ck("ReadFile()", err)
 	s.Equal(expectedContent, objx.MustFromJSON(string(bs)))
 }
 
 func (s *EditorSuite) verifyTextFile(path string, expectedContent string) {
-	bs, err := ioutil.ReadFile(s.DataFilePath(path))
+	bs, err := os.ReadFile(s.DataFilePath(path))
 	s.Ck("ReadFile()", err)
 	s.Equal(expectedContent, string(bs))
 }
