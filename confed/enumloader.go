@@ -3,11 +3,12 @@ package confed
 import (
 	"encoding/json"
 	"errors"
-	"github.com/wirenboard/wbgong"
-	"github.com/xeipuuv/gojsonpointer"
 	"reflect"
 	"sort"
 	"sync"
+
+	"github.com/wirenboard/wbgong"
+	"github.com/xeipuuv/gojsonpointer"
 )
 
 type enumLoader struct {
@@ -49,7 +50,7 @@ func (c *subconfWatcherClient) LiveRemoveFile(path string) error {
 func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) (err error) {
 	wbgong.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
 	bs, err := loadConfigBytes(path, nil)
-	content := bs.content 
+	content := bs.content
 	if err != nil {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
 		return

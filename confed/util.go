@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,7 +67,7 @@ func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult,
 	var jsonInput io.Reader = in
 	if preprocessCmd != nil {
 		var tmpBs []byte
-		tmpBs, err = ioutil.ReadAll(in)
+		tmpBs, err = io.ReadAll(in)
 		if err != nil {
 			return
 		}
@@ -84,7 +83,7 @@ func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult,
 	}
 
 	reader := JsonConfigReader.New(jsonInput)
-	res.content, err = ioutil.ReadAll(reader)
+	res.content, err = io.ReadAll(reader)
 	return
 }
 

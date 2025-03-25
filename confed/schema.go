@@ -186,10 +186,6 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	return
 }
 
-func NewJSONSchema(schemaPath string) (s *JSONSchema, err error) {
-	return NewJSONSchemaWithRoot(schemaPath, "/")
-}
-
 func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
 	if s.patchLoader.IsDirty() {
 		err := json.Unmarshal(s.patchLoader.Patch(s.content), &s.parsed)

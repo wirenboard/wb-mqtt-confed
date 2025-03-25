@@ -20,6 +20,7 @@ const (
 	DRIVER_CLIENT_ID    = "confed"
 	MOSQUITTO_SOCK_FILE = "/var/run/mosquitto/mosquitto.sock"
 	DEFAULT_BROKER_URL  = "tcp://localhost:1883"
+	WBGO_FILE           = "/usr/lib/wb-mqtt-confed/wbgo.so"
 )
 
 func isSocket(path string) bool {
@@ -38,13 +39,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	brokerAddress := flag.String("broker", "tcp://localhost:1883", "MQTT broker url")
+	brokerAddress := flag.String("broker", DEFAULT_BROKER_URL, "MQTT broker url")
 	root := flag.String("root", "/", "Config root path")
 	debug := flag.Bool("debug", false, "Enable debugging")
 	useSyslog := flag.Bool("syslog", false, "Use syslog for logging")
 	validate := flag.Bool("validate", false, "Validate specified config file and exit")
 	dump := flag.Bool("dump", false, "Dump preprocessed schema and exit")
-	wbgoso := flag.String("wbgo", "/usr/lib/wb-mqtt-confed/wbgo.so", "Location to wbgo.so file")
+	wbgoso := flag.String("wbgo", WBGO_FILE, "Location to wbgo.so file")
 	profile := flag.String("profile", "", "Run pprof server")
 	flag.Parse()
 
