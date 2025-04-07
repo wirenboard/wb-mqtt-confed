@@ -3,7 +3,7 @@
     "type": "object",
     "title": "Clock synchronization (NTP)",
     "configFile": {
-        "path": "/etc/ntp.conf",
+        "path": "/etc/ntpsec/ntp.conf",
         "toJSON": "/usr/lib/wb-mqtt-confed/parsers/ntpparser",
         "fromJSON": ["/usr/lib/wb-mqtt-confed/parsers/ntpparser", "-s"],
         "restartDelayMS": 4000,
