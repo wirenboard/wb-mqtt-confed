@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.17.0) stable; urgency=medium
+
+  * Migrate to ntpsec
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 12 May 2025 16:10:00 +0400
+
 wb-mqtt-confed (1.16.2) stable; urgency=medium
 
   * Update wbgo.so library

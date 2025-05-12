@@ -1,1 +1,1 @@
-wb_move /etc/ntp.conf
+wb_move /etc/ntpsec/ntp.conf
