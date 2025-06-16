@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.16.3) stable; urgency=medium
+
+  * Update wbgong, no functional changes
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 16 Jun 2025 11:30:00 +0400
+
 wb-mqtt-confed (1.16.2) stable; urgency=medium
 
   * Update wbgo.so library
