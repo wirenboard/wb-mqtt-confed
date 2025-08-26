@@ -32,7 +32,7 @@ amd64:
 
 test:
 	cp amd64.wbgo.so confed/wbgo.so
-	CC=x86_64-linux-gnu-gcc $(GO) test -v -trimpath -ldflags="-s -w" -tags test -cover ./confed
+	CC=x86_64-linux-gnu-gcc $(GO) test -v -trimpath -ldflags="-s -w" -tags test -cover -race ./confed
 
 wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build -trimpath $(GO_FLAGS)
