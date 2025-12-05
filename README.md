@@ -10,7 +10,7 @@ WirenBoard Config Editor Backend
 Для отображения настроек в homeui используется JSON-схема с их описанием.
 Схема должна содержать дополнительный параметр `configFile` с инструкциями для `wb-mqtt-confed`.
 
-```json
+```jsonc
   "configFile": {
     // Путь до файла с настройками. Обязательный параметр
     "path": "/etc/wb-mqtt-serial.conf",
