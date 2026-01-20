@@ -27,6 +27,7 @@ _testmain.go
 .tern-port
 
 /wb-mqtt-confed
+wbgo*
 
 vendor
 
