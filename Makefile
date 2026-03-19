@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean test install
 
 PREFIX = /usr
 DEB_TARGET_ARCH ?= armhf
@@ -15,17 +15,20 @@ GO_ENV := GOARCH=amd64
 endif
 
 GO ?= go
+GOTEST ?= $(GO) test
 GCFLAGS :=
 LDFLAGS := -X main.version=`git describe --tags --always --dirty`
+GO_FLAGS := -buildvcs=false
+GO_TEST_FLAGS = -v -cover -tags test
 
 ifeq ($(DEBUG),)
 	LDFLAGS += -s -w
+	GO_FLAGS += -trimpath
 else
 	GCFLAGS += -N -l
 endif
 
-GO_FLAGS = -trimpath $(if $(GCFLAGS),-gcflags=all="$(GCFLAGS)") $(if $(LDFLAGS),-ldflags="$(LDFLAGS)")
-GO_TEST_FLAGS = -v -cover -tags test
+GO_FLAGS += $(if $(GCFLAGS),-gcflags=all="$(GCFLAGS)") $(if $(LDFLAGS),-ldflags="$(LDFLAGS)")
 
 all: clean wb-mqtt-confed
 
@@ -37,7 +40,7 @@ amd64:
 
 test:
 	cp $(WBGO_LOCAL_PATH)/amd64.wbgo.so confed/wbgo.so
-	$(GO) test $(GO_FLAGS) $(GO_TEST_FLAGS) ./confed
+	$(GOTEST) $(GO_FLAGS) $(GO_TEST_FLAGS) ./confed
 
 wb-mqtt-confed: main.go confed/*.go
 	$(GO_ENV) $(GO) build $(GO_FLAGS)

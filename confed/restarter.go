@@ -3,8 +3,9 @@ package confed
 import (
 	"time"
 
-	"github.com/wirenboard/wbgong"
 	"strconv"
+
+	"github.com/wirenboard/wbgong"
 )
 
 const (
@@ -26,13 +27,13 @@ func RunRequestHandler(ch chan Request) {
 				wbgong.Debug.Printf("Delay %d ms before restarting services", delay)
 				time.Sleep(time.Duration(delay) * time.Millisecond)
 			case Sync:
-				var path string = req.properties["path"]
+				path := req.properties["path"]
 				wbgong.Debug.Printf("File sync %s", path)
 				if _, err := runCommand(false, nil, "sync", path); err != nil {
 					wbgong.Error.Printf("Error sync file %s: %s", path, err)
 				}
 			case Restart:
-				var service string = req.properties["service"]
+				service := req.properties["service"]
 				wbgong.Debug.Printf("Restarting service %s", service)
 				if err := restartService(service); err != nil {
 					wbgong.Error.Printf("Error restarting %s: %s", service, err)

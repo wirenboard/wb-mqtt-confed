@@ -57,12 +57,10 @@ func (pl *patchLoader) patchIsChanged(path string) {
 	index := sort.SearchStrings(pl.sortedPatchPaths, path)
 	if index == len(pl.sortedPatchPaths) {
 		pl.sortedPatchPaths = append(pl.sortedPatchPaths, path)
-	} else {
-		if pl.sortedPatchPaths[index] != path {
-			pl.sortedPatchPaths = append(pl.sortedPatchPaths, "")
-			copy(pl.sortedPatchPaths[index+1:], pl.sortedPatchPaths[index:])
-			pl.sortedPatchPaths[index] = path
-		}
+	} else if pl.sortedPatchPaths[index] != path {
+		pl.sortedPatchPaths = append(pl.sortedPatchPaths, "")
+		copy(pl.sortedPatchPaths[index+1:], pl.sortedPatchPaths[index:])
+		pl.sortedPatchPaths[index] = path
 	}
 }
 

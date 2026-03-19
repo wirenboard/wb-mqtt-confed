@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/wirenboard/wb-mqtt-confed/confed"
@@ -29,6 +30,32 @@ func isSocket(path string) bool {
 		return false
 	}
 	return info.Mode()&os.ModeSocket != 0
+}
+
+func runValidation(schemaPath, configPath, absRoot string) error {
+	schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
+	if err != nil {
+		return fmt.Errorf("failed to load schema %s: %w", schemaPath, err)
+	}
+
+	r, err := schema.ValidateFile(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to validate %s: %w", configPath, err)
+	}
+
+	if !r.Valid() {
+		var b strings.Builder
+
+		fmt.Fprintf(&b, "Validation failed for %s\n", configPath)
+
+		for _, desc := range r.Errors() {
+			fmt.Fprintf(&b, "- %s\n", desc)
+		}
+
+		return fmt.Errorf("%s", b.String())
+	}
+
+	return nil
 }
 
 var version = "unknown"
@@ -82,21 +109,11 @@ func main() {
 			wbgong.Error.Fatal("must specify schema and config files")
 		}
 		schemaPath, configPath := flag.Arg(0), flag.Arg(1)
-		schema, err := confed.NewJSONSchemaWithRoot(schemaPath, absRoot)
-		if err != nil {
-			wbgong.Error.Fatalf("failed to load schema %s: %s", schemaPath, err)
+
+		if err := runValidation(schemaPath, configPath, absRoot); err != nil {
+			wbgong.Error.Fatal(err)
 		}
-		r, err := schema.ValidateFile(configPath)
-		if err != nil {
-			wbgong.Error.Fatalf("failed to validate %s: %s", configPath, err)
-		}
-		if !r.Valid() {
-			wbgong.Error.Printf("Validation failed for %s", configPath)
-			for _, desc := range r.Errors() {
-				wbgong.Error.Printf("- %s\n", desc)
-			}
-			os.Exit(1)
-		}
+
 		os.Exit(0)
 	}
 	if *dump {
@@ -143,7 +160,10 @@ func main() {
 
 	mqttClient := wbgong.NewPahoMQTTClient(*brokerAddress, DRIVER_CLIENT_ID)
 	rpc := wbgong.NewMQTTRPCServer("confed", mqttClient)
-	rpc.Register(editor)
+	err = rpc.Register(editor)
+	if err != nil {
+		wbgong.Error.Fatalf("failed to register editor: %v", err)
+	}
 	rpc.Start()
 	defer rpc.Stop()
 

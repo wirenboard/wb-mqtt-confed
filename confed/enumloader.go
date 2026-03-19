@@ -56,7 +56,7 @@ func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer
 		return
 	}
 
-	var parsed map[string]interface{}
+	var parsed map[string]any
 	if err = json.Unmarshal(content, &parsed); err != nil {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s unmarshal failed: %s", path, err)
 		return
@@ -123,8 +123,8 @@ func (e *enumLoader) ensureSubconfDirLoaded(path, pattern, ptrString string) (er
 
 var invalidEnumSubconfError = errors.New("invalid enum subconf node")
 
-func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interface{}, err error) {
-	maybePaths, ok := node["directories"].([]interface{})
+func (e *enumLoader) subconfEnumValues(node map[string]any) (r []any, err error) {
+	maybePaths, ok := node["directories"].([]any)
 	if !ok || len(maybePaths) == 0 {
 		return nil, invalidEnumSubconfError
 	}
@@ -175,7 +175,7 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	}
 
 	sort.Strings(strs)
-	r = make([]interface{}, len(strs))
+	r = make([]any, len(strs))
 	for n, v := range strs {
 		r[n] = v
 	}
@@ -183,17 +183,17 @@ func (e *enumLoader) subconfEnumValues(node map[string]interface{}) (r []interfa
 	return
 }
 
-func (e *enumLoader) preprocess(v interface{}) interface{} {
+func (e *enumLoader) preprocess(v any) any {
 	switch v.(type) {
-	case map[string]interface{}:
-		m := v.(map[string]interface{})
-		r := make(map[string]interface{})
+	case map[string]any:
+		m := v.(map[string]any)
+		r := make(map[string]any)
 		for k, item := range m {
 			if k != "enum" {
 				r[k] = e.preprocess(item)
 				continue
 			}
-			msi, ok := item.(map[string]interface{})
+			msi, ok := item.(map[string]any)
 			if !ok {
 				r[k] = e.preprocess(item)
 				continue
@@ -208,15 +208,15 @@ func (e *enumLoader) preprocess(v interface{}) interface{} {
 				wbgong.Error.Printf(
 					"failed to load subconf values for %v: %s",
 					vals, err)
-				r[k] = []interface{}{}
+				r[k] = []any{}
 				continue
 			}
 			r[k] = vals
 		}
 		return r
-	case []interface{}:
-		l := v.([]interface{})
-		r := make([]interface{}, len(l))
+	case []any:
+		l := v.([]any)
+		r := make([]any, len(l))
 		for n, item := range l {
 			r[n] = e.preprocess(item)
 		}
@@ -226,7 +226,7 @@ func (e *enumLoader) preprocess(v interface{}) interface{} {
 	}
 }
 
-func (e *enumLoader) Preprocess(v interface{}) (r interface{}) {
+func (e *enumLoader) Preprocess(v any) (r any) {
 	e.Lock()
 	defer e.Unlock()
 

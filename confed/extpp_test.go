@@ -10,10 +10,10 @@ func TestExtPreprocess(t *testing.T) {
 		"sed", "s/-/:/g",
 	}, []byte("abc-def-ghi"))
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
-	if string(out.stdout.Bytes()) != "abc:def:ghi" {
-		t.Fatalf("unexpected output: %s", out.stdout.Bytes())
+	if out.stdout.String() != "abc:def:ghi" {
+		t.Fatalf("unexpected output: %s", out.stdout.String())
 	}
 }
 
@@ -31,7 +31,7 @@ func TestExtCaptureStderr(t *testing.T) {
 		"sh", "-c", "echo 'zzz qqq' 1>&2; exit 42",
 	}, []byte("foobar"))
 	if !strings.Contains(err.Error(), "zzz qqq") {
-		t.Errorf("stderr not captured: %s", err)
+		t.Errorf("stderr not captured: %v", err)
 	}
 	if !strings.Contains(err.Error(), "42") {
 		t.Errorf("proper exit status not mentioned in the error message")

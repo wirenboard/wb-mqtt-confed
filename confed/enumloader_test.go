@@ -3,9 +3,10 @@ package confed
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wirenboard/wbgong/testutils"
 	"os"
 	"testing"
+
+	"github.com/wirenboard/wbgong/testutils"
 )
 
 const (
@@ -73,7 +74,7 @@ func (s *EnumLoaderSuite) TearDownTest() {
 	s.Suite.TearDownTest()
 }
 
-func (s *EnumLoaderSuite) expectedContent(enumSubst string) (r map[string]interface{}) {
+func (s *EnumLoaderSuite) expectedContent(enumSubst string) (r map[string]any) {
 	bs := []byte(fmt.Sprintf(EXPECTED_SCHEMA_CONTENT_TMPL, enumSubst))
 	s.Ck("Unmarshal expected JSON", json.Unmarshal(bs, &r))
 	return
@@ -82,7 +83,7 @@ func (s *EnumLoaderSuite) expectedContent(enumSubst string) (r map[string]interf
 func (s *EnumLoaderSuite) verifyEnum(enumSubst string) {
 	bs, err := loadConfigBytes(s.DataFilePath("sample.schema.json"), nil)
 	s.Ck("loadConfigBytes()", err)
-	var m map[string]interface{}
+	var m map[string]any
 	s.Ck("Unmarshal JSON", json.Unmarshal(bs.content, &m))
 	// TBD: specify the base directory for Preprocess
 	s.Equal(s.expectedContent(enumSubst), s.enumLoader.Preprocess(m))
