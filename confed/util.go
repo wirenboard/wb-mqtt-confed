@@ -88,7 +88,7 @@ func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult,
 }
 
 func pathFromRoot(root, path string) (r string, err error) {
-	if root == "" || root[:len(root)-1] != "/" {
+	if root == "" || !strings.HasSuffix(root, "/") {
 		root += "/"
 	}
 	path, err = filepath.Abs(path)
