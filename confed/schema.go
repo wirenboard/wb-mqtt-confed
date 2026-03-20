@@ -33,8 +33,8 @@ type JSONSchema struct {
 	path         string
 	schema       *gojsonschema.Schema
 	content      []byte
-	parsed       map[string]interface{}
-	preprocessed map[string]interface{}
+	parsed       map[string]any
+	preprocessed map[string]any
 	props        JSONSchemaProps
 	enumLoader   *enumLoader
 	patchLoader  *patchLoader
@@ -44,7 +44,7 @@ func subconfKey(path, pattern, ptrString string) string {
 	return path + "\x00" + pattern + "\x00" + ptrString
 }
 
-func extractStringOrStringList(msi map[string]interface{}, key string) ([]string, error) {
+func extractStringOrStringList(msi map[string]any, key string) ([]string, error) {
 	cmd, found := msi[key]
 	if !found {
 		return nil, nil
@@ -55,7 +55,7 @@ func extractStringOrStringList(msi map[string]interface{}, key string) ([]string
 		return []string{s}, nil
 	}
 
-	parts, ok := cmd.([]interface{})
+	parts, ok := cmd.([]any)
 	if !ok {
 		return nil, errors.New("bad command spec")
 	}
@@ -70,7 +70,7 @@ func extractStringOrStringList(msi map[string]interface{}, key string) ([]string
 	return r, nil
 }
 
-func addTranslation(strings map[string]interface{}, lang string, key string, dst map[string]string) {
+func addTranslation(strings map[string]any, lang, key string, dst map[string]string) {
 	translated, ok := strings[key]
 	if ok {
 		res, ok := translated.(string)
@@ -87,12 +87,12 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		return
 	}
 
-	var parsed map[string]interface{}
+	var parsed map[string]any
 	if err = json.Unmarshal(content, &parsed); err != nil {
 		return
 	}
 
-	configFile, _ := parsed["configFile"].(map[string]interface{})
+	configFile, _ := parsed["configFile"].(map[string]any)
 	if configFile == nil {
 		return nil, errors.New("no configFile section in the schema")
 	}
@@ -148,10 +148,10 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	// }
 	titleTranslations := map[string]string{}
 	descriptionTranslations := map[string]string{}
-	translations, ok := parsed["translations"].(map[string]interface{})
+	translations, ok := parsed["translations"].(map[string]any)
 	if ok {
 		for lang, val := range translations {
-			strings, ok := val.(map[string]interface{})
+			strings, ok := val.(map[string]any)
 			if ok {
 				addTranslation(strings, lang, title, titleTranslations)
 				addTranslation(strings, lang, description, descriptionTranslations)
@@ -186,7 +186,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	return
 }
 
-func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
+func (s *JSONSchema) GetPreprocessed() map[string]any {
 	if s.patchLoader.IsDirty() {
 		err := json.Unmarshal(s.patchLoader.Patch(s.content), &s.parsed)
 		if err != nil {
@@ -196,7 +196,7 @@ func (s *JSONSchema) GetPreprocessed() map[string]interface{} {
 		}
 	}
 	if s.preprocessed == nil || s.enumLoader.IsDirty() {
-		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]interface{}) // FIXME
+		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]any) // FIXME
 	}
 	return s.preprocessed
 }

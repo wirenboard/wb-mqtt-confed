@@ -46,7 +46,7 @@ func (s *SchemaSuite) verifyError(docPath, schemaPath string) {
 	s.Ck("error loading schema", err)
 	defer schema.StopWatchingDependentFiles()
 	_, validationError := schema.ValidateFile(docPath)
-	s.NotNil(validationError)
+	s.Error(validationError)
 }
 
 func (s *SchemaSuite) TestValidation() {
@@ -54,11 +54,11 @@ func (s *SchemaSuite) TestValidation() {
 	s.verifyValid("sample-comments.json")
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
-	//s.verifyError("nosuchfile.json", "sample.schema.json")
-	//_, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.DataFileTempDir())
-	//s.NotNil(err)
+	// s.verifyError("nosuchfile.json", "sample.schema.json")
+	// _, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.DataFileTempDir())
+	// s.NotNil(err)
 	_, err := NewJSONSchemaWithRoot("noconfig.schema.json", s.DataFileTempDir())
-	s.NotNil(err)
+	s.Error(err)
 }
 
 func (s *SchemaSuite) SkipTestSchemaProperties() {

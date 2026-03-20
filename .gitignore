@@ -17,8 +17,6 @@ _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
 
-_testmain.go
-
 *.exe
 *.test
 *.prof
@@ -36,6 +34,8 @@ debian/wb-mqtt-confed*
 debian/debhelper-build-stamp
 
 .devcontainer
+.vscode
+.golangci.yml
 
 ### direnv ###
 .direnv

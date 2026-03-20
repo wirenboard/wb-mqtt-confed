@@ -17,11 +17,11 @@ const (
 	RESTART_QUEUE_LEN = 100
 )
 
-func fixFormatProps(v interface{}) interface{} {
+func fixFormatProps(v any) any {
 	switch v.(type) {
-	case map[string]interface{}:
-		m := v.(map[string]interface{})
-		r := make(map[string]interface{})
+	case map[string]any:
+		m := v.(map[string]any)
+		r := make(map[string]any)
 		for k, item := range m {
 			if k == "_format" {
 				r["format"] = fixFormatProps(item)
@@ -30,9 +30,9 @@ func fixFormatProps(v interface{}) interface{} {
 			}
 		}
 		return r
-	case []interface{}:
-		l := v.([]interface{})
-		r := make([]interface{}, len(l))
+	case []any:
+		l := v.([]any)
+		r := make([]any, len(l))
 		for n, item := range l {
 			r[n] = fixFormatProps(item)
 		}
@@ -42,8 +42,8 @@ func fixFormatProps(v interface{}) interface{} {
 	}
 }
 
-func printPreprocessorErrors(configPath string, errors string) {
-	if len(errors) > 0 {
+func printPreprocessorErrors(configPath, errors string) {
+	if errors != "" {
 		for _, err := range strings.Split(strings.TrimSpace(errors), "\n") {
 			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", configPath, err)
 		}
@@ -87,24 +87,16 @@ func (err *EditorError) ErrorCode() int32 {
 const (
 	// no iota here because these values may be used
 	// by external software
-	EDITOR_ERROR_INVALID_PATH   = 1000
-	EDITOR_ERROR_LISTDIR        = 1001
 	EDITOR_ERROR_WRITE          = 1002
 	EDITOR_ERROR_FILE_NOT_FOUND = 1003
-	EDITOR_ERROR_REMOVE         = 1004
-	EDITOR_ERROR_READ           = 1005
 	EDITOR_ERROR_INVALID_CONFIG = 1006
-	EDITOR_ERROR_INVALID_SCHEMA = 1007
 )
 
-var invalidPathError = &EditorError{EDITOR_ERROR_INVALID_PATH, "Invalid path"}
-var listDirError = &EditorError{EDITOR_ERROR_LISTDIR, "Error listing the directory"}
-var writeError = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
-var fileNotFoundError = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
-var invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "Invalid config file"}
-var invalidConfigSchemaError = &EditorError{EDITOR_ERROR_INVALID_SCHEMA, "Invalid config schema"}
-var rmError = &EditorError{EDITOR_ERROR_REMOVE, "Error removing the file"}
-var readError = &EditorError{EDITOR_ERROR_READ, "Error reading the file"}
+var (
+	writeError         = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
+	fileNotFoundError  = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
+	invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "Invalid config file"}
+)
 
 func NewEditor(root string) *Editor {
 	confRoot, err := filepath.Abs(root)
@@ -127,7 +119,7 @@ func (editor *Editor) loadSchema(path string) (err error) {
 	wbgong.Debug.Printf("Loading schema file: %s", path)
 	schema, err := NewJSONSchemaWithRoot(path, editor.root)
 	if err != nil {
-		wbgong.Error.Printf("Error loading schema: %s", err)
+		wbgong.Error.Printf("Error loading schema: %v", err)
 		return
 	}
 
@@ -210,10 +202,10 @@ type EditorPathResponse struct {
 }
 
 type EditorContentResponse struct {
-	ConfigPath string                 `json:"configPath"`
-	Content    *json.RawMessage       `json:"content"`
-	Schema     map[string]interface{} `json:"schema"`
-	Editor     string                 `json:"editor"`
+	ConfigPath string           `json:"configPath"`
+	Content    *json.RawMessage `json:"content"`
+	Schema     map[string]any   `json:"schema"`
+	Editor     string           `json:"editor"`
 }
 
 func (editor *Editor) locateSchema(path string) (*JSONSchema, error) {
@@ -254,16 +246,14 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 			}
 			return invalidConfigError
 		}
-	} else {
-		if !json.Valid(bs.content) {
-			return invalidConfigError
-		}
+	} else if !json.Valid(bs.content) {
+		return invalidConfigError
 	}
 
 	content := json.RawMessage(bs.content) // TBD: use parsed config
 	reply.ConfigPath = schema.ConfigPath()
 	reply.Content = &content
-	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]interface{})
+	reply.Schema = fixFormatProps(schema.GetPreprocessed()).(map[string]any)
 	reply.Editor = schema.Editor()
 
 	return nil
@@ -285,7 +275,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 	if schema.ShouldValidate() {
 		r, err := schema.ValidateContent(*args.Content)
 		if err != nil {
-			wbgong.Error.Printf("Failed to validate config file: %s", err)
+			wbgong.Error.Printf("Failed to validate config file: %v", err)
 			return invalidConfigError
 		}
 		if !r.Valid() {

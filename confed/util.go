@@ -37,7 +37,7 @@ func runCommand(captureStdout bool, stdin io.Reader, command string, args ...str
 			}
 			err = fmt.Errorf("exit status %d from %s %s: %s",
 				status, command, strings.Join(args, " "),
-				string(res.stderr.Bytes()))
+				res.stderr.String())
 		}
 	}
 
@@ -88,8 +88,8 @@ func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult,
 }
 
 func pathFromRoot(root, path string) (r string, err error) {
-	if len(root) == 0 || root[:len(root)-1] != "/" {
-		root = root + "/"
+	if root == "" || !strings.HasSuffix(root, "/") {
+		root += "/"
 	}
 	path, err = filepath.Abs(path)
 	if err == nil {

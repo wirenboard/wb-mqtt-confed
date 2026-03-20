@@ -173,7 +173,6 @@ func (s *EditorSuite) setupPathEnvVar() {
 	} else {
 		os.Setenv("PATH", s.SourceDir()+"/..:"+path)
 	}
-
 }
 
 func (s *EditorSuite) verifyInitialSchemaList() {
@@ -226,7 +225,7 @@ func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
 	s.Equal(expectedContent, objx.MustFromJSON(string(bs)))
 }
 
-func (s *EditorSuite) verifyTextFile(path string, expectedContent string) {
+func (s *EditorSuite) verifyTextFile(path, expectedContent string) {
 	bs, err := os.ReadFile(s.DataFilePath(path))
 	s.Ck("ReadFile()", err)
 	s.Equal(expectedContent, string(bs))
@@ -350,19 +349,19 @@ func (s *EditorSuite) SkipTestLoadPreprocessed() {
 		"configPath": "/etc/network/interfaces",
 		"content":    objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
 		"schema": objx.MustFromJSON(
-			strings.Replace(
+			strings.ReplaceAll(
 				s.ReadSourceDataFile("interfaces.schema.json"),
-				"_format", "format", -1)),
+				"_format", "format")),
 	})
 }
 
 var newIfacesContent = objx.Map{
-	"interfaces": []interface{}{
-		map[string]interface{}{
+	"interfaces": []any{
+		map[string]any{
 			"name":   "eth0",
 			"auto":   true,
 			"method": "dhcp",
-			"options": map[string]interface{}{
+			"options": map[string]any{
 				"hostname": "WirenBoard",
 			},
 		},
