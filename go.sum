@@ -15,8 +15,8 @@ github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.11.0 h1:ib4sjIrwZKxE5u/Japgo/7SJV3PvgjGiRNAvTVGqQl8=
 github.com/stretchr/testify v1.11.0/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/wirenboard/wbgong v0.7.2 h1:DY5paMB+MkHOMKfshKDnuJsqT24pjQb0xb5YbXyYxC4=
-github.com/wirenboard/wbgong v0.7.2/go.mod h1:ghUgMIoNQWlCoFMwpJ8dhEcZjrhRh7cc8RlatNd4yAE=
+github.com/wirenboard/wbgong v0.7.3 h1:b/omQ++wjBg1k5ya5uPyu0TAUA+VXZ4khV6BWBobqCU=
+github.com/wirenboard/wbgong v0.7.3/go.mod h1:ghUgMIoNQWlCoFMwpJ8dhEcZjrhRh7cc8RlatNd4yAE=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f h1:J9EGpcZtP0E/raorCMxlFGSTBrsSlaDGf3jU/qvAE2c=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=
