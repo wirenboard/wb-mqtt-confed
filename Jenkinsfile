@@ -1,3 +1,3 @@
-buildDebGolangWbgo defaultTargets: 'bullseye-armhf bullseye-arm64',
+buildDebGolangWbgo defaultTargets: 'current-armhf current-arm64',
                    defaultRunLintian: true,
                    defaultRunPythonChecks: true
