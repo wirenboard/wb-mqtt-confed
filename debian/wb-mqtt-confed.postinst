@@ -6,7 +6,7 @@ set -e
 old_ntp_conf="/etc/ntp.conf"
 if [ -f $old_ntp_conf ]; then
     ntp_conf_calculated_hash=$(md5sum "$old_ntp_conf" | cut -f 1 -d ' ')
-    if [ "$wb_conf_calculated_hash" == "4c8b0024bac256f7f7f5b2732b79b33a" ]; then
+    if [ "$ntp_conf_calculated_hash" == "4c8b0024bac256f7f7f5b2732b79b33a" ]; then
         echo "Removing old $old_ntp_conf"
         rm -f $old_ntp_conf || true
     else
