@@ -1,8 +1,32 @@
-wb-mqtt-confed (1.16.8) stable; urgency=medium
+wb-mqtt-confed (1.17.4) stable; urgency=medium
 
   * Enable race detection for tests, no functional changes
 
- -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 13 May 2026 17:00:00 +0400
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 08 Jun 2026 17:00:00 +0400
+
+wb-mqtt-confed (1.17.3) stable; urgency=medium
+
+  * Add ntpsec to dependencies
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 08 Jun 2026 12:00:00 +0400
+
+wb-mqtt-confed (1.17.2) stable; urgency=medium
+
+  * Fix postinst script
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Fri, 05 Jun 2026 17:00:00 +0400
+
+wb-mqtt-confed (1.17.1) stable; urgency=medium
+
+  * Bump github.com/wirenboard/wbgong to 0.7.3
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 03 Apr 2026 17:00:00 +0400
+
+wb-mqtt-confed (1.17.0) stable; urgency=medium
+
+  * Port for Debian 13
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 02 Jun 2026 16:20:00 +0400
 
 wb-mqtt-confed (1.16.7) stable; urgency=medium
 
