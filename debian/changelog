@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.17.2) stable; urgency=medium
+
+  * Fix postinst script
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Fri, 05 Jun 2026 17:00:00 +0400
+
 wb-mqtt-confed (1.17.1) stable; urgency=medium
 
   * Bump github.com/wirenboard/wbgong to 0.7.3
