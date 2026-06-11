@@ -4,6 +4,7 @@ set -e
 
 # ntp config is now in /etc/ntpsec/
 old_ntp_conf="/etc/ntp.conf"
+new_ntp_conf="/etc/ntpsec/ntp.conf"
 if [ -f $old_ntp_conf ]; then
     ntp_conf_calculated_hash=$(md5sum "$old_ntp_conf" | cut -f 1 -d ' ')
     if [ "$ntp_conf_calculated_hash" == "4c8b0024bac256f7f7f5b2732b79b33a" ]; then
@@ -11,7 +12,7 @@ if [ -f $old_ntp_conf ]; then
         rm -f $old_ntp_conf || true
     else
         echo "Moving existing ntp.conf to /etc/ntpsec/"
-        mv $old_ntp_conf /etc/ntpsec/
+        sed 's#/var/lib/ntp#/var/lib/ntpsec#' $old_ntp_conf > $new_ntp_conf
     fi
 fi
 
