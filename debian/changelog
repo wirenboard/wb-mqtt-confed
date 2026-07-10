@@ -1,4 +1,4 @@
-wb-mqtt-confed (1.16.8) stable; urgency=medium
+wb-mqtt-confed (1.16.7-wb100) stable; urgency=medium
 
   * Update wbgo.so
 
