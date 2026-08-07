@@ -19,7 +19,7 @@ GOTEST ?= $(GO) test
 GCFLAGS :=
 LDFLAGS := -X main.version=`git describe --tags --always --dirty`
 GO_FLAGS := -buildvcs=false
-GO_TEST_FLAGS = -v -cover -tags test
+GO_TEST_FLAGS = -v -cover -race -tags test
 
 ifeq ($(DEBUG),)
 	LDFLAGS += -s -w
