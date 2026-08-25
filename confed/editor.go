@@ -96,6 +96,7 @@ var (
 	writeError         = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
 	fileNotFoundError  = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
 	invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "Invalid config file"}
+	noContentError     = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "No config content in the request"}
 )
 
 func NewEditor(root string) *Editor {
@@ -265,6 +266,11 @@ type EditorSaveArgs struct {
 }
 
 func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) error {
+	if args.Content == nil {
+		wbgong.Error.Printf("Save request for %s contains no content", args.Path)
+		return noContentError
+	}
+
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 

@@ -1,6 +1,7 @@
 package confed
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -456,6 +457,26 @@ func (s *EditorSuite) SkipTestMultipleSchemasPerConfig() {
 		"path": "/sample-extra.schema.json",
 	})
 	s.verifyJSONFile("sample.json", content)
+}
+
+// A Save request without the (mandatory) content field must be rejected
+// instead of dereferencing a nil args.Content.
+func TestSaveWithoutContent(t *testing.T) {
+	f := NewConfFixture(t)
+	defer f.TearDownDataFiles()
+
+	editor := NewEditor(f.DataFileTempDir())
+	f.Ckf("editor.loadSchema()", editor.loadSchema(f.DataFilePath("sample.schema.json")))
+	defer editor.stopWatchingDependentFiles()
+
+	var args EditorSaveArgs
+	f.Ckf("json.Unmarshal()", json.Unmarshal([]byte(`{"path": "/sample.json"}`), &args))
+
+	var reply EditorPathResponse
+	err := editor.Save(&args, &reply)
+	if err != noContentError {
+		t.Fatalf("Save() without content returned %v, want %v", err, noContentError)
+	}
 }
 
 func TestEditorSuite(t *testing.T) {

@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.2) stable; urgency=medium
+
+  * Fix crash on Save RPC request without content field
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 24 Aug 2026 17:50:00 +0400
+
 wb-mqtt-confed (1.18.1) stable; urgency=medium
 
   * Use go 1.26 compiler
