@@ -1,5 +1,6 @@
 wb-mqtt-confed (1.18.3) stable; urgency=medium
 
+  * Fix service restart after saving ntp.conf (use ntpsec systemd unit)
   * Fix adding NTP servers after removing all existing servers
 
  -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 08 Sep 2026 17:50:00 +0400
