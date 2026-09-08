@@ -4,17 +4,38 @@
 
 import json
 import sys
+from typing import Any, List, Sequence, TypedDict
+
+
+class NTPEntry(TypedDict, total=False):
+    type: str
+    address: str
+    autokey: bool
+    burst: bool
+    iburst: bool
+    prefer: bool
+    key: int
+    version: int
+    minpoll: int
+    maxpoll: int
+    ttl: int
+
+
+class NTPConfig(TypedDict):
+    data: List[NTPEntry]
+    etc: List[str]
+
 
 ETC_MARKER = "### !!!SERVER LIST GOES HERE ###"
 SERVER_ENTRIES = ["pool", "server", "peer", "broadcast", "manycastclient"]
 
 
-def eprint(*args, **kwargs):
+def eprint(*args: Any, **kwargs: Any) -> None:
     print(*args, file=sys.stderr, **kwargs)
 
 
-def parse_entry(entry):
-    ret = dict()
+def parse_entry(entry: Sequence[str]) -> NTPEntry:
+    ret: NTPEntry = {}
 
     # address is 2nd value in word list
     ret["address"] = entry[1]
@@ -36,19 +57,19 @@ def parse_entry(entry):
     return ret
 
 
-def print_entry(srv):
+def print_entry(srv: NTPEntry) -> None:
     result = srv["type"] + " " + srv["address"]
 
-    if "autokey" in srv:
+    if srv.get("autokey", False):
         result += " autokey"
     elif "key" in srv:
-        result += " key " + srv["key"]
+        result += " key " + str(srv["key"])
 
-    if "burst" in srv:
+    if srv.get("burst", False):
         result += " burst"
-    if "iburst" in srv:
+    if srv.get("iburst", False):
         result += " iburst"
-    if "prefer" in srv:
+    if srv.get("prefer", False):
         result += " prefer"
 
     if "version" in srv:
@@ -63,9 +84,9 @@ def print_entry(srv):
     print(result)
 
 
-def from_json():
+def from_json() -> None:
     try:
-        data = json.load(sys.stdin)
+        data: NTPConfig = json.load(sys.stdin)
     except ValueError:
         eprint("Invalid JSON")
         sys.exit(1)
@@ -78,13 +99,18 @@ def from_json():
             print(item)
         elif not data_printed and "data" in data:
             data_printed = True
-            for srv in data["data"]:
-                print_entry(srv)
+            if data["data"]:
+                for srv in data["data"]:
+                    print_entry(srv)
+            else:
+                # Keep the insertion point in the config while the server list
+                # is empty, so future servers return to the same location.
+                print(ETC_MARKER)
 
 
-def to_json():
-    data = list()
-    etc = list()
+def to_json() -> None:
+    data: List[NTPEntry] = []
+    etc: List[str] = []
 
     etc_marked = False
 
@@ -92,7 +118,11 @@ def to_json():
         # check if it is server description
         m = line.split()
 
-        if len(m) > 0 and m[0] in SERVER_ENTRIES:
+        if line.strip() == ETC_MARKER:
+            if not etc_marked:
+                etc_marked = True
+                etc.append(ETC_MARKER)
+        elif len(m) > 0 and m[0] in SERVER_ENTRIES:
             if not etc_marked:
                 etc_marked = True
                 etc.append(ETC_MARKER)
@@ -101,15 +131,16 @@ def to_json():
         else:
             etc.append(line.strip())
 
-    if not etc_marked and len(data) > 0:
+    # Keep an insertion point even when the current config has no servers.
+    if not etc_marked:
         etc.append(ETC_MARKER)
 
-    result = {"data": data, "etc": etc}
+    result: NTPConfig = {"data": data, "etc": etc}
 
     json.dump(result, sys.stdout, indent=True)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "-s":
         from_json()
     else:

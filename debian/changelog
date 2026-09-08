@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.3) stable; urgency=medium
+
+  * Fix adding NTP servers after removing all existing servers
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 08 Sep 2026 17:50:00 +0400
+
 wb-mqtt-confed (1.18.2) stable; urgency=medium
 
   * Fix crash on Save RPC request without content field
