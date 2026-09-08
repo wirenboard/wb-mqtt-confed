@@ -137,7 +137,7 @@ def to_json() -> None:
 
     result: NTPConfig = {"data": data, "etc": etc}
 
-    json.dump(result, sys.stdout, indent=True)
+    json.dump(result, sys.stdout, indent=2)
 
 
 def main() -> None:
