@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.3) stable; urgency=medium
+
+  * Fix schema patch lookup when using an alternate root directory
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 09 Sep 2026 17:23:28 +0400
+
 wb-mqtt-confed (1.18.2) stable; urgency=medium
 
   * Fix crash on Save RPC request without content field
