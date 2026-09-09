@@ -3,6 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 
 	"github.com/wirenboard/wbgong"
 	"github.com/xeipuuv/gojsonschema"
@@ -85,6 +86,10 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	content := bs.content
 	if err != nil {
 		return
+	}
+	physicalSchemaPath, err := filepath.Abs(schemaPath)
+	if err != nil {
+		return nil, err
 	}
 
 	var parsed map[string]any
@@ -181,7 +186,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 			Editor:                  editor,
 		},
 		enumLoader:  newEnumLoader(root),
-		patchLoader: newPatchLoader(schemaPathFromRoot),
+		patchLoader: newPatchLoader(physicalSchemaPath),
 	}
 	return
 }

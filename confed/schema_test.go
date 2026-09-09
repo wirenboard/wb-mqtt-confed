@@ -69,6 +69,10 @@ func (s *SchemaSuite) SkipTestSchemaProperties() {
 	s.Equal("Just an example", s.schema.Description())
 }
 
+func (s *SchemaSuite) TestPatchLoaderPath() {
+	s.Equal(s.DataFilePath("sample.schema.json"), s.schema.patchLoader.baseSchemaPath)
+}
+
 func (s *SchemaSuite) TestAddingSubconf() {
 	s.verifyValid("sample.json") // initialize schema to make sure it's updated properly later
 	s.WriteDataFile("sample_devtypes/whatever.conf", `{"device_type": "Whatever"}`)
