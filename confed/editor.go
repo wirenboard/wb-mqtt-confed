@@ -312,7 +312,7 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		bs = indented.Bytes()
 	}
 
-	if err = writeConfigFileAtomic(schema.PhysicalConfigPath(), bytes.NewReader(bs)); err != nil {
+	if err = wbgong.WriteFileAtomic(schema.PhysicalConfigPath(), bytes.NewReader(bs), 0777); err != nil {
 		wbgong.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}

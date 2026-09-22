@@ -481,6 +481,28 @@ func TestSaveWithoutContent(t *testing.T) {
 	}
 }
 
+func checkFileContent(t *testing.T, path, expected string) {
+	t.Helper()
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != expected {
+		t.Fatalf("content of %s = %q, want %q", path, content, expected)
+	}
+}
+
+func checkNoTemporaryConfigs(t *testing.T, dir string) {
+	t.Helper()
+	paths, err := filepath.Glob(filepath.Join(dir, ".*"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(paths) != 0 {
+		t.Fatalf("temporary config files were not removed: %v", paths)
+	}
+}
+
 func TestSaveConfigAtomically(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "example.conf")
