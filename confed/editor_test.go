@@ -2,7 +2,9 @@ package confed
 
 import (
 	"encoding/json"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -477,6 +479,77 @@ func TestSaveWithoutContent(t *testing.T) {
 	if err != noContentError {
 		t.Fatalf("Save() without content returned %v, want %v", err, noContentError)
 	}
+}
+
+func TestSaveConfigAtomically(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "example.conf")
+	schemaPath := filepath.Join(dir, "example.schema.json")
+	const originalConfig = `{"enabled":false}`
+	const schemaContent = `{
+		"type": "object",
+		"properties": {"enabled": {"type": "boolean"}},
+		"required": ["enabled"],
+		"additionalProperties": false,
+		"configFile": {
+			"path": "/example.conf",
+			"service": "example",
+			"validate": true
+		}
+	}`
+	if err := os.WriteFile(configPath, []byte(originalConfig), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(schemaPath, []byte(schemaContent), 0644); err != nil {
+		t.Fatal(err)
+	}
+	oldConfigFile, err := os.Open(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer oldConfigFile.Close()
+
+	editor := NewEditor(dir)
+	defer editor.stopWatchingDependentFiles()
+	if err := editor.loadSchema(schemaPath); err != nil {
+		t.Fatal(err)
+	}
+
+	// The loaded schema validates config content before any file is replaced.
+	invalidContent := json.RawMessage(`{"enabled":"invalid"}`)
+	var reply EditorPathResponse
+	if err := editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &invalidContent}, &reply); err != invalidConfigError {
+		t.Fatalf("Save() with invalid config returned %v, want %v", err, invalidConfigError)
+	}
+	checkFileContent(t, configPath, originalConfig)
+	checkFileContent(t, schemaPath, schemaContent)
+	if len(editor.RequestCh) != 0 {
+		t.Fatalf("invalid config queued %d requests", len(editor.RequestCh))
+	}
+
+	content := json.RawMessage(`{"enabled":true}`)
+	if err := editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &content}, &reply); err != nil {
+		t.Fatal(err)
+	}
+	checkFileContent(t, configPath, "{\n    \"enabled\": true\n}")
+	checkFileContent(t, schemaPath, schemaContent)
+	oldContent, err := io.ReadAll(oldConfigFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(oldContent) != originalConfig {
+		t.Fatalf("save modified the original config inode: %q", oldContent)
+	}
+	if reply.Path != "/example.conf" {
+		t.Fatalf("reply path = %q", reply.Path)
+	}
+	if len(editor.RequestCh) != 1 {
+		t.Fatalf("queued requests = %d, want one restart", len(editor.RequestCh))
+	}
+	if request := <-editor.RequestCh; request.requestType != Restart || request.properties["service"] != "example" {
+		t.Fatalf("unexpected restart request: %v", request)
+	}
+	checkNoTemporaryConfigs(t, dir)
 }
 
 func TestEditorSuite(t *testing.T) {
