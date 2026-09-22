@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/google/renameio/v2"
+	"github.com/wirenboard/wbgong"
 )
 
 // Resolve the final symlink, including links to files that do not exist yet.
@@ -107,10 +108,12 @@ func writeConfigFileAtomic(path string, content io.Reader) error {
 	if err = temp.CloseAtomicallyReplace(); err != nil {
 		return fmt.Errorf("replace config: %w", err)
 	}
-	// The rename has committed at this point; sync its directory entry so the
-	// replacement is durable before the caller schedules a service restart.
+	// The rename has committed at this point, so a directory sync failure must
+	// not be reported as a failed write: the caller would skip the service
+	// restart even though the new config is already installed. Keep the sync
+	// best-effort and report the reduced crash durability as a warning.
 	if err = dir.Sync(); err != nil {
-		return fmt.Errorf("sync config directory: %w", err)
+		wbgong.Warn.Printf("cannot sync config directory %s: %s", filepath.Dir(path), err)
 	}
 	return nil
 }
