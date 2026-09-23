@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.5) stable; urgency=medium
+
+  * Save config files atomically to prevent truncation on write errors
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 21 Sep 2026 10:23:28 +0400
+
 wb-mqtt-confed (1.18.4) stable; urgency=medium
 
   * Fix schema patch lookup when using an alternate root directory

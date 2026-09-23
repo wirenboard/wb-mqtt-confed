@@ -3,7 +3,6 @@ package confed
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -54,7 +53,6 @@ type RequestType int64
 
 const (
 	Sleep RequestType = iota
-	Sync
 	Restart
 )
 
@@ -314,15 +312,13 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		bs = indented.Bytes()
 	}
 
-	if err = os.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
+	if err = wbgong.WriteFileAtomic(schema.PhysicalConfigPath(), bytes.NewReader(bs), 0777); err != nil {
 		wbgong.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}
 
 	if schema.RestartDelayMS() > 0 {
 		editor.RequestCh <- Request{Sleep, map[string]string{"delay": strconv.Itoa(schema.RestartDelayMS())}}
-	} else {
-		editor.RequestCh <- Request{Sync, map[string]string{"path": schema.PhysicalConfigPath()}}
 	}
 
 	reply.Path = args.Path
