@@ -9,14 +9,15 @@ import (
 )
 
 const (
-	SERVICE_CMD = "systemctl"
+	serviceCmd = "systemctl"
 )
 
 func restartService(name string) (err error) {
-	_, err = runCommand(false, nil, SERVICE_CMD, "reload-or-restart", name)
+	_, err = runCommand(false, nil, serviceCmd, "reload-or-restart", name)
 	return
 }
 
+// RunRequestHandler starts a goroutine processing requests from the channel.
 func RunRequestHandler(ch chan Request) {
 	go func() {
 		for {

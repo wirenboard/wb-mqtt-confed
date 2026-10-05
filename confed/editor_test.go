@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	EXPECTED_SCHEMA_CONTENT = `
+	expectedSchemaContent = `
 {
   "type": "object",
   "title": "Example Config",
@@ -53,7 +53,7 @@ const (
   }
 }
 `
-	EXPECTED_ALT_SCHEMA_CONTENT = `
+	expectedAltSchemaContent = `
 {
   "type": "object",
   "title": "Example Config (alt)",
@@ -97,7 +97,7 @@ const (
 	// gets replaced with "format". That's necessary because
 	// 'format' values intended for json-editor like 'checkbox'
 	// for boolean may confuse gojsonschema
-	EXPECTED_ANOTHER_SCHEMA_CONTENT = `
+	expectedAnotherSchemaContent = `
 {
   "type": "object",
   "title": "Another Example Config",
@@ -120,7 +120,7 @@ const (
 }
 `
 
-	EXPECTED_INTERFACES_JSON = `
+	expectedInterfacesJSON = `
 {
   "interfaces": [
     {
@@ -193,7 +193,7 @@ func (s *EditorSuite) SkipTestListFiles() {
 	s.verifyInitialSchemaList()
 }
 
-func (s *EditorSuite) verifyLoadSampleJson() {
+func (s *EditorSuite) verifyLoadSampleJSON() {
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.json"}, objx.Map{
 		"configPath": "/sample.json",
 		"content": objx.Map{
@@ -203,12 +203,12 @@ func (s *EditorSuite) verifyLoadSampleJson() {
 			"slave_id":    float64(24),
 			"enabled":     true,
 		},
-		"schema": objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
+		"schema": objx.MustFromJSON(expectedSchemaContent),
 	})
 }
 
 func (s *EditorSuite) SkipTestLoadFile() {
-	s.verifyLoadSampleJson()
+	s.verifyLoadSampleJSON()
 	s.CopyDataFilesToTempDir("another.schema.json", "another.json")
 	s.Ck("loadSchema()", s.editor.loadSchema("another.schema.json"))
 	for _, path := range []string{"/another.json", "/another.schema.json"} {
@@ -217,13 +217,13 @@ func (s *EditorSuite) SkipTestLoadFile() {
 			"content": objx.Map{
 				"name": "foobar",
 			},
-			"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
+			"schema": objx.MustFromJSON(expectedAnotherSchemaContent),
 		})
 	}
 }
 
-func (s *EditorSuite) verifyJSONFile(path string, expectedContent objx.Map) {
-	bs, err := os.ReadFile(s.DataFilePath(path))
+func (s *EditorSuite) verifySampleJSONFile(expectedContent objx.Map) {
+	bs, err := os.ReadFile(s.DataFilePath("sample.json"))
 	s.Ck("ReadFile()", err)
 	s.Equal(expectedContent, objx.MustFromJSON(string(bs)))
 }
@@ -247,7 +247,7 @@ func (s *EditorSuite) SkipTestSaveFile() {
 	}, objx.Map{
 		"path": "/sample.json",
 	})
-	s.verifyJSONFile("sample.json", newContent)
+	s.verifySampleJSONFile(newContent)
 
 	newContent["id"] = "msu21xxx"
 	s.VerifyRpc("Save", objx.Map{
@@ -256,14 +256,14 @@ func (s *EditorSuite) SkipTestSaveFile() {
 	}, objx.Map{
 		"path": "/sample.schema.json",
 	})
-	s.verifyJSONFile("sample.json", newContent)
+	s.verifySampleJSONFile(newContent)
 }
 
 func (s *EditorSuite) SkipTestSaveInvalidConfig() {
 	s.VerifyRpcError("Save", objx.Map{
 		"path":    "/sample.json",
 		"content": objx.Map{"wtf": 100},
-	}, EDITOR_ERROR_INVALID_CONFIG, "EditorError", "Invalid config file")
+	}, EditorErrorInvalidConfig, "EditorError", "Invalid config file")
 }
 
 func (s *EditorSuite) SkipTestAddSchema() {
@@ -285,13 +285,13 @@ func (s *EditorSuite) SkipTestAddSchema() {
 			"description": "Just an example",
 		},
 	})
-	s.verifyLoadSampleJson()
+	s.verifyLoadSampleJSON()
 	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
 		"configPath": "/another.json",
 		"content": objx.Map{
 			"name": "foobar",
 		},
-		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
+		"schema": objx.MustFromJSON(expectedAnotherSchemaContent),
 	})
 }
 
@@ -311,13 +311,13 @@ func (s *EditorSuite) SkipTestRemoveSchema() {
 		},
 	})
 	s.VerifyRpcError("Load", objx.Map{"path": "/sample.json"},
-		EDITOR_ERROR_FILE_NOT_FOUND, "EditorError", "File not found")
+		EditorErrorFileNotFound, "EditorError", "File not found")
 	s.VerifyRpc("Load", objx.Map{"path": "/another.json"}, objx.Map{
 		"configPath": "/another.json",
 		"content": objx.Map{
 			"name": "foobar",
 		},
-		"schema": objx.MustFromJSON(EXPECTED_ANOTHER_SCHEMA_CONTENT),
+		"schema": objx.MustFromJSON(expectedAnotherSchemaContent),
 	})
 }
 
@@ -350,7 +350,7 @@ func (s *EditorSuite) SkipTestLoadPreprocessed() {
 	s.loadInterfacesConf()
 	s.VerifyRpc("Load", objx.Map{"path": "/etc/network/interfaces"}, objx.Map{
 		"configPath": "/etc/network/interfaces",
-		"content":    objx.MustFromJSON(EXPECTED_INTERFACES_JSON),
+		"content":    objx.MustFromJSON(expectedInterfacesJSON),
 		"schema": objx.MustFromJSON(
 			strings.ReplaceAll(
 				s.ReadSourceDataFile("interfaces.schema.json"),
@@ -434,12 +434,12 @@ func (s *EditorSuite) SkipTestMultipleSchemasPerConfig() {
 	s.VerifyRpc("Load", objx.Map{"path": "/sample.schema.json"}, objx.Map{
 		"configPath": "/sample.json",
 		"content":    content,
-		"schema":     objx.MustFromJSON(EXPECTED_SCHEMA_CONTENT),
+		"schema":     objx.MustFromJSON(expectedSchemaContent),
 	})
 	s.VerifyRpc("Load", objx.Map{"path": "/sample-extra.schema.json"}, objx.Map{
 		"configPath": "/sample.json",
 		"content":    content,
-		"schema":     objx.MustFromJSON(EXPECTED_ALT_SCHEMA_CONTENT),
+		"schema":     objx.MustFromJSON(expectedAltSchemaContent),
 	})
 
 	content["id"] = "msu21xxx"
@@ -449,7 +449,7 @@ func (s *EditorSuite) SkipTestMultipleSchemasPerConfig() {
 	}, objx.Map{
 		"path": "/sample.schema.json",
 	})
-	s.verifyJSONFile("sample.json", content)
+	s.verifySampleJSONFile(content)
 
 	content["id"] = "msu21yyy"
 	s.VerifyRpc("Save", objx.Map{
@@ -458,7 +458,7 @@ func (s *EditorSuite) SkipTestMultipleSchemasPerConfig() {
 	}, objx.Map{
 		"path": "/sample-extra.schema.json",
 	})
-	s.verifyJSONFile("sample.json", content)
+	s.verifySampleJSONFile(content)
 }
 
 // A Save request without the (mandatory) content field must be rejected
@@ -519,10 +519,10 @@ func TestSaveConfigAtomically(t *testing.T) {
 			"validate": true
 		}
 	}`
-	if err := os.WriteFile(configPath, []byte(originalConfig), 0600); err != nil {
+	if err := os.WriteFile(configPath, []byte(originalConfig), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(schemaPath, []byte(schemaContent), 0644); err != nil {
+	if err := os.WriteFile(schemaPath, []byte(schemaContent), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	oldConfigFile, err := os.Open(configPath)
@@ -533,14 +533,14 @@ func TestSaveConfigAtomically(t *testing.T) {
 
 	editor := NewEditor(dir)
 	defer editor.stopWatchingDependentFiles()
-	if err := editor.loadSchema(schemaPath); err != nil {
+	if err = editor.loadSchema(schemaPath); err != nil {
 		t.Fatal(err)
 	}
 
 	// The loaded schema validates config content before any file is replaced.
 	invalidContent := json.RawMessage(`{"enabled":"invalid"}`)
 	var reply EditorPathResponse
-	if err := editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &invalidContent}, &reply); err != invalidConfigError {
+	if err = editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &invalidContent}, &reply); err != invalidConfigError {
 		t.Fatalf("Save() with invalid config returned %v, want %v", err, invalidConfigError)
 	}
 	checkFileContent(t, configPath, originalConfig)
@@ -550,7 +550,7 @@ func TestSaveConfigAtomically(t *testing.T) {
 	}
 
 	content := json.RawMessage(`{"enabled":true}`)
-	if err := editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &content}, &reply); err != nil {
+	if err = editor.Save(&EditorSaveArgs{Path: "/example.conf", Content: &content}, &reply); err != nil {
 		t.Fatal(err)
 	}
 	checkFileContent(t, configPath, "{\n    \"enabled\": true\n}")

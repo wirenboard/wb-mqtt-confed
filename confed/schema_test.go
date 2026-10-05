@@ -54,9 +54,6 @@ func (s *SchemaSuite) TestValidation() {
 	s.verifyValid("sample-comments.json")
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
-	// s.verifyError("nosuchfile.json", "sample.schema.json")
-	// _, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.DataFileTempDir())
-	// s.NotNil(err)
 	_, err := NewJSONSchemaWithRoot("noconfig.schema.json", s.DataFileTempDir())
 	s.Error(err)
 }

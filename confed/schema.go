@@ -3,6 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/wirenboard/wbgong"
@@ -10,9 +11,10 @@ import (
 )
 
 const (
-	DEFAULT_SUBCONF_PATTERN = `^.*\.conf$`
+	defaultSubconfPattern = `^.*\.conf$`
 )
 
+// JSONSchemaProps holds schema properties, some of which are reported by the List RPC method.
 type JSONSchemaProps struct {
 	Title                   string `json:"title"`
 	Description             string `json:"description"`
@@ -30,6 +32,7 @@ type JSONSchemaProps struct {
 	Editor                  string            `json:"editor"`
 }
 
+// JSONSchema is a config schema with its patches and enum subconfs.
 type JSONSchema struct {
 	path         string
 	schema       *gojsonschema.Schema
@@ -81,20 +84,21 @@ func addTranslation(strings map[string]any, lang, key string, dst map[string]str
 	}
 }
 
-func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
+// NewJSONSchemaWithRoot loads a schema with config paths relative to the root directory.
+func NewJSONSchemaWithRoot(schemaPath, root string) (*JSONSchema, error) {
 	bs, err := loadConfigBytes(schemaPath, nil)
-	content := bs.content
-	if err != nil {
-		return
-	}
-	physicalSchemaPath, err := filepath.Abs(schemaPath)
 	if err != nil {
 		return nil, err
+	}
+	content := bs.content
+	physicalSchemaPath, err := filepath.Abs(schemaPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path of %s: %w", schemaPath, err)
 	}
 
 	var parsed map[string]any
 	if err = json.Unmarshal(content, &parsed); err != nil {
-		return
+		return nil, fmt.Errorf("failed to parse %s: %w", schemaPath, err)
 	}
 
 	configFile, _ := parsed["configFile"].(map[string]any)
@@ -108,17 +112,17 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 	}
 	physicalConfigPath, configPath, err := fakeRootPath(root, physicalConfigPath)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	fromJSONCommand, err := extractStringOrStringList(configFile, "fromJSON")
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	toJSONCommand, err := extractStringOrStringList(configFile, "toJSON")
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	shouldValidate, ok := configFile["validate"].(bool)
@@ -140,7 +144,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 
 	schemaPathFromRoot, err := pathFromRoot(root, schemaPath)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// A schema could contain "translations" property
@@ -164,7 +168,7 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		}
 	}
 
-	s = &JSONSchema{
+	return &JSONSchema{
 		path:    schemaPathFromRoot,
 		schema:  nil,
 		content: content,
@@ -187,10 +191,10 @@ func NewJSONSchemaWithRoot(schemaPath, root string) (s *JSONSchema, err error) {
 		},
 		enumLoader:  newEnumLoader(root),
 		patchLoader: newPatchLoader(physicalSchemaPath),
-	}
-	return
+	}, nil
 }
 
+// GetPreprocessed returns the schema with patches applied and enum subconfs resolved.
 func (s *JSONSchema) GetPreprocessed() map[string]any {
 	if s.patchLoader.IsDirty() {
 		err := json.Unmarshal(s.patchLoader.Patch(s.content), &s.parsed)
@@ -201,7 +205,7 @@ func (s *JSONSchema) GetPreprocessed() map[string]any {
 		}
 	}
 	if s.preprocessed == nil || s.enumLoader.IsDirty() {
-		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]any) // FIXME
+		s.preprocessed = s.enumLoader.Preprocess(s.parsed).(map[string]any) // preprocessing of a map always yields a map
 	}
 	return s.preprocessed
 }
@@ -220,15 +224,21 @@ func (s *JSONSchema) getSchema() (schema *gojsonschema.Schema, err error) {
 	return s.schema, nil
 }
 
+// ValidateContent validates the config content against the schema.
 func (s *JSONSchema) ValidateContent(content []byte) (r *gojsonschema.Result, err error) {
 	documentLoader := gojsonschema.NewStringLoader(string(content))
 	schema, err := s.getSchema()
 	if err != nil {
 		return
 	}
-	return schema.Validate(documentLoader)
+	r, err = schema.Validate(documentLoader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load document: %w", err)
+	}
+	return r, nil
 }
 
+// ValidateFile validates the config file against the schema.
 func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err error) {
 	bs, err := loadConfigBytes(path, nil)
 	if err != nil {
@@ -237,63 +247,78 @@ func (s *JSONSchema) ValidateFile(path string) (result *gojsonschema.Result, err
 	return s.ValidateContent(bs.content)
 }
 
+// Path returns the schema path relative to the root directory.
 func (s *JSONSchema) Path() string {
 	return s.path
 }
 
+// Content returns the original schema content.
 func (s *JSONSchema) Content() []byte {
 	return s.content
 }
 
+// ConfigPath returns the config path relative to the root directory.
 func (s *JSONSchema) ConfigPath() string {
 	return s.props.ConfigPath
 }
 
+// PhysicalConfigPath returns the config path in the filesystem.
 func (s *JSONSchema) PhysicalConfigPath() string {
 	return s.props.physicalConfigPath
 }
 
+// ToJSONCommand returns the command converting the config to JSON, if any.
 func (s *JSONSchema) ToJSONCommand() []string {
 	return s.props.toJSONCommand
 }
 
+// FromJSONCommand returns the command converting JSON to the config format, if any.
 func (s *JSONSchema) FromJSONCommand() []string {
 	return s.props.fromJSONCommand
 }
 
+// Title returns the schema title.
 func (s *JSONSchema) Title() string {
 	return s.props.Title
 }
 
+// Description returns the schema description.
 func (s *JSONSchema) Description() string {
 	return s.props.Description
 }
 
+// Services returns the services to restart after the config is saved.
 func (s *JSONSchema) Services() []string {
 	return s.props.services
 }
 
+// RestartDelayMS returns the delay before restarting the services.
 func (s *JSONSchema) RestartDelayMS() int {
 	return s.props.restartDelayMS
 }
 
+// ShouldValidate reports whether the config should be validated against the schema.
 func (s *JSONSchema) ShouldValidate() bool {
 	return s.props.shouldValidate
 }
 
+// HideFromList reports whether the schema should be hidden from the List RPC method.
 func (s *JSONSchema) HideFromList() bool {
 	return s.props.hideFromList
 }
 
+// Properties returns the schema properties.
 func (s *JSONSchema) Properties() *JSONSchemaProps {
 	return &s.props
 }
 
+// StopWatchingDependentFiles stops watching enum subconfs and schema patches.
 func (s *JSONSchema) StopWatchingDependentFiles() {
 	s.enumLoader.StopWatchingSubconfigs()
 	s.patchLoader.StopWatchingPatches()
 }
 
+// Editor returns the name of a custom editor for the config.
 func (s *JSONSchema) Editor() string {
 	return s.props.Editor
 }
