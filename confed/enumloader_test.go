@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	EXPECTED_SCHEMA_CONTENT_TMPL = `
+	expectedSchemaContentTmpl = `
 {
   "type": "object",
   "title": "Example Config",
@@ -75,7 +75,7 @@ func (s *EnumLoaderSuite) TearDownTest() {
 }
 
 func (s *EnumLoaderSuite) expectedContent(enumSubst string) (r map[string]any) {
-	bs := []byte(fmt.Sprintf(EXPECTED_SCHEMA_CONTENT_TMPL, enumSubst))
+	bs := []byte(fmt.Sprintf(expectedSchemaContentTmpl, enumSubst))
 	s.Ck("Unmarshal expected JSON", json.Unmarshal(bs, &r))
 	return
 }
