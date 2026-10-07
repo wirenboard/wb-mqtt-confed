@@ -3,6 +3,7 @@ package confed
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"sort"
 	"sync"
@@ -47,25 +48,24 @@ func (c *subconfWatcherClient) LiveRemoveFile(path string) error {
 	return nil
 }
 
-func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) (err error) {
+func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer) error {
 	wbgong.Debug.Printf("enumLoader.loadSubconf(): %s, %s", key, path)
 	bs, err := loadConfigBytes(path, nil)
-	content := bs.content
 	if err != nil {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s load failed: %s", path, err)
-		return
+		return err
 	}
 
 	var parsed map[string]any
-	if err = json.Unmarshal(content, &parsed); err != nil {
+	if err = json.Unmarshal(bs.content, &parsed); err != nil {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s unmarshal failed: %s", path, err)
-		return
+		return fmt.Errorf("failed to parse %s: %w", path, err)
 	}
 
 	node, kind, err := ptr.Get(parsed)
 	if err != nil {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s JSON pointer deref failed: %s", path, err)
-		return
+		return fmt.Errorf("failed to dereference JSON pointer in %s: %w", path, err)
 	}
 	if kind != reflect.String {
 		wbgong.Debug.Printf("enumLoader.loadSubconf(): %s: JSON Pointer enum target is not a string", path)
@@ -78,7 +78,7 @@ func (e *enumLoader) loadSubconf(key, path string, ptr gojsonpointer.JsonPointer
 		e.enumValues[key] = vals
 	}
 	vals[path] = node.(string)
-	return
+	return nil
 }
 
 func (e *enumLoader) liveLoadSubconf(key, path string, ptr gojsonpointer.JsonPointer) error {
@@ -117,22 +117,24 @@ func (e *enumLoader) ensureSubconfDirLoaded(path, pattern, ptrString string) (er
 	client := &subconfWatcherClient{e: e, key: key, ptr: ptr}
 	watcher := wbgong.NewDirWatcher(pattern, client)
 	e.watchers[key] = watcher
-	watcher.Load(path)
+	if loadErr := watcher.Load(path); loadErr != nil {
+		wbgong.Debug.Printf("enumLoader.ensureSubconfDirLoaded(): failed to load %s: %s", path, loadErr)
+	}
 	return
 }
 
-var invalidEnumSubconfError = errors.New("invalid enum subconf node")
+var errInvalidEnumSubconf = errors.New("invalid enum subconf node")
 
 func (e *enumLoader) subconfEnumValues(node map[string]any) (r []any, err error) {
 	maybePaths, ok := node["directories"].([]any)
 	if !ok || len(maybePaths) == 0 {
-		return nil, invalidEnumSubconfError
+		return nil, errInvalidEnumSubconf
 	}
 	paths := make([]string, len(maybePaths))
 	for n, p := range maybePaths {
-		path, ok := p.(string)
-		if !ok {
-			return nil, invalidEnumSubconfError
+		path, isString := p.(string)
+		if !isString {
+			return nil, errInvalidEnumSubconf
 		}
 		paths[n], _, err = fakeRootPath(e.root, path)
 		if err != nil {
@@ -144,12 +146,12 @@ func (e *enumLoader) subconfEnumValues(node map[string]any) (r []any, err error)
 
 	ptrString, ok := node["pointer"].(string)
 	if !ok {
-		return nil, invalidEnumSubconfError
+		return nil, errInvalidEnumSubconf
 	}
 
 	pattern, ok := node["pattern"].(string)
 	if !ok {
-		pattern = DEFAULT_SUBCONF_PATTERN
+		pattern = defaultSubconfPattern
 	}
 
 	seen := make(map[string]bool)
@@ -180,15 +182,14 @@ func (e *enumLoader) subconfEnumValues(node map[string]any) (r []any, err error)
 		r[n] = v
 	}
 	wbgong.Debug.Printf("enumLoader.subconfEnumValues(): values=%v", r)
-	return
+	return r, err
 }
 
 func (e *enumLoader) preprocess(v any) any {
-	switch v.(type) {
+	switch v := v.(type) {
 	case map[string]any:
-		m := v.(map[string]any)
 		r := make(map[string]any)
-		for k, item := range m {
+		for k, item := range v {
 			if k != "enum" {
 				r[k] = e.preprocess(item)
 				continue
@@ -215,9 +216,8 @@ func (e *enumLoader) preprocess(v any) any {
 		}
 		return r
 	case []any:
-		l := v.([]any)
-		r := make([]any, len(l))
-		for n, item := range l {
+		r := make([]any, len(v))
+		for n, item := range v {
 			r[n] = e.preprocess(item)
 		}
 		return r

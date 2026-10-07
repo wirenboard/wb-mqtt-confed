@@ -9,18 +9,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/DisposaBoy/JsonConfigReader"
 )
 
+// RunCommandResult holds the output of an external command.
 type RunCommandResult struct {
 	stdout bytes.Buffer
 	stderr bytes.Buffer
 }
 
 func runCommand(captureStdout bool, stdin io.Reader, command string, args ...string) (res RunCommandResult, err error) {
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command(command, args...) //nolint:gosec // commands are specified by schema files
 	cmd.Stdin = stdin
 	if captureStdout {
 		cmd.Stdout = &res.stdout
@@ -30,13 +30,8 @@ func runCommand(captureStdout bool, stdin io.Reader, command string, args ...str
 	if err != nil {
 		exitErr, ok := err.(*exec.ExitError)
 		if ok {
-			status := -1 // FIXME
-			ws, ok := exitErr.Sys().(syscall.WaitStatus)
-			if ok {
-				status = ws.ExitStatus()
-			}
 			err = fmt.Errorf("exit status %d from %s %s: %s",
-				status, command, strings.Join(args, " "),
+				exitErr.ExitCode(), command, strings.Join(args, " "),
 				res.stderr.String())
 		}
 	}
@@ -52,13 +47,14 @@ func extPreprocess(commandAndArgs []string, in []byte) (RunCommandResult, error)
 	return runCommand(true, bytes.NewBuffer(in), commandAndArgs[0], commandAndArgs[1:]...)
 }
 
+// LoadConfigResult holds the content of a loaded config.
 type LoadConfigResult struct {
 	content            []byte
 	preprocessorErrors string
 }
 
 func loadConfigBytes(path string, preprocessCmd []string) (res LoadConfigResult, err error) {
-	in, err := os.Open(path)
+	in, err := os.Open(path) //nolint:gosec // reading configs and schemas by path is intended
 	if err != nil {
 		return
 	}

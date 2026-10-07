@@ -54,9 +54,6 @@ func (s *SchemaSuite) TestValidation() {
 	s.verifyValid("sample-comments.json")
 	s.verifyInvalid("sample-invalid.json")
 	s.verifyError("sample-badsyntax.json", "sample.schema.json")
-	// s.verifyError("nosuchfile.json", "sample.schema.json")
-	// _, err := NewJSONSchemaWithRoot("nosuchfile.schema.json", s.DataFileTempDir())
-	// s.NotNil(err)
 	_, err := NewJSONSchemaWithRoot("noconfig.schema.json", s.DataFileTempDir())
 	s.Error(err)
 }
@@ -67,6 +64,10 @@ func (s *SchemaSuite) SkipTestSchemaProperties() {
 	s.Equal(s.DataFilePath("sample.json"), s.schema.PhysicalConfigPath())
 	s.Equal("Example Config", s.schema.Title())
 	s.Equal("Just an example", s.schema.Description())
+}
+
+func (s *SchemaSuite) TestPatchLoaderPath() {
+	s.Equal(s.DataFilePath("sample.schema.json"), s.schema.patchLoader.baseSchemaPath)
 }
 
 func (s *SchemaSuite) TestAddingSubconf() {

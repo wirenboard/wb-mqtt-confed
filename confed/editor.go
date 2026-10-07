@@ -1,9 +1,10 @@
+// Package confed implements loading, validation and saving of JSON
+// configuration files described by JSON schemas.
 package confed
 
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -14,15 +15,14 @@ import (
 )
 
 const (
-	RESTART_QUEUE_LEN = 100
+	restartQueueLen = 100
 )
 
 func fixFormatProps(v any) any {
-	switch v.(type) {
+	switch v := v.(type) {
 	case map[string]any:
-		m := v.(map[string]any)
 		r := make(map[string]any)
-		for k, item := range m {
+		for k, item := range v {
 			if k == "_format" {
 				r["format"] = fixFormatProps(item)
 			} else {
@@ -31,9 +31,8 @@ func fixFormatProps(v any) any {
 		}
 		return r
 	case []any:
-		l := v.([]any)
-		r := make([]any, len(l))
-		for n, item := range l {
+		r := make([]any, len(v))
+		for n, item := range v {
 			r[n] = fixFormatProps(item)
 		}
 		return r
@@ -44,25 +43,29 @@ func fixFormatProps(v any) any {
 
 func printPreprocessorErrors(configPath, errors string) {
 	if errors != "" {
-		for _, err := range strings.Split(strings.TrimSpace(errors), "\n") {
-			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", configPath, err)
+		for line := range strings.SplitSeq(strings.TrimSpace(errors), "\n") {
+			wbgong.Warn.Printf("config preprocessor of %s printed in stderr: %s", configPath, line)
 		}
 	}
 }
 
+// RequestType is the kind of a request processed by RunRequestHandler.
 type RequestType int64
 
+// Request types processed by RunRequestHandler.
 const (
 	Sleep RequestType = iota
-	Sync
 	Restart
 )
 
+// Request is a deferred action to be performed after a config is saved.
 type Request struct {
 	requestType RequestType
 	properties  map[string]string
 }
 
+// Editor is an MQTT RPC service providing access to configs
+// described by the loaded schemas.
 type Editor struct {
 	mtx                 sync.Mutex
 	root                string
@@ -71,6 +74,7 @@ type Editor struct {
 	RequestCh           chan Request
 }
 
+// EditorError is an error returned to RPC clients along with its code.
 type EditorError struct {
 	code    int32
 	message string
@@ -80,24 +84,27 @@ func (err *EditorError) Error() string {
 	return err.message
 }
 
+// ErrorCode returns the RPC error code.
 func (err *EditorError) ErrorCode() int32 {
 	return err.code
 }
 
+// RPC error codes.
+// No iota here because these values may be used by external software.
 const (
-	// no iota here because these values may be used
-	// by external software
-	EDITOR_ERROR_WRITE          = 1002
-	EDITOR_ERROR_FILE_NOT_FOUND = 1003
-	EDITOR_ERROR_INVALID_CONFIG = 1006
+	EditorErrorWrite         = 1002
+	EditorErrorFileNotFound  = 1003
+	EditorErrorInvalidConfig = 1006
 )
 
 var (
-	writeError         = &EditorError{EDITOR_ERROR_WRITE, "Error writing the file"}
-	fileNotFoundError  = &EditorError{EDITOR_ERROR_FILE_NOT_FOUND, "File not found"}
-	invalidConfigError = &EditorError{EDITOR_ERROR_INVALID_CONFIG, "Invalid config file"}
+	writeError         = &EditorError{EditorErrorWrite, "Error writing the file"}
+	fileNotFoundError  = &EditorError{EditorErrorFileNotFound, "File not found"}
+	invalidConfigError = &EditorError{EditorErrorInvalidConfig, "Invalid config file"}
+	noContentError     = &EditorError{EditorErrorInvalidConfig, "No config content in the request"}
 )
 
+// NewEditor creates an Editor for configs located under the root directory.
 func NewEditor(root string) *Editor {
 	confRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -108,7 +115,7 @@ func NewEditor(root string) *Editor {
 		root:                confRoot,
 		schemasByConfigPath: make(map[string][]*JSONSchema),
 		schemasBySchemaPath: make(map[string]*JSONSchema),
-		RequestCh:           make(chan Request, RESTART_QUEUE_LEN),
+		RequestCh:           make(chan Request, restartQueueLen),
 	}
 }
 
@@ -168,6 +175,7 @@ func (editor *Editor) removeSchema(path string) (err error) {
 	return nil
 }
 
+// ByConfigThenSchemaPath sorts schema properties by config path, then by schema path.
 type ByConfigThenSchemaPath []*JSONSchemaProps
 
 func (b ByConfigThenSchemaPath) Len() int      { return len(b) }
@@ -179,7 +187,8 @@ func (b ByConfigThenSchemaPath) Less(i, j int) bool {
 	return b[i].ConfigPath < b[j].ConfigPath
 }
 
-func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error) {
+// List is an RPC method returning properties of all visible schemas.
+func (editor *Editor) List(_ *struct{}, reply *[]*JSONSchemaProps) (err error) {
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
@@ -193,14 +202,17 @@ func (editor *Editor) List(args *struct{}, reply *[]*JSONSchemaProps) (err error
 	return
 }
 
+// EditorPathArgs are arguments of the Load RPC method.
 type EditorPathArgs struct {
 	Path string `json:"path"`
 }
 
+// EditorPathResponse is a reply of the Save RPC method.
 type EditorPathResponse struct {
 	Path string `json:"path"`
 }
 
+// EditorContentResponse is a reply of the Load RPC method.
 type EditorContentResponse struct {
 	ConfigPath string           `json:"configPath"`
 	Content    *json.RawMessage `json:"content"`
@@ -211,15 +223,17 @@ type EditorContentResponse struct {
 func (editor *Editor) locateSchema(path string) (*JSONSchema, error) {
 	schema, ok := editor.schemasBySchemaPath[path]
 	if !ok {
-		if schemas, ok := editor.schemasByConfigPath[path]; !ok || len(schemas) == 0 {
+		schemas, ok := editor.schemasByConfigPath[path]
+		if !ok || len(schemas) == 0 {
 			return nil, fileNotFoundError
-		} else {
-			schema = schemas[0]
 		}
+		schema = schemas[0]
 	}
 	return schema, nil
 }
 
+// Load is an RPC method returning a config with its preprocessed schema.
+// The path may be either a config path or a schema path.
 func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) error {
 	schema, err := editor.locateSchema(args.Path)
 	if err != nil {
@@ -259,12 +273,20 @@ func (editor *Editor) Load(args *EditorPathArgs, reply *EditorContentResponse) e
 	return nil
 }
 
+// EditorSaveArgs are arguments of the Save RPC method.
 type EditorSaveArgs struct {
 	Path    string           `json:"path"`
 	Content *json.RawMessage `json:"content"`
 }
 
+// Save is an RPC method validating and writing a config, then restarting
+// the services specified in its schema.
 func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) error {
+	if args.Content == nil {
+		wbgong.Error.Printf("Save request for %s contains no content", args.Path)
+		return noContentError
+	}
+
 	editor.mtx.Lock()
 	defer editor.mtx.Unlock()
 
@@ -273,9 +295,9 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		return err
 	}
 	if schema.ShouldValidate() {
-		r, err := schema.ValidateContent(*args.Content)
-		if err != nil {
-			wbgong.Error.Printf("Failed to validate config file: %v", err)
+		r, validateErr := schema.ValidateContent(*args.Content)
+		if validateErr != nil {
+			wbgong.Error.Printf("Failed to validate config file: %v", validateErr)
 			return invalidConfigError
 		}
 		if !r.Valid() {
@@ -308,15 +330,13 @@ func (editor *Editor) Save(args *EditorSaveArgs, reply *EditorPathResponse) erro
 		bs = indented.Bytes()
 	}
 
-	if err = os.WriteFile(schema.PhysicalConfigPath(), bs, 0777); err != nil {
+	if err = wbgong.WriteFileAtomic(schema.PhysicalConfigPath(), bytes.NewReader(bs), 0o777); err != nil {
 		wbgong.Error.Printf("error writing %s: %s", schema.PhysicalConfigPath(), err)
 		return writeError
 	}
 
 	if schema.RestartDelayMS() > 0 {
 		editor.RequestCh <- Request{Sleep, map[string]string{"delay": strconv.Itoa(schema.RestartDelayMS())}}
-	} else {
-		editor.RequestCh <- Request{Sync, map[string]string{"path": schema.PhysicalConfigPath()}}
 	}
 
 	reply.Path = args.Path
@@ -338,22 +358,28 @@ func (editor *Editor) stopWatchingDependentFiles() {
 // for *Editor itself in order to avoid RPC server warnings
 // about improper methods.
 
+// EditorDirWatcherClient loads and removes schemas of an Editor
+// upon directory watcher events.
 type EditorDirWatcherClient struct {
 	editor *Editor
 }
 
+// NewEditorDirWatcherClient creates a directory watcher client for the editor.
 func NewEditorDirWatcherClient(editor *Editor) wbgong.DirWatcherClient {
 	return &EditorDirWatcherClient{editor}
 }
 
+// LoadFile loads a schema file.
 func (c *EditorDirWatcherClient) LoadFile(path string) error {
 	return c.editor.loadSchema(path)
 }
 
+// LiveLoadFile reloads a changed schema file.
 func (c *EditorDirWatcherClient) LiveLoadFile(path string) error {
 	return c.LoadFile(path)
 }
 
+// LiveRemoveFile removes a deleted schema file.
 func (c *EditorDirWatcherClient) LiveRemoveFile(path string) error {
 	return c.editor.removeSchema(path)
 }

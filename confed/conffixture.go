@@ -8,10 +8,12 @@ import (
 	"github.com/wirenboard/wbgong/testutils"
 )
 
+// ConfFixture provides sample config and schema files for tests.
 type ConfFixture struct {
 	*testutils.DataFileFixture
 }
 
+// NewConfFixture creates a fixture with sample files copied to a temporary directory.
 func NewConfFixture(t *testing.T) (f *ConfFixture) {
 	f = &ConfFixture{testutils.NewDataFileFixture(t)}
 	f.addSampleFiles()

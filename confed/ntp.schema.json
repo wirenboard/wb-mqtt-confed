@@ -7,7 +7,7 @@
         "toJSON": "/usr/lib/wb-mqtt-confed/parsers/ntpparser",
         "fromJSON": ["/usr/lib/wb-mqtt-confed/parsers/ntpparser", "-s"],
         "restartDelayMS": 4000,
-        "service": "ntp"
+        "service": "ntpsec"
     },
 
     "definitions": {
