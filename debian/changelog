@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.7) stable; urgency=medium
+
+  * Enable race detection for tests, no functional changes
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 07 Oct 2026 11:00:00 +0400
+
 wb-mqtt-confed (1.18.6) stable; urgency=medium
 
   * Fix golangci-lint issues
