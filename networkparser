@@ -75,12 +75,12 @@ class NetworkParser(object):
     method = Regex("loopback|manual|dhcp|static|ppp|bootp|tunnel|wvdial|ipv4ll")
     stanza = Regex("auto|iface|mapping|allow-hotplug")
     option_key = Regex(
-        "bridge_\w*|post-\w*|up|down|pre-\w*|address"
-        "|network|netmask|gateway|broadcast|dns-\w*|scope|"
-        "pointtopoint|metric|hwaddress|mtu|hostname|"
-        "leasehours|leasetime|vendor|client|bootfile|server"
-        "|mode|endpoint|dstaddr|local|ttl|provider|unit"
-        "|options|frame|bitrate|netnum|media|wpa-[\w-]*"
+        r"bridge_\w*|post-\w*|up|down|pre-\w*|address"
+        r"|network|netmask|gateway|broadcast|dns-\w*|scope|"
+        r"pointtopoint|metric|hwaddress|mtu|hostname|"
+        r"leasehours|leasetime|vendor|client|bootfile|server"
+        r"|mode|endpoint|dstaddr|local|ttl|provider|unit"
+        r"|options|frame|bitrate|netnum|media|wpa-[\w-]*"
     )
     _eol = Literal("\n").suppress()
     option = Forward()
