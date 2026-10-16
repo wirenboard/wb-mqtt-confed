@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.18.7) stable; urgency=medium
+
+  * Drop python3-netaddr dependency: remove unused Interface class from networkparser
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Thu, 15 Oct 2026 20:47:58 +0400
+
 wb-mqtt-confed (1.18.6) stable; urgency=medium
 
   * Fix golangci-lint issues
