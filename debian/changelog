@@ -1,3 +1,9 @@
+wb-mqtt-confed (1.19.0) stable; urgency=medium
+
+  * Update dependencies
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 24 Nov 2026 17:50:00 +0400
+
 wb-mqtt-confed (1.18.7) stable; urgency=medium
 
   * Drop python3-netaddr dependency: remove unused Interface class from networkparser
