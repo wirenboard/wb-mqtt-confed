@@ -1,10 +1,16 @@
-wb-mqtt-confed (1.18.8) stable; urgency=medium
+wb-mqtt-confed (1.19.1) stable; urgency=medium
 
   * Update LICENSE: Wiren Board as the copyright holder,
     2015 as the first publication year, use restricted to Wiren Board equipment
   * Fill debian/copyright in the DEP-5 format
 
- -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Thu, 12 Nov 2026 14:40:07 +0300
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Thu, 26 Nov 2026 18:14:02 +0300
+
+wb-mqtt-confed (1.19.0) stable; urgency=medium
+
+  * Update dependencies
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 24 Nov 2026 17:50:00 +0400
 
 wb-mqtt-confed (1.18.7) stable; urgency=medium
 
